@@ -1,0 +1,13 @@
+project_id = "etkqgftplaxooyearbsm"
+
+[functions.myra-chat]
+verify_jwt = false
+
+[functions.sync-to-ghl]
+verify_jwt = false
+
+[functions.book-ghl-appointment]
+verify_jwt = false
+
+[functions.get-available-slots]
+verify_jwt = false
