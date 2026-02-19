@@ -3,7 +3,6 @@ import { useSearchParams, Link } from "react-router-dom";
 import { Check, Calendar, ArrowRight, Home } from "lucide-react";
 import { motion } from "framer-motion";
 import Footer from "@/components/Footer";
-import BlurOrb from "@/components/BlurOrb";
 
 declare global {
   interface Window {
@@ -25,13 +24,12 @@ export default function ThankYou() {
     }
   }, []);
 
-  // Determine content based on URL params
   const getContent = () => {
     if (booked && slot) {
       return {
         icon: <Check className="w-16 h-16 text-primary" />,
         headline: "You're All Set!",
-        subheadline: `Your Venue Strategy Session is booked for ${decodeURIComponent(slot)}`,
+        subheadline: `Your Retirement Strategy Session is booked for ${decodeURIComponent(slot)}`,
         description: "Check your email for the calendar invite and meeting details.",
       };
     }
@@ -41,7 +39,7 @@ export default function ThankYou() {
         icon: <Calendar className="w-16 h-16 text-primary" />,
         headline: "One More Step!",
         subheadline: "Pick a time that works best for you",
-        description: "Click below to view all available times and book your free Venue Strategy Session.",
+        description: "Click below to view all available times and book your free Retirement Strategy Session.",
         showCalendarButton: true,
       };
     }
@@ -49,8 +47,8 @@ export default function ThankYou() {
     return {
       icon: <Check className="w-16 h-16 text-primary" />,
       headline: "Thanks for Sharing!",
-      subheadline: "We've got your wedding preferences",
-      description: "Our team will be in touch soon to schedule your free Venue Strategy Session.",
+      subheadline: "We've got your retirement preferences",
+      description: "Our team will be in touch soon to schedule your free Retirement Strategy Session.",
       showBookNowButton: true,
     };
   };
@@ -59,18 +57,10 @@ export default function ThankYou() {
 
   return (
     <div className="min-h-screen bg-background overflow-hidden">
-
-
       {/* Background effects */}
       <div className="fixed inset-0 pointer-events-none overflow-hidden">
-        <BlurOrb
-          color="primary"
-          className="w-[400px] h-[400px] absolute left-[20%] top-[30%] opacity-60"
-        />
-        <BlurOrb
-          color="peach"
-          className="w-[350px] h-[350px] absolute right-[20%] top-[60%] opacity-50"
-        />
+        <div className="w-[400px] h-[400px] absolute left-[20%] top-[30%] opacity-20 rounded-full bg-primary blur-[120px]" />
+        <div className="w-[350px] h-[350px] absolute right-[20%] top-[60%] opacity-15 rounded-full bg-accent blur-[120px]" />
       </div>
 
       <main className="relative z-10 flex flex-col items-center justify-center min-h-[80vh] px-4 pt-24 pb-16">
@@ -90,22 +80,18 @@ export default function ThankYou() {
             {content.icon}
           </motion.div>
 
-          {/* Headline */}
           <h1 className="font-heading text-4xl md:text-5xl font-bold text-foreground mb-4">
             {content.headline}
           </h1>
 
-          {/* Subheadline */}
           <p className="text-xl text-muted-foreground mb-8">
             {content.subheadline}
           </p>
 
-          {/* Description */}
           <p className="text-base text-muted-foreground mb-8">
             {content.description}
           </p>
 
-          {/* Divider */}
           <div className="w-16 h-1 bg-primary/30 mx-auto mb-8 rounded-full" />
 
           {/* What Happens Next */}
@@ -127,7 +113,7 @@ export default function ThankYou() {
                   2
                 </span>
                 <span className="text-muted-foreground">
-                  We'll review your preferences and curate venue matches
+                  We'll review your retirement goals and prepare your personalized plan
                 </span>
               </li>
               <li className="flex items-start gap-3">
@@ -135,7 +121,7 @@ export default function ThankYou() {
                   3
                 </span>
                 <span className="text-muted-foreground">
-                  On your call, we'll walk through your personalized shortlist
+                  On your call, we'll walk through your income gap strategy
                 </span>
               </li>
             </ul>
@@ -145,7 +131,7 @@ export default function ThankYou() {
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             {content.showCalendarButton && (
               <a
-                href="https://myra.com/meet-your-planner"
+                href="https://myra.ai/meet-your-planner"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="inline-flex items-center justify-center gap-2 px-6 py-3 bg-primary text-primary-foreground rounded-full font-medium hover:bg-primary/90 transition-colors"
