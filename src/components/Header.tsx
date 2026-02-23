@@ -44,6 +44,12 @@ const Header = () => {
         <div className="flex-1" />
 
         <div className="flex items-center gap-3 pr-1 sm:pr-0">
+          <Link
+            to="/chat"
+            className="hidden sm:inline-flex items-center justify-center rounded-full bg-secondary/10 px-4 py-2 text-sm font-medium text-secondary hover:bg-secondary/20 transition-colors"
+          >
+            Agent Chat
+          </Link>
           <AuthModal />
         </div>
       </header>

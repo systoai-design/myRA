@@ -145,6 +145,7 @@ export function useMyRAChat() {
     // Lead info captured from conversation
     const [leadInfo, setLeadInfo] = useState<{ name?: string; email?: string; phone?: string }>({});
 
+    const [input, setInput] = useState("");
     const [isLoading, setIsLoading] = useState(false);
     const [isTyping, setIsTyping] = useState(false);
     const [isSeen, setIsSeen] = useState(false);
@@ -193,17 +194,24 @@ export function useMyRAChat() {
         localStorage.removeItem("myra-chat-history");
     }, []);
 
-    const sendMessage = useCallback(async (input: string) => {
-        if (!input.trim()) return;
+    const sendMessage = useCallback(async (eOrString?: React.FormEvent | string) => {
+        let messageText = typeof eOrString === 'string' ? eOrString : input;
+
+        if (eOrString && typeof eOrString !== 'string' && 'preventDefault' in eOrString) {
+            eOrString.preventDefault();
+        }
+
+        if (!messageText.trim()) return;
 
         // 1. Add User Message
         const userMsg: ChatMessage = {
             id: generateId(),
             role: "user",
-            content: input
+            content: messageText
         };
 
         setMessages(prev => [...prev, userMsg]);
+        setInput(""); // Clear input after sending
         setIsTyping(true);
 
         try {
@@ -211,7 +219,7 @@ export function useMyRAChat() {
             const apiMessages = [
                 { role: "system", content: SYSTEM_PROMPT },
                 ...messages.map(m => ({ role: m.role, content: m.content })),
-                { role: "user", content: input }
+                { role: "user", content: messageText }
             ];
 
             // 3. Call Groq API
@@ -277,7 +285,7 @@ export function useMyRAChat() {
                 content: errorMsg
             }]);
         }
-    }, [messages]);
+    }, [messages, input]);
 
     const startChat = useCallback(() => {
         if (messages.length === 0) {
@@ -292,6 +300,8 @@ export function useMyRAChat() {
 
     return {
         messages,
+        input,
+        setInput,
         sendMessage,
         clearChat,
         startChat,
