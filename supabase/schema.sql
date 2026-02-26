@@ -19,6 +19,12 @@ CREATE INDEX IF NOT EXISTS idx_chats_user_id ON public.chats(user_id);
 -- 3. Row Level Security (RLS) - users can only see their own chats
 ALTER TABLE public.chats ENABLE ROW LEVEL SECURITY;
 
+-- Drop existing policies if they exist (allows safe re-running of this script)
+DROP POLICY IF EXISTS "Users can read own chats" ON public.chats;
+DROP POLICY IF EXISTS "Users can insert own chats" ON public.chats;
+DROP POLICY IF EXISTS "Users can update own chats" ON public.chats;
+DROP POLICY IF EXISTS "Users can delete own chats" ON public.chats;
+
 -- Allow users to read their own chats
 CREATE POLICY "Users can read own chats"
     ON public.chats FOR SELECT
@@ -48,6 +54,7 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
+DROP TRIGGER IF EXISTS on_chat_updated ON public.chats;
 CREATE TRIGGER on_chat_updated
     BEFORE UPDATE ON public.chats
     FOR EACH ROW
