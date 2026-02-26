@@ -68,7 +68,7 @@ export const AssetBuckets: React.FC<AssetBucketsProps> = ({
 
             {total === 0 && (
                 <div className="mt-4 text-center text-xs text-slate-400 italic">
-                    Tell myRA about your savings to see them fill up.
+                    Tell MyRA about your savings to see them fill up.
                 </div>
             )}
         </div>

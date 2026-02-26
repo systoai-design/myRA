@@ -1,7 +1,9 @@
 import { useRef, useState, useEffect, useCallback } from "react";
+import { useNavigate } from "react-router-dom";
 import { useMyRAChat } from "@/hooks/useMyRAChat";
+import { useAuth } from "@/contexts/AuthContext";
 import { ChatChart } from "./chat/ChatChart";
-import { motion } from "framer-motion";
+import gsap from "gsap";
 
 // Sound effect utility using Web Audio API (no external files needed)
 const playMessageSound = () => {
@@ -30,11 +32,26 @@ const playMessageSound = () => {
 
 const Hero = () => {
     const { messages, sendMessage, clearChat, startChat, isLoading, isTyping, isSeen } = useMyRAChat();
+    const { user } = useAuth();
+    const navigate = useNavigate();
     const [inputValue, setInputValue] = useState("");
     const [showChat, setShowChat] = useState(false);
     const [seenMsgId, setSeenMsgId] = useState<string | null>(null);
     const chatScrollRef = useRef<HTMLDivElement>(null);
     const prevMsgCount = useRef(messages.length);
+
+    const handleStart = useCallback(() => {
+        if (user) {
+            navigate('/agent-chat');
+        } else {
+            // Let guests try the chat right here
+            setShowChat(true);
+            startChat();
+            setTimeout(() => {
+                document.getElementById('chat-input')?.focus();
+            }, 100);
+        }
+    }, [user, navigate, startChat]);
 
     // Auto-open chat if there are partial messages (previous session)
     useEffect(() => {
@@ -82,13 +99,26 @@ const Hero = () => {
         }
     }, [messages]);
 
-    const handleStart = () => {
-        setShowChat(true);
-        startChat();
-        setTimeout(() => {
-            document.getElementById('chat-input')?.focus();
-        }, 100);
-    };
+    const heroTextRef = useRef<HTMLDivElement>(null);
+    const chatBoxRef = useRef<HTMLDivElement>(null);
+
+    // Initial GSAP Entrance Animations
+    useEffect(() => {
+        if (heroTextRef.current) {
+            gsap.fromTo(
+                heroTextRef.current,
+                { opacity: 0, y: 30 },
+                { opacity: 1, y: 0, duration: 1, ease: "power3.out", delay: 0.2 }
+            );
+        }
+        if (chatBoxRef.current) {
+            gsap.fromTo(
+                chatBoxRef.current,
+                { opacity: 0, scale: 0.95, y: 20 },
+                { opacity: 1, scale: 1, y: 0, duration: 1.2, ease: "power3.out", delay: 0.4 }
+            );
+        }
+    }, []);
 
     const handleSend = () => {
         if (!inputValue.trim()) return;
@@ -125,61 +155,49 @@ const Hero = () => {
     };
 
     return (
-        <section className="relative overflow-hidden pt-32 pb-20 lg:pt-40 lg:pb-32 min-h-screen flex items-center justify-center bg-slate-50 dark:bg-slate-950">
-            {/* Future Grid Background */}
-            <div className="absolute inset-0 bg-grid-slate-900/5 [mask-image:linear-gradient(0deg,white,rgba(255,255,255,0.6))] dark:bg-grid-slate-100/5 dark:[mask-image:linear-gradient(0deg,rgba(255,255,255,0.1),rgba(255,255,255,0.5))]" />
+        <section className="relative overflow-hidden pt-32 pb-20 lg:pt-40 lg:pb-32 min-h-screen flex items-center justify-center bg-transparent">
+            {/* Subtle Ambient Glows */}
+            <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[600px] h-[400px] bg-blue-500/[0.07] blur-[100px] rounded-full opacity-60 pointer-events-none" />
+            <div className="absolute bottom-0 right-0 w-[500px] h-[500px] bg-emerald-500/[0.05] blur-[100px] rounded-full opacity-40 pointer-events-none" />
 
-            {/* Ambient Glows */}
-            <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[1000px] h-[500px] bg-primary/20 blur-[120px] rounded-full opacity-50 pointer-events-none" />
-            <div className="absolute bottom-0 right-0 w-[800px] h-[600px] bg-emerald-500/10 blur-[100px] rounded-full opacity-30 pointer-events-none" />
-
-            <div className="relative mx-auto max-w-7xl px-6 lg:px-8 w-full grid lg:grid-cols-2 gap-16 item-center">
+            <div className="relative mx-auto max-w-7xl px-6 lg:px-8 w-full grid lg:grid-cols-2 gap-16 item-center z-10">
 
                 {/* Left Column: Text Content */}
                 <div className="flex flex-col justify-center text-center lg:text-left z-10">
-                    <motion.div
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ duration: 0.8, ease: "easeOut" }}
-                    >
-                        <span className="inline-flex items-center rounded-full bg-blue-50 px-3 py-1 text-sm font-medium text-blue-700 ring-1 ring-inset ring-blue-700/10 mb-6 dark:bg-blue-900/30 dark:text-blue-200">
+                    <div ref={heroTextRef} className="opacity-0">
+                        <span className="inline-flex items-center rounded-full bg-blue-50 px-3 py-1 text-sm font-medium text-blue-700 ring-1 ring-inset ring-blue-700/10 mb-6 dark:bg-blue-500/10 dark:text-blue-300 dark:ring-blue-500/20 backdrop-blur-md">
                             <span className="flex h-2 w-2 rounded-full bg-blue-600 mr-2 animate-pulse"></span>
                             AI-Powered Fiduciary Guidance
                         </span>
                         <h1 className="text-5xl sm:text-7xl font-bold tracking-tight text-slate-900 dark:text-white mb-6 font-serif leading-[1.1]">
-                            <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-emerald-500 dark:from-blue-400 dark:to-emerald-400">myRA</span>
+                            <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-emerald-500 dark:from-blue-400 dark:to-emerald-400">MyRA</span>
                             <br />
                             Clear, confident retirement planning.
                         </h1>
                         <p className="text-xl text-slate-600 dark:text-slate-300 leading-relaxed mb-10 max-w-2xl mx-auto lg:mx-0">
-                            myRA combines 15 years of real-world CFP experience with powerful AI guidance to give you a practical, unbiased path to retirement.
+                            MyRA combines 15 years of real-world CFP experience with powerful AI guidance to give you a practical, unbiased path to retirement.
                         </p>
 
                         <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
                             <button
                                 onClick={handleStart}
-                                className="rounded-full bg-slate-900 px-8 py-3.5 text-base font-semibold text-white shadow-sm hover:bg-slate-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-slate-900 transition-all dark:bg-white dark:text-slate-900 dark:hover:bg-slate-200"
+                                className="rounded-full bg-slate-900 px-8 py-3.5 text-base font-semibold text-white shadow-lg shadow-slate-900/20 hover:bg-slate-800 hover:shadow-xl transition-all active:scale-[0.97] dark:bg-white dark:text-slate-900 dark:hover:bg-slate-100 dark:shadow-white/10"
                             >
                                 Start Planning Free
                             </button>
-                            <a href="#how-it-works" className="rounded-full px-8 py-3.5 text-base font-semibold text-slate-900 ring-1 ring-inset ring-slate-200 hover:bg-slate-50 transition-all dark:text-white dark:ring-white/20 dark:hover:bg-white/10">
+                            <a href="#how-it-works" className="rounded-full px-8 py-3.5 text-base font-semibold text-slate-900 ring-1 ring-inset ring-slate-200 hover:bg-slate-50 transition-all active:scale-[0.97] dark:text-white dark:ring-white/20 dark:hover:bg-white/10">
                                 How it works
                             </a>
                         </div>
-                    </motion.div>
+                    </div>
                 </div>
 
                 {/* Right Column: Chat Interface (Floating) */}
-                <motion.div
-                    initial={{ opacity: 0, scale: 0.95 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    transition={{ duration: 1, delay: 0.2 }}
-                    className="relative w-full max-w-md mx-auto lg:max-w-full"
-                >
+                <div ref={chatBoxRef} className="relative w-full max-w-md mx-auto lg:max-w-full opacity-0">
                     {/* Levitation Animation Container */}
                     <div className="animate-float">
-                        {/* FIXED HEIGHT container - h-[600px] instead of min-h, with flex to constrain children */}
-                        <div className="relative rounded-3xl border border-white/50 bg-white/70 shadow-2xl backdrop-blur-2xl dark:border-white/10 dark:bg-slate-900/70 dark:shadow-emerald-900/20 ring-1 ring-black/5 h-[600px] flex flex-col overflow-hidden transition-all duration-500">
+                        {/* Premium Chat Container */}
+                        <div className="relative rounded-2xl border border-slate-200/60 bg-white/90 shadow-2xl dark:border-white/[0.08] dark:bg-slate-900/60 ring-1 ring-black/5 h-[600px] flex flex-col overflow-hidden transition-all duration-500">
 
                             {!showChat ? (
                                 /* START SCREEN Overlay */
@@ -189,7 +207,7 @@ const Hero = () => {
                                     </div>
                                     <h3 className="text-2xl font-bold text-slate-900 dark:text-white mb-2">Build Your Roadmap</h3>
                                     <p className="text-slate-600 dark:text-slate-300 mb-8 max-w-xs">
-                                        Chat with myRA to analyze your gaps, optimize taxes, and retire with confidence.
+                                        Chat with MyRA to analyze your gaps, optimize taxes, and retire with confidence.
                                     </p>
                                     <button
                                         onClick={handleStart}
@@ -215,7 +233,7 @@ const Hero = () => {
                                             </div>
                                             <div>
                                                 <div className="text-base font-bold text-slate-900 dark:text-white">
-                                                    myRA Assistant
+                                                    MyRA Assistant
                                                 </div>
                                                 <div className="text-xs text-slate-500 dark:text-slate-400 font-medium">
                                                     {isTyping ? "typing..." : "Online"}
@@ -320,7 +338,7 @@ const Hero = () => {
                             )}
                         </div>
                     </div>
-                </motion.div>
+                </div>
 
             </div>
         </section>

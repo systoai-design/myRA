@@ -29,7 +29,7 @@ const WhoForSection = () => {
         <ScrollReveal className="text-center mb-8">
           <span className="section-label">Is This For You?</span>
           <h2 className="section-title mb-4">
-            myRA makes sense out of chaos
+            MyRA makes sense out of chaos
           </h2>
           <p className="text-xl text-muted-foreground">especially when...</p>
         </ScrollReveal>
@@ -61,7 +61,7 @@ const WhoForSection = () => {
             {/* Quote */}
             <blockquote className="text-center max-w-lg">
               <p className="text-lg md:text-xl text-foreground italic font-medium">
-                "I had a vision but no direction. The myRA planners gave me that and more."
+                "I had a vision but no direction. The MyRA planners gave me that and more."
               </p>
               <cite className="text-sm text-muted-foreground mt-2 block not-italic">
                 — Past Bride

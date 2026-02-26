@@ -28,7 +28,7 @@ const WhyItWorksSection = () => {
         <h2 className="section-title mb-6">
           Most tools show you every venue.
           <br />
-          <span className="text-gradient">myRA does the opposite.</span>
+          <span className="text-gradient">MyRA does the opposite.</span>
         </h2>
         <p className="text-lg md:text-xl text-muted-foreground max-w-3xl mx-auto leading-relaxed">
           We take your full picture — budget, date, guest count, style, must-haves — and filter out everything that doesn't fit. Then our planners layer in real pricing, policies, and availability to build a must-tour list that actually makes sense.

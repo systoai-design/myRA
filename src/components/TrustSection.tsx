@@ -28,7 +28,7 @@ const TrustSection = () => {
     };
 
     return (
-        <section ref={ref} className="py-20 bg-white dark:bg-slate-900 border-b border-slate-100 dark:border-slate-800">
+        <section ref={ref} className="py-20 bg-transparent border-b border-white/5 relative z-10">
             <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
                 <motion.div
                     variants={containerVariants}
@@ -37,8 +37,8 @@ const TrustSection = () => {
                     className="grid grid-cols-1 gap-12 md:grid-cols-3 text-center"
                 >
                     {/* Item 1 */}
-                    <motion.div variants={itemVariants} className="flex flex-col items-center gap-4 p-6 rounded-2xl hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors duration-300">
-                        <div className="rounded-full bg-blue-100 p-4 text-primary dark:bg-blue-900/20 shadow-sm">
+                    <motion.div variants={itemVariants} className="flex flex-col items-center gap-4 p-8 rounded-[2rem] bg-white/5 dark:bg-slate-900/40 backdrop-blur-xl border border-white/10 hover:bg-white/10 dark:hover:bg-slate-800/60 hover:border-white/20 transition-all duration-500 shadow-2xl">
+                        <div className="rounded-2xl bg-blue-500/10 p-4 text-blue-400 shadow-inner ring-1 ring-blue-500/20">
                             <span className="material-symbols-outlined text-[32px]">psychology</span>
                         </div>
                         <h3 className="text-xl font-bold text-slate-900 dark:text-white">Planning Logic</h3>
@@ -48,8 +48,8 @@ const TrustSection = () => {
                     </motion.div>
 
                     {/* Item 2 */}
-                    <motion.div variants={itemVariants} className="flex flex-col items-center gap-4 p-6 rounded-2xl hover:bg-emerald-50 dark:hover:bg-emerald-900/10 transition-colors duration-300">
-                        <div className="rounded-full bg-emerald-100 p-4 text-emerald-600 dark:bg-emerald-900/20 shadow-sm">
+                    <motion.div variants={itemVariants} className="flex flex-col items-center gap-4 p-8 rounded-[2rem] bg-white/5 dark:bg-slate-900/40 backdrop-blur-xl border border-white/10 hover:bg-white/10 dark:hover:bg-slate-800/60 hover:border-white/20 transition-all duration-500 shadow-2xl">
+                        <div className="rounded-2xl bg-emerald-500/10 p-4 text-emerald-400 shadow-inner ring-1 ring-emerald-500/20">
                             <span className="material-symbols-outlined text-[32px]">verified_user</span>
                         </div>
                         <h3 className="text-xl font-bold text-slate-900 dark:text-white">Unbiased</h3>
@@ -59,8 +59,8 @@ const TrustSection = () => {
                     </motion.div>
 
                     {/* Item 3 */}
-                    <motion.div variants={itemVariants} className="flex flex-col items-center gap-4 p-6 rounded-2xl hover:bg-purple-50 dark:hover:bg-purple-900/10 transition-colors duration-300">
-                        <div className="rounded-full bg-purple-100 p-4 text-purple-600 dark:bg-purple-900/20 shadow-sm">
+                    <motion.div variants={itemVariants} className="flex flex-col items-center gap-4 p-8 rounded-[2rem] bg-white/5 dark:bg-slate-900/40 backdrop-blur-xl border border-white/10 hover:bg-white/10 dark:hover:bg-slate-800/60 hover:border-white/20 transition-all duration-500 shadow-2xl">
+                        <div className="rounded-2xl bg-purple-500/10 p-4 text-purple-400 shadow-inner ring-1 ring-purple-500/20">
                             <span className="material-symbols-outlined text-[32px]">rocket_launch</span>
                         </div>
                         <h3 className="text-xl font-bold text-slate-900 dark:text-white">Actionable</h3>

@@ -26,12 +26,19 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "sonner";
 import { Loader2 } from "lucide-react";
 
-const authSchema = z.object({
+const loginSchema = z.object({
     email: z.string().email("Invalid email address"),
     password: z.string().min(6, "Password must be at least 6 characters"),
 });
 
-type AuthFormValues = z.infer<typeof authSchema>;
+const signupSchema = z.object({
+    firstName: z.string().min(1, "First name is required"),
+    email: z.string().email("Invalid email address"),
+    password: z.string().min(6, "Password must be at least 6 characters"),
+});
+
+type LoginFormValues = z.infer<typeof loginSchema>;
+type SignupFormValues = z.infer<typeof signupSchema>;
 
 export function AuthModal() {
     const [isOpen, setIsOpen] = useState(false);
@@ -39,8 +46,8 @@ export function AuthModal() {
     const { user, signOut } = useAuth();
 
     // Login Form
-    const loginForm = useForm<AuthFormValues>({
-        resolver: zodResolver(authSchema),
+    const loginForm = useForm<LoginFormValues>({
+        resolver: zodResolver(loginSchema),
         defaultValues: {
             email: "",
             password: "",
@@ -48,15 +55,16 @@ export function AuthModal() {
     });
 
     // Signup Form
-    const signupForm = useForm<AuthFormValues>({
-        resolver: zodResolver(authSchema),
+    const signupForm = useForm<SignupFormValues>({
+        resolver: zodResolver(signupSchema),
         defaultValues: {
+            firstName: "",
             email: "",
             password: "",
         },
     });
 
-    const onLogin = async (data: AuthFormValues) => {
+    const onLogin = async (data: LoginFormValues) => {
         setIsLoading(true);
         try {
             const { error } = await supabase.auth.signInWithPassword({
@@ -82,12 +90,17 @@ export function AuthModal() {
         }
     };
 
-    const onSignup = async (data: AuthFormValues) => {
+    const onSignup = async (data: SignupFormValues) => {
         setIsLoading(true);
         try {
             const { error } = await supabase.auth.signUp({
                 email: data.email,
                 password: data.password,
+                options: {
+                    data: {
+                        first_name: data.firstName,
+                    },
+                },
             });
 
             if (error) {
@@ -95,7 +108,7 @@ export function AuthModal() {
                 return;
             }
 
-            toast.success("Account created! Please check your email to confirm.");
+            toast.success("Account created! Welcome aboard, " + data.firstName + "!");
             setIsOpen(false);
         } catch (error) {
             toast.error("An error occurred during signup");
@@ -110,27 +123,33 @@ export function AuthModal() {
     };
 
     if (user) {
+        const displayName = user.user_metadata?.first_name || "User";
         return (
-            <Button
-                variant="ghost"
-                className="text-sm font-semibold text-slate-600 hover:text-primary"
-                onClick={handleSignOut}
-            >
-                Sign Out
-            </Button>
+            <div className="flex items-center gap-3">
+                <span className="text-sm font-medium text-slate-600 dark:text-slate-300 hidden sm:block">
+                    Hi, {displayName}
+                </span>
+                <Button
+                    variant="ghost"
+                    className="text-sm font-semibold text-slate-600 hover:text-primary"
+                    onClick={handleSignOut}
+                >
+                    Sign Out
+                </Button>
+            </div>
         );
     }
 
     return (
         <Dialog open={isOpen} onOpenChange={setIsOpen}>
             <DialogTrigger asChild>
-                <Button variant="secondary" className="rounded-full shadow-lg shadow-secondary/20 hover:scale-105 transition-all">
+                <Button id="auth-modal-trigger" variant="secondary" className="rounded-full shadow-lg shadow-secondary/20 hover:scale-105 transition-all">
                     Sign In / Up
                 </Button>
             </DialogTrigger>
             <DialogContent className="sm:max-w-[425px]">
                 <DialogHeader>
-                    <DialogTitle>Welcome to myRA</DialogTitle>
+                    <DialogTitle>Welcome to MyRA</DialogTitle>
                     <DialogDescription>
                         Sign in to save your chat history and retirement plan.
                     </DialogDescription>
@@ -181,6 +200,19 @@ export function AuthModal() {
                     <TabsContent value="signup">
                         <Form {...signupForm}>
                             <form onSubmit={signupForm.handleSubmit(onSignup)} className="space-y-4 pt-4">
+                                <FormField
+                                    control={signupForm.control}
+                                    name="firstName"
+                                    render={({ field }) => (
+                                        <FormItem>
+                                            <FormLabel>First Name</FormLabel>
+                                            <FormControl>
+                                                <Input placeholder="John" {...field} />
+                                            </FormControl>
+                                            <FormMessage />
+                                        </FormItem>
+                                    )}
+                                />
                                 <FormField
                                     control={signupForm.control}
                                     name="email"

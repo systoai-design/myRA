@@ -51,9 +51,9 @@ export default {
         },
       },
       fontFamily: {
-        sans: ["Avenir", "Nunito Sans", "sans-serif"],
-        serif: ["Avenir", "Nunito Sans", "serif"],
-        display: ["Avenir", "Nunito Sans", "sans-serif"],
+        sans: ["Inter", "sans-serif"],
+        serif: ["Outfit", "sans-serif"],
+        display: ["Outfit", "sans-serif"],
       },
       borderRadius: {
         lg: "0.5rem",
