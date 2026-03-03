@@ -37,12 +37,18 @@ const signupSchema = z.object({
     password: z.string().min(6, "Password must be at least 6 characters"),
 });
 
+const resetSchema = z.object({
+    email: z.string().email("Invalid email address"),
+});
+
 type LoginFormValues = z.infer<typeof loginSchema>;
 type SignupFormValues = z.infer<typeof signupSchema>;
+type ResetFormValues = z.infer<typeof resetSchema>;
 
 export function AuthModal() {
     const [isOpen, setIsOpen] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
+    const [view, setView] = useState<'tabs' | 'reset'>('tabs');
     const { user, signOut } = useAuth();
 
     // Login Form
@@ -61,6 +67,14 @@ export function AuthModal() {
             firstName: "",
             email: "",
             password: "",
+        },
+    });
+
+    // Reset Password Form
+    const resetForm = useForm<ResetFormValues>({
+        resolver: zodResolver(resetSchema),
+        defaultValues: {
+            email: "",
         },
     });
 
@@ -117,6 +131,27 @@ export function AuthModal() {
         }
     };
 
+    const onResetPassword = async (data: ResetFormValues) => {
+        setIsLoading(true);
+        try {
+            const { error } = await supabase.auth.resetPasswordForEmail(data.email, {
+                redirectTo: `${window.location.origin}/reset-password`,
+            });
+
+            if (error) {
+                toast.error(error.message);
+                return;
+            }
+
+            toast.success("Password reset link sent! Check your email.");
+            setView('tabs');
+        } catch (error) {
+            toast.error("An error occurred sending the reset link");
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
     const handleSignOut = async () => {
         await signOut();
         toast.success("Signed out successfully");
@@ -141,7 +176,10 @@ export function AuthModal() {
     }
 
     return (
-        <Dialog open={isOpen} onOpenChange={setIsOpen}>
+        <Dialog open={isOpen} onOpenChange={(open) => {
+            setIsOpen(open);
+            if (!open) setTimeout(() => setView('tabs'), 300); // Reset view when closed
+        }}>
             <DialogTrigger asChild>
                 <Button id="auth-modal-trigger" variant="secondary" className="rounded-full shadow-lg shadow-secondary/20 hover:scale-105 transition-all">
                     Sign In / Up
@@ -149,104 +187,141 @@ export function AuthModal() {
             </DialogTrigger>
             <DialogContent className="sm:max-w-[425px]">
                 <DialogHeader>
-                    <DialogTitle>Welcome to MyRA</DialogTitle>
+                    <DialogTitle>{view === 'tabs' ? 'Welcome to MyRA' : 'Reset Password'}</DialogTitle>
                     <DialogDescription>
-                        Sign in to save your chat history and retirement plan.
+                        {view === 'tabs'
+                            ? 'Sign in to save your chat history and retirement plan.'
+                            : 'Enter your email address to receive a password reset link.'}
                     </DialogDescription>
                 </DialogHeader>
-                <Tabs defaultValue="login" className="w-full">
-                    <TabsList className="grid w-full grid-cols-2">
-                        <TabsTrigger value="login">Login</TabsTrigger>
-                        <TabsTrigger value="signup">Sign Up</TabsTrigger>
-                    </TabsList>
 
-                    <TabsContent value="login">
-                        <Form {...loginForm}>
-                            <form onSubmit={loginForm.handleSubmit(onLogin)} className="space-y-4 pt-4">
-                                <FormField
-                                    control={loginForm.control}
-                                    name="email"
-                                    render={({ field }) => (
-                                        <FormItem>
-                                            <FormLabel>Email</FormLabel>
-                                            <FormControl>
-                                                <Input placeholder="you@example.com" {...field} />
-                                            </FormControl>
-                                            <FormMessage />
-                                        </FormItem>
-                                    )}
-                                />
-                                <FormField
-                                    control={loginForm.control}
-                                    name="password"
-                                    render={({ field }) => (
-                                        <FormItem>
-                                            <FormLabel>Password</FormLabel>
-                                            <FormControl>
-                                                <Input type="password" placeholder="******" {...field} />
-                                            </FormControl>
-                                            <FormMessage />
-                                        </FormItem>
-                                    )}
-                                />
-                                <Button type="submit" className="w-full" disabled={isLoading}>
+                {view === 'reset' ? (
+                    <Form {...resetForm}>
+                        <form onSubmit={resetForm.handleSubmit(onResetPassword)} className="space-y-4 pt-4">
+                            <FormField
+                                control={resetForm.control}
+                                name="email"
+                                render={({ field }) => (
+                                    <FormItem>
+                                        <FormLabel>Email</FormLabel>
+                                        <FormControl>
+                                            <Input placeholder="you@example.com" {...field} />
+                                        </FormControl>
+                                        <FormMessage />
+                                    </FormItem>
+                                )}
+                            />
+                            <div className="flex flex-col gap-3">
+                                <Button type="submit" className="w-full bg-blue-600 hover:bg-blue-700" disabled={isLoading}>
                                     {isLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
-                                    Login
+                                    Send Reset Link
                                 </Button>
-                            </form>
-                        </Form>
-                    </TabsContent>
+                                <Button type="button" variant="ghost" onClick={() => setView('tabs')} className="w-full text-slate-500 hover:text-slate-700">
+                                    Wait, I remember my password
+                                </Button>
+                            </div>
+                        </form>
+                    </Form>
+                ) : (
+                    <Tabs defaultValue="login" className="w-full">
+                        <TabsList className="grid w-full grid-cols-2">
+                            <TabsTrigger value="login">Login</TabsTrigger>
+                            <TabsTrigger value="signup">Sign Up</TabsTrigger>
+                        </TabsList>
 
-                    <TabsContent value="signup">
-                        <Form {...signupForm}>
-                            <form onSubmit={signupForm.handleSubmit(onSignup)} className="space-y-4 pt-4">
-                                <FormField
-                                    control={signupForm.control}
-                                    name="firstName"
-                                    render={({ field }) => (
-                                        <FormItem>
-                                            <FormLabel>First Name</FormLabel>
-                                            <FormControl>
-                                                <Input placeholder="John" {...field} />
-                                            </FormControl>
-                                            <FormMessage />
-                                        </FormItem>
-                                    )}
-                                />
-                                <FormField
-                                    control={signupForm.control}
-                                    name="email"
-                                    render={({ field }) => (
-                                        <FormItem>
-                                            <FormLabel>Email</FormLabel>
-                                            <FormControl>
-                                                <Input placeholder="you@example.com" {...field} />
-                                            </FormControl>
-                                            <FormMessage />
-                                        </FormItem>
-                                    )}
-                                />
-                                <FormField
-                                    control={signupForm.control}
-                                    name="password"
-                                    render={({ field }) => (
-                                        <FormItem>
-                                            <FormLabel>Password</FormLabel>
-                                            <FormControl>
-                                                <Input type="password" placeholder="******" {...field} />
-                                            </FormControl>
-                                            <FormMessage />
-                                        </FormItem>
-                                    )}
-                                />
-                                <Button type="submit" className="w-full" disabled={isLoading}>
-                                    {isLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
-                                    Sign Up
-                                </Button>
-                            </form>
-                        </Form>
-                    </TabsContent>
-                </Tabs>
+                        <TabsContent value="login">
+                            <Form {...loginForm}>
+                                <form onSubmit={loginForm.handleSubmit(onLogin)} className="space-y-4 pt-4">
+                                    <FormField
+                                        control={loginForm.control}
+                                        name="email"
+                                        render={({ field }) => (
+                                            <FormItem>
+                                                <FormLabel>Email</FormLabel>
+                                                <FormControl>
+                                                    <Input placeholder="you@example.com" {...field} />
+                                                </FormControl>
+                                                <FormMessage />
+                                            </FormItem>
+                                        )}
+                                    />
+                                    <FormField
+                                        control={loginForm.control}
+                                        name="password"
+                                        render={({ field }) => (
+                                            <FormItem>
+                                                <FormLabel>Password</FormLabel>
+                                                <FormControl>
+                                                    <Input type="password" placeholder="******" {...field} />
+                                                </FormControl>
+                                                <FormMessage />
+                                            </FormItem>
+                                        )}
+                                    />
+                                    <div className="flex flex-col gap-3 pt-2">
+                                        <Button type="submit" className="w-full" disabled={isLoading}>
+                                            {isLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
+                                            Login
+                                        </Button>
+                                        <Button type="button" variant="link" onClick={() => setView('reset')} className="text-xs text-slate-500 hover:text-slate-800 px-0 h-auto font-normal self-center">
+                                            Forgot your password?
+                                        </Button>
+                                    </div>
+                                </form>
+                            </Form>
+                        </TabsContent>
+
+                        <TabsContent value="signup">
+                            <Form {...signupForm}>
+                                <form onSubmit={signupForm.handleSubmit(onSignup)} className="space-y-4 pt-4">
+                                    <FormField
+                                        control={signupForm.control}
+                                        name="firstName"
+                                        render={({ field }) => (
+                                            <FormItem>
+                                                <FormLabel>First Name</FormLabel>
+                                                <FormControl>
+                                                    <Input placeholder="John" {...field} />
+                                                </FormControl>
+                                                <FormMessage />
+                                            </FormItem>
+                                        )}
+                                    />
+                                    <FormField
+                                        control={signupForm.control}
+                                        name="email"
+                                        render={({ field }) => (
+                                            <FormItem>
+                                                <FormLabel>Email</FormLabel>
+                                                <FormControl>
+                                                    <Input placeholder="you@example.com" {...field} />
+                                                </FormControl>
+                                                <FormMessage />
+                                            </FormItem>
+                                        )}
+                                    />
+                                    <FormField
+                                        control={signupForm.control}
+                                        name="password"
+                                        render={({ field }) => (
+                                            <FormItem>
+                                                <FormLabel>Password</FormLabel>
+                                                <FormControl>
+                                                    <Input type="password" placeholder="******" {...field} />
+                                                </FormControl>
+                                                <FormMessage />
+                                            </FormItem>
+                                        )}
+                                    />
+                                    <Button type="submit" className="w-full" disabled={isLoading}>
+                                        {isLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
+                                        Sign Up
+                                    </Button>
+                                </form>
+                            </Form>
+                        </TabsContent>
+                    </Tabs>
+                )}
             </DialogContent>
         </Dialog>
     );

@@ -7,6 +7,7 @@ import { useState } from "react";
 import Index from "./pages/Index";
 import ThankYou from "./pages/ThankYou";
 import AgentChat from "./pages/AgentChat";
+import ResetPassword from "./pages/ResetPassword";
 import NotFound from "./pages/NotFound";
 import { AuthProvider } from "@/contexts/AuthContext";
 import SplashScreen from "@/components/SplashScreen";
@@ -37,6 +38,7 @@ const App = () => {
               <Routes>
                 <Route path="/" element={<Index />} />
                 <Route path="/agent-chat" element={<AgentChat />} />
+                <Route path="/reset-password" element={<ResetPassword />} />
                 {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
                 <Route path="*" element={<NotFound />} />
               </Routes>
