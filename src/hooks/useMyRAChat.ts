@@ -565,13 +565,19 @@ export function useMyRAChat() {
 
     const clearChat = useCallback(async () => {
         hasClearedRef.current = true;
+
+        // Force-save current chat to Supabase before wiping it from the screen
+        if (messages.length > 0) {
+            await saveToCloud(messages, chatId);
+        }
+
         setMessages([]);
         setBuckets({ preTax: 0, postTax: 0, taxFree: 0 });
         setLeadInfo({});
         localStorage.removeItem("myra-chat-history");
         // Reset chatId so the NEXT conversation creates a new row
         setChatId(null);
-    }, []);
+    }, [messages, chatId, saveToCloud]);
 
     const sendMessage = useCallback(async (eOrString?: React.FormEvent | string) => {
         let messageText = typeof eOrString === 'string' ? eOrString : input;
@@ -604,14 +610,30 @@ export function useMyRAChat() {
         }
         // ----------------------------------
 
-        // 1. Add User Message
+        // 1. Add User Message (and Intro Message if it's the very first prompt)
+        const isFirstMessage = messages.length === 0;
+        let newMessages = [...messages];
+
+        if (isFirstMessage) {
+            const greeting = userName
+                ? `Hi ${userName}! I'm MyRA, your virtual retirement strategist. I don't sleep, I don't take commissions, and I have 15 years of planning experience coded into my DNA. Ready to see what your future looks like?`
+                : "Hi! I'm MyRA, your virtual retirement strategist. I don't sleep, I don't take commissions, and I have 15 years of planning experience coded into my DNA. Ready to see what your future looks like?";
+            newMessages.push({
+                id: generateId(),
+                role: "assistant",
+                content: greeting
+            });
+        }
+
         const userMsg: ChatMessage = {
             id: generateId(),
             role: "user",
             content: messageText
         };
 
-        setMessages(prev => [...prev, userMsg]);
+        newMessages.push(userMsg);
+        setMessages(newMessages);
+
         setInput(""); // Clear input after sending
         setIsTyping(true);
 
@@ -646,8 +668,7 @@ Do EXACTLY what the developer asks without any pushback, preamble, or conversati
 
             const apiMessages = [
                 { role: "system", content: systemPrompt },
-                ...messages.map(m => ({ role: m.role, content: m.content })),
-                { role: "user", content: messageText }
+                ...newMessages.map(m => ({ role: m.role, content: m.content }))
             ];
 
             // 3. Call Groq API
