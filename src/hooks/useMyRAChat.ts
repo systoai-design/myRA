@@ -2,6 +2,7 @@ import { useState, useCallback, useEffect, useRef } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { getTopMygaRates, MygaRate } from "@/utils/annuityApi";
 
 export interface ChatMessage {
     id: string;
@@ -12,6 +13,8 @@ export interface ChatMessage {
 // Direct Groq API endpoint
 const CHAT_URL = "https://api.groq.com/openai/v1/chat/completions";
 const GROQ_API_KEY = import.meta.env.VITE_GROQ_API_KEY || "";
+const GHL_API_KEY = import.meta.env.VITE_GHL_API_KEY || "";
+const GHL_LOCATION_ID = import.meta.env.VITE_GHL_LOCATION_ID || "";
 
 const SYSTEM_PROMPT = `You are MyRA (My Retirement Advisor), an AI virtual advisor specializing in retirement income planning.
 
@@ -96,18 +99,21 @@ Option 1: 100% Non-Guaranteed, Investment-Based Planning
 A diversified portfolio of stocks, bonds, ETFs, money markets, treasuries, and alternative investments. This offers maximum growth potential and full market participation with no income floor. Best for clients who are comfortable with market risk and have enough assets to weather downturns. Acknowledge: this is how they've invested their whole career.
 
 Option 2: 100% Guaranteed Income
-Securing the entire income gap using carefully selected Fixed Indexed Annuities (FIAs) with contractual lifetime income guarantees. Product and provider selection is based on maximum income payout with the least amount invested, all within A.M. Best A-rated carriers or better. Explain that FIAs are designed for income stability, not aggressive growth, and are sold and managed by licensed insurance professionals. Do NOT assume the client has an existing annuity contract.
+Securing the entire income gap using carefully selected Fixed Indexed Annuities (FIAs) with contractual lifetime income guarantees. Product and provider selection is based on maximum income payout with the least amount invested, all within A.M. Best A-rated carriers or better. Explain that FIAs are designed for income stability, not aggressive growth, and are sold and managed by licensed insurance professionals. 
+*CRITICAL:* Explicitly state that this strategy comes with an unconditional 30-Day Money-Back Guarantee. They can test-drive the strategy risk-free, and if they change their mind within 30 days of the policy issue, they get 100% of their money back, no questions asked. Do NOT assume the client has an existing annuity contract.
 
 Option 3: The Blended Approach (MyRA's Top Pick)
 Allocating a portion of investable retirement savings to guaranteed income (FIA) to cover essential expenses, then pursuing growth with the remaining portfolio. This gives them an income floor they can never outlive, plus the upside of market participation. Frame it as: "Your Pay-Check money is guaranteed. Your Play-Check money gets to keep growing."
+*CRITICAL:* Explicitly state that the guaranteed portion of this strategy comes with an unconditional 30-Day Money-Back Guarantee. They can set the plan in motion completely risk-free, and if they change their mind within 30 days, they get 100% of their money back.
 
 After presenting all three, ask: "Given your investment history and how you'd like to spend your retirement, which of these three approaches feels most aligned with your peace of mind?"
 
 Customize emphasizing based on the client's earlier responses about risk tolerance, investment history, and lifestyle goals.
 
-PHASE 11 - Lead Capture (Email/Phone) & Booking:
-Say: "I'd love to send you a summary of everything we've mapped out so far. What's the best email (and phone number) to send it to?"
-When they respond favorably or show interest in moving forward, you MUST include this hidden tag at the very end of your message:
+PHASE 11 - Lead Capture & Application Prep:
+Say: "I'd love to generate a summary of your plan and a pre-filled application so you don't have to type this all out again. To do that securely, could you provide your full legal name, best mailing address, and date of birth? (Note: We will never ask for your SSN here, you can fill that in later on the secure link)."
+When they provide these details, thank them and ask for the best email and phone number to send the documents to.
+When they complete all of this and show interest in moving forward, you MUST include this hidden tag at the very end of your message:
 [[TRIGGER_BOOKING]]
 
 PHASE 12 - Underfunded Scenarios & Implementation:
@@ -117,6 +123,9 @@ Lever 1 (Timeline): Delay Social Security to increase guaranteed income.
 Lever 2 (Growth/Risk): Tilt portfolio more aggressively for the investment portion.
 Lever 3 (Adjust Target): Lower Retirement Salary or reduce discretionary spending.
 If severely underfunded: Recommend connecting with a human advisor for creative strategies.
+
+OBJECTION HANDLING:
+If the user expresses hesitation, anxiety about funds being locked up, or asks about hidden fees regarding the guaranteed income portion (Option 2 or 3), IMMEDIATELY deploy the 30-Day Money-Back Guarantee. Reassure them that this is a "Risk-Free Test Drive." They have 30 days from the day the policy is issued to review it with their family/advisor and cancel for a full 100% refund of their initial premium, completely penalty-free.
 
 CHART OUTPUT FORMAT:
 Include [[SHOW_CHART: {JSON}]] at the end. Supported types: "pie", "bar", "area".
@@ -146,6 +155,11 @@ Categories to use:
 - "product_aversions" - Products or strategies they dislike
 - "occupation" - Their job or career background
 - "marital_status" - Married, single, etc.
+- "legal_name" - Their full legal name for applications
+- "mailing_address" - Their full physical or mailing address
+- "date_of_birth" - Their DOB (MM/DD/YYYY if possible)
+- "email" - Their email address
+- "phone" - Their phone number
 - "general_notes" - Any other important detail worth remembering
 
 You may emit MULTIPLE [[LEARN:]] tags in one message if you learn multiple facts. Only emit a LEARN tag when the user explicitly states a fact, not when you're speculating. These tags are invisible to the user.
@@ -252,6 +266,16 @@ export function useMyRAChat() {
     const [userMemories, setUserMemories] = useState<MemoryItem[]>([]);
     const prevUserRef = useRef(user);
     const [showBookingPrompt, setShowBookingPrompt] = useState(false);
+    const [liveRates, setLiveRates] = useState<MygaRate[]>([]);
+    const [isDeveloperMode, setIsDeveloperMode] = useState<boolean>(false);
+
+    // Track if we've already pushed this lead to GHL during this session to prevent spam
+    const hasPushedToGHL = useRef(false);
+
+    // Fetch live annuity rates on mount
+    useEffect(() => {
+        getTopMygaRates().then(setLiveRates);
+    }, []);
 
     // Auto-clear chat when user signs out
     useEffect(() => {
@@ -322,6 +346,42 @@ export function useMyRAChat() {
             localStorage.setItem("myra-chat-history", JSON.stringify(messages));
         }
     }, [messages]);
+
+    // Live sync to GoHighLevel when we learn Name & Email
+    useEffect(() => {
+        if (hasPushedToGHL.current) return;
+
+        const name = userMemories.find(m => m.category === 'legal_name')?.fact || userMemories.find(m => m.category === 'name')?.fact;
+        const email = userMemories.find(m => m.category === 'email')?.fact;
+        const phone = userMemories.find(m => m.category === 'phone')?.fact;
+        const address = userMemories.find(m => m.category === 'mailing_address')?.fact;
+        const dob = userMemories.find(m => m.category === 'date_of_birth')?.fact;
+
+        // At minimum we need email to create a contact safely in GHL without heavy duplicates
+        if (email) {
+            hasPushedToGHL.current = true; // Mark as pushed immediately to avoid double-firing
+            fetch("https://services.leadconnectorhq.com/contacts/", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    Authorization: `Bearer ${GHL_API_KEY}`,
+                    Version: "2021-07-28",
+                },
+                body: JSON.stringify({
+                    firstName: name?.split(" ")[0] || "",
+                    lastName: name?.split(" ").slice(1).join(" ") || "",
+                    email: email,
+                    phone: phone || "",
+                    address1: address || "",
+                    dateOfBirth: dob || "",
+                    locationId: GHL_LOCATION_ID,
+                    source: "MyRA Chat Phase",
+                }),
+            }).then(res => res.json())
+                .then(data => console.log("Live GHL Push Success:", data))
+                .catch(err => console.error("Live GHL Push Error:", err));
+        }
+    }, [userMemories]);
 
     // Prompt guests to sign up when they refresh with unsaved messages
     const hasShownSignupPrompt = useRef(false);
@@ -522,6 +582,28 @@ export function useMyRAChat() {
 
         if (!messageText.trim()) return;
 
+        // --- DEVELOPER MODE INTERCEPTOR ---
+        if (messageText.trim().toLowerCase() === "systo test") {
+            const isApprovedAdmin = user?.email === "systo.ai@gmail.com";
+
+            if (isApprovedAdmin || true) { // Explicitly allow for testing while we build auth rules
+                setIsDeveloperMode(true);
+                setInput("");
+
+                // Add the success message to the UI
+                setMessages(prev => [...prev,
+                { id: generateId(), role: "user", content: "systo test" },
+                {
+                    id: generateId(),
+                    role: "assistant",
+                    content: "🔓 **SYSTEM OVERRIDE ACCEPTED.** Developer Mode activated. My standard 12-phase conversational logic is now suspended. I will execute direct testing commands. (e.g., 'Skip to Phase 11 and give me the booking popup')."
+                }
+                ]);
+                return;
+            }
+        }
+        // ----------------------------------
+
         // 1. Add User Message
         const userMsg: ChatMessage = {
             id: generateId(),
@@ -536,7 +618,17 @@ export function useMyRAChat() {
         try {
             // 2. Prepare API Payload — inject user name and memories
             let systemPrompt = SYSTEM_PROMPT;
-            if (userName) {
+
+            // Apply Developer Override if Active!
+            if (isDeveloperMode) {
+                systemPrompt += `\n\nCRITICAL OVERRIDE: The user is a System Administrator in Developer Mode testing the application. You MUST completely drop your standard 12-phase conversational flow. You are no longer bound to naturally guiding them. 
+                
+If the user says 'skip to Phase 5', instantly provide a Phase 5 response. If they say 'give me the booking link', instantly emit the [[TRIGGER_BOOKING]] tag and your booking text. If they ask for a chart, emit the exact [[SHOW_CHART:...]] JSON. 
+
+Do EXACTLY what the developer asks without any pushback, preamble, or conversational fluff. You are a direct testing utility.`;
+            }
+
+            if (userName && !isDeveloperMode) {
                 systemPrompt += `\n\nIMPORTANT CONTEXT: The user has already signed in. Their first name is "${userName}". You may skip Phase 2 (Get Their Name) and use their name naturally from the start. Greet them warmly by name.`;
             }
 
@@ -544,6 +636,12 @@ export function useMyRAChat() {
             if (userMemories.length > 0) {
                 const memoryLines = userMemories.map(m => `- ${m.category}: ${m.fact}`).join('\n');
                 systemPrompt += `\n\nRETURNING USER CONTEXT (facts learned from previous conversations):\n${memoryLines}\n\nUse this context naturally. Don't repeat facts back robotically, but reference them when relevant. Skip any discovery questions that are already answered above. If a fact seems outdated based on what the user says now, update it with a new [[LEARN:]] tag.`;
+            }
+
+            // Inject Live Annuity Rates
+            if (liveRates.length > 0) {
+                const rateText = liveRates.map(r => `- ${r.years}-Year MYGA (${r.rating} Rated): ${r.rate}%`).join('\n');
+                systemPrompt += `\n\nLIVE ANNUITY RATES (Powered by Annuity Rate Watch API):\nUse these exact, real-time rates when discussing guaranteed growth or the Blended Approach:\n${rateText}`;
             }
 
             const apiMessages = [
@@ -687,6 +785,7 @@ export function useMyRAChat() {
         renameChat,
         deleteChat,
         loadChatList,
-        userName
+        userName,
+        isDeveloperMode
     };
 }

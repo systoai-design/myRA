@@ -45,12 +45,14 @@ export default function SplashScreen({ onComplete }: SplashScreenProps) {
         >
             <video
                 ref={videoRef}
-                src="/splash.mp4"
                 muted
                 playsInline
                 onEnded={handleVideoEnd}
                 className="w-full h-full object-contain"
-            />
+            >
+                <source src="/myra_transparent.webm" type="video/webm" />
+                <source src="/myra_transparent.mov" type="video/quicktime" />
+            </video>
         </div>
     );
 }

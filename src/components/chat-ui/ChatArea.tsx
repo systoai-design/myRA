@@ -9,11 +9,13 @@ interface ChatAreaProps {
     messages: ChatMessage[];
     input: string;
     setInput: (value: string) => void;
-    sendMessage: (e: React.FormEvent) => void;
+    sendMessage: (eOrString?: React.FormEvent | string) => void;
     isLoading: boolean;
     isTyping: boolean;
     toggleSidebar: () => void;
     showBookingPrompt?: boolean;
+    userMemories?: { category: string; fact: string }[];
+    isDeveloperMode?: boolean;
 }
 
 export default function ChatArea({
@@ -24,7 +26,9 @@ export default function ChatArea({
     isLoading,
     isTyping,
     toggleSidebar,
-    showBookingPrompt = false
+    showBookingPrompt = false,
+    userMemories = [],
+    isDeveloperMode = false
 }: ChatAreaProps) {
 
     const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -66,6 +70,15 @@ export default function ChatArea({
         );
     };
 
+    // Extract prefill data from user memories
+    const prefillData = {
+        name: userMemories.find(m => m.category === 'legal_name')?.fact || userMemories.find(m => m.category === 'name')?.fact,
+        email: userMemories.find(m => m.category === 'email')?.fact,
+        phone: userMemories.find(m => m.category === 'phone')?.fact,
+        address: userMemories.find(m => m.category === 'mailing_address')?.fact,
+        dob: userMemories.find(m => m.category === 'date_of_birth')?.fact,
+    };
+
     return (
         <div className="flex-1 flex flex-col h-full bg-gradient-to-b from-[#1a1b2e] to-[#16172a] relative">
 
@@ -84,17 +97,54 @@ export default function ChatArea({
                         <span className="text-[10px] bg-blue-500/10 text-blue-400 px-2 py-0.5 rounded-full uppercase tracking-wider font-bold border border-blue-500/20">Llama3.3 70B</span>
                     </div>
                 </div>
+
+                {/* Developer Mode Banner/Controls */}
+                {isDeveloperMode && (
+                    <div className="flex items-center gap-2">
+                        <span className="text-xs text-orange-400 font-mono bg-orange-500/10 px-2 py-1 rounded border border-orange-500/20">
+                            DEV MODE ACTIVE
+                        </span>
+                        <button
+                            onClick={() => setBookingOpen(true)}
+                            className="text-xs bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 px-3 py-1 rounded hover:bg-emerald-500/20 transition-colors flex items-center gap-1"
+                        >
+                            <Calendar className="w-3 h-3" />
+                            Trigger Booking Modal
+                        </button>
+                    </div>
+                )}
             </div>
 
             {/* Main Scrollable Messages */}
             <div className="flex-1 overflow-y-auto custom-scrollbar overflow-x-hidden">
                 {messages.length === 0 ? (
-                    <div className="h-full flex flex-col items-center justify-center p-8">
+                    <div className="h-full flex flex-col items-center justify-center p-4 sm:p-8 max-w-4xl mx-auto w-full">
                         <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-blue-600 to-blue-500 flex items-center justify-center mb-6 shadow-xl shadow-blue-600/20">
                             <span className="font-serif text-white text-3xl font-bold tracking-tighter">m</span>
                         </div>
-                        <h2 className="text-gray-300 text-lg font-medium mb-1">Start a new conversation</h2>
-                        <p className="text-gray-500 text-sm">Ask MyRA anything about retirement planning</p>
+                        <h2 className="text-gray-200 text-2xl font-semibold mb-2 text-center">Hi, I'm MyRA.</h2>
+                        <p className="text-gray-400 text-[15px] mb-8 text-center max-w-lg">
+                            I'm your virtual retirement strategist. Select a question below to get started, or ask me anything.
+                        </p>
+
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-3 w-full max-w-3xl">
+                            {[
+                                "How much do I need to retire?",
+                                "When should I claim Social Security / benefits?",
+                                "How should I invest for retirement?",
+                                "What withdrawal strategy should I use?",
+                                "How much will healthcare and long-term care costs affect me?",
+                            ].map((promptTitle, i) => (
+                                <button
+                                    key={i}
+                                    onClick={() => sendMessage(promptTitle)}
+                                    className={`text-left p-4 rounded-xl border border-white/5 bg-white/[0.02] hover:bg-white/[0.06] transition-all hover:-translate-y-0.5 shadow-sm active:scale-[0.98] ${i === 4 ? "md:col-span-2 md:max-w-md md:mx-auto w-full" : ""
+                                        }`}
+                                >
+                                    <p className="text-gray-300 text-[15px] leading-snug">{promptTitle}</p>
+                                </button>
+                            ))}
+                        </div>
                     </div>
                 ) : (
                     <div className="max-w-3xl mx-auto w-full pt-8 pb-36 px-4 flex flex-col space-y-6">
@@ -243,7 +293,12 @@ export default function ChatArea({
                 </div>
             </div>
 
-            <BookingModal isOpen={bookingOpen} onClose={() => setBookingOpen(false)} />
+            <BookingModal
+                isOpen={bookingOpen || showBookingPrompt}
+                onClose={() => setBookingOpen(false)}
+                prefillData={prefillData}
+                messages={messages}
+            />
         </div>
     );
 }

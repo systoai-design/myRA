@@ -8,7 +8,8 @@ export default function AgentChat() {
     const {
         messages, input, setInput, sendMessage, clearChat,
         isLoading, isTyping,
-        chatId, chatList, switchChat, renameChat, deleteChat, userName
+        chatId, chatList, switchChat, renameChat, deleteChat, userName,
+        isDeveloperMode
     } = useMyRAChat();
 
     const toggleSidebar = () => setSidebarOpen(!sidebarOpen);
@@ -37,6 +38,7 @@ export default function AgentChat() {
                 isLoading={isLoading}
                 isTyping={isTyping}
                 toggleSidebar={toggleSidebar}
+                isDeveloperMode={isDeveloperMode}
             />
         </div>
     );

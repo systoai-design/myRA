@@ -1,6 +1,8 @@
 import { useState } from "react";
 import { Calendar, Clock, User, Mail, Phone, X } from "lucide-react";
 import { toast } from "sonner";
+import { ChatMessage } from "@/hooks/useMyRAChat";
+import { generateSessionSummary } from "@/utils/summarizeSession";
 
 const GHL_API_KEY = import.meta.env.VITE_GHL_API_KEY || "";
 const GHL_CALENDAR_ID = import.meta.env.VITE_GHL_CALENDAR_ID || "";
@@ -9,12 +11,20 @@ const GHL_LOCATION_ID = import.meta.env.VITE_GHL_LOCATION_ID || "";
 interface BookingModalProps {
     isOpen: boolean;
     onClose: () => void;
+    prefillData?: {
+        name?: string;
+        email?: string;
+        phone?: string;
+        address?: string;
+        dob?: string;
+    };
+    messages?: ChatMessage[];
 }
 
-export default function BookingModal({ isOpen, onClose }: BookingModalProps) {
-    const [name, setName] = useState("");
-    const [email, setEmail] = useState("");
-    const [phone, setPhone] = useState("");
+export default function BookingModal({ isOpen, onClose, prefillData, messages }: BookingModalProps) {
+    const [name, setName] = useState(prefillData?.name || "");
+    const [email, setEmail] = useState(prefillData?.email || "");
+    const [phone, setPhone] = useState(prefillData?.phone || "");
     const [date, setDate] = useState("");
     const [time, setTime] = useState("");
     const [isSubmitting, setIsSubmitting] = useState(false);
@@ -58,19 +68,29 @@ export default function BookingModal({ isOpen, onClose }: BookingModalProps) {
                         Version: "2021-07-28",
                     },
                     body: JSON.stringify({
-                        firstName: name.split(" ")[0],
-                        lastName: name.split(" ").slice(1).join(" ") || "",
-                        email,
-                        phone,
+                        firstName: name.split(" ")[0] || prefillData?.name?.split(" ")[0] || "",
+                        lastName: name.split(" ").slice(1).join(" ") || prefillData?.name?.split(" ").slice(1).join(" ") || "",
+                        email: email || prefillData?.email || "",
+                        phone: phone || prefillData?.phone || "",
+                        address1: prefillData?.address || "",
+                        dateOfBirth: prefillData?.dob || "",
                         locationId: GHL_LOCATION_ID,
                         source: "MyRA Chat",
                     }),
                 }
             );
 
+            let finalContactId = undefined;
             if (contactRes.ok) {
                 const contactData = await contactRes.json();
-                appointmentData.contactId = contactData.contact?.id;
+                finalContactId = contactData.contact?.id;
+                appointmentData.contactId = finalContactId;
+            } else {
+                const errBody = await contactRes.json().catch(() => ({}));
+                if (errBody.statusCode === 400 && errBody.meta && errBody.meta.contactId) {
+                    finalContactId = errBody.meta.contactId;
+                    appointmentData.contactId = finalContactId;
+                }
             }
 
             // Create the appointment
@@ -90,6 +110,30 @@ export default function BookingModal({ isOpen, onClose }: BookingModalProps) {
             if (res.ok) {
                 setIsBooked(true);
                 toast.success("Meeting scheduled successfully!");
+
+                // Generate and save the Session Summary if we have a contact and messages
+                if (finalContactId && messages && messages.length > 0) {
+                    toast.info("Generating session summary...", { duration: 3000 });
+                    try {
+                        const summary = await generateSessionSummary(messages);
+
+                        // Push summary as a Note to the GHL Contact
+                        await fetch(
+                            `https://services.leadconnectorhq.com/contacts/${finalContactId}/notes`,
+                            {
+                                method: "POST",
+                                headers: {
+                                    "Content-Type": "application/json",
+                                    Authorization: `Bearer ${GHL_API_KEY}`,
+                                    Version: "2021-07-28",
+                                },
+                                body: JSON.stringify({ body: summary }),
+                            }
+                        );
+                    } catch (e) {
+                        console.error("Failed to generate or save summary:", e);
+                    }
+                }
             } else {
                 const errorData = await res.json().catch(() => ({}));
                 console.error("GHL booking error:", errorData);
