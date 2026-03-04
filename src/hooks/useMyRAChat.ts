@@ -447,10 +447,23 @@ export function useMyRAChat() {
 
             if (activeChatId) {
                 // Update existing chat
-                await supabase
+                const { error, data } = await supabase
                     .from('chats')
                     .update({ messages: msgs as any, title })
-                    .eq('id', activeChatId);
+                    .eq('id', activeChatId)
+                    .select('id');
+
+                // If update failed (e.g. record deleted on another device or RLS issue), fallback to insert
+                if (error || !data || data.length === 0) {
+                    console.log("Update failed or returned no rows, falling back to insert...");
+                    const { data: newChat } = await supabase
+                        .from('chats')
+                        .insert({ user_id: user.id, messages: msgs as any, title })
+                        .select('id')
+                        .single();
+
+                    if (newChat) setChatId(newChat.id);
+                }
             } else {
                 // Create new chat
                 const { data } = await supabase
@@ -566,17 +579,24 @@ export function useMyRAChat() {
     const clearChat = useCallback(async () => {
         hasClearedRef.current = true;
 
+        const resetState = () => {
+            setMessages([]);
+            setBuckets({ preTax: 0, postTax: 0, taxFree: 0 });
+            setLeadInfo({});
+            localStorage.removeItem("myra-chat-history");
+            setChatId(null);
+        };
+
         // Force-save current chat to Supabase before wiping it from the screen
         if (messages.length > 0) {
-            await saveToCloud(messages, chatId);
+            try {
+                await saveToCloud(messages, chatId);
+            } finally {
+                resetState();
+            }
+        } else {
+            resetState();
         }
-
-        setMessages([]);
-        setBuckets({ preTax: 0, postTax: 0, taxFree: 0 });
-        setLeadInfo({});
-        localStorage.removeItem("myra-chat-history");
-        // Reset chatId so the NEXT conversation creates a new row
-        setChatId(null);
     }, [messages, chatId, saveToCloud]);
 
     const sendMessage = useCallback(async (eOrString?: React.FormEvent | string) => {
