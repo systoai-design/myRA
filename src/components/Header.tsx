@@ -21,8 +21,8 @@ const Header = () => {
       <div className="fixed top-6 left-0 right-0 z-50 flex justify-center pointer-events-none">
         <header
           className={`pointer-events-auto transition-all duration-500 ease-out
-            mx-4 w-full max-w-5xl rounded-full border border-slate-200/60 shadow-lg shadow-black/[0.03]
-            backdrop-blur-xl bg-white/85 dark:bg-slate-900/85 dark:border-white/10 dark:shadow-black/20
+            mx-4 w-full max-w-4xl rounded-2xl border border-white/20 shadow-lg shadow-black/[0.03]
+            backdrop-blur-[64px] bg-white/10 glass-shine
             flex items-center justify-between px-2 py-2 sm:px-3
             animate-in slide-in-from-top-4 fade-in duration-1000
             ${scrolled ? "scale-[0.98] shadow-xl shadow-black/[0.06]" : "scale-100"}

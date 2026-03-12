@@ -176,7 +176,7 @@ const Hero = () => {
                 {/* Smart Chat Panel */}
                 <div
                     ref={heroTextRef}
-                    className="opacity-0 w-full bg-white/10 backdrop-blur-[64px] border border-white/20 saturate-150 shadow-[0_32px_64px_rgba(0,0,0,0.4)] relative overflow-hidden flex flex-col rounded-[2.5rem] p-6 sm:p-10 max-h-[65vh] min-h-[50vh]"
+                    className="opacity-0 w-full bg-white/10 backdrop-blur-[64px] border border-white/20 saturate-150 shadow-[0_32px_64px_rgba(0,0,0,0.4)] relative overflow-hidden flex flex-col rounded-[2.5rem] p-6 sm:p-10 max-h-[65vh] min-h-[50vh] glass-shine"
                 >
                     {/* Decorative reflection */}
                     <div className="absolute top-0 left-0 right-0 h-1/2 bg-gradient-to-b from-white/10 to-transparent pointer-events-none" />
@@ -261,8 +261,8 @@ const Hero = () => {
                     </div>
 
                     {/* Quick Reply Tags */}
-                    <div className="relative z-10 flex items-center mt-6 gap-2 sm:gap-3 px-2 sm:px-4 py-3 w-full overflow-x-auto custom-scrollbar [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
-                        <span className="text-white/80 drop-shadow-md font-bold mr-2 font-inter hidden sm:inline-block uppercase tracking-wider text-xs whitespace-nowrap">Quick Replies →</span>
+                    <div className="relative z-10 flex items-center mt-6 gap-3 px-1 py-4 w-full overflow-x-auto custom-scrollbar [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
+                        <span className="text-white/80 drop-shadow-md font-bold mr-1 font-inter hidden sm:inline-block uppercase tracking-wider text-xs whitespace-nowrap">Quick Replies →</span>
                         {["Analyze my income gap", "Optimize my taxes", "Review my asset allocation"].map((tag) => (
                             <button
                                 key={tag}

@@ -131,6 +131,26 @@
       transform: scale(0.98);
     }
   }
+
+  @keyframes glass-shine {
+    0% {
+      background-position: 0% 50%;
+      background-image: linear-gradient(135deg, rgba(255, 255, 255, 0.05) 0%, rgba(255, 255, 255, 0.1) 50%, rgba(255, 255, 255, 0.05) 100%);
+    }
+    50% {
+      background-position: 100% 50%;
+      background-image: linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0.05) 50%, rgba(255, 255, 255, 0.1) 100%);
+    }
+    100% {
+      background-position: 0% 50%;
+      background-image: linear-gradient(135deg, rgba(255, 255, 255, 0.05) 0%, rgba(255, 255, 255, 0.1) 50%, rgba(255, 255, 255, 0.05) 100%);
+    }
+  }
+
+  .glass-shine {
+    background-size: 200% 200%;
+    animation: glass-shine 8s ease-in-out infinite;
+  }
 }
 
 .custom-scrollbar::-webkit-scrollbar {
