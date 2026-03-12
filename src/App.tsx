@@ -16,13 +16,15 @@ const queryClient = new QueryClient();
 
 const App = () => {
   const [showSplash, setShowSplash] = useState(() => {
-    // Only show splash once per browser session
-    if (sessionStorage.getItem('myra-splash-shown')) return false;
+    // Only show splash once per browser visit globally
+    if (localStorage.getItem('myra-splash-shown')) return false;
     return true;
   });
 
   const handleSplashComplete = () => {
-    sessionStorage.setItem('myra-splash-shown', 'true');
+    localStorage.setItem('myra-splash-shown', 'true');
+    // Only set this flag if we actually just finished playing the splash screen right now
+    sessionStorage.setItem('myra-just-finished-splash', 'true');
     setShowSplash(false);
   };
 

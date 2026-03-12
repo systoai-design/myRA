@@ -38,7 +38,24 @@ export default function ChatArea({
         messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
     };
 
+    const prevMessagesLengthRef = useRef(messages.length);
+
     useEffect(() => {
+        const lastMessage = messages[messages.length - 1];
+        const isNewMessage = messages.length > prevMessagesLengthRef.current;
+        prevMessagesLengthRef.current = messages.length;
+
+        // If the newest message is from the assistant, scroll to the TOP of that message
+        // so the user can begin reading from the very beginning of her response.
+        if (isNewMessage && lastMessage?.role === 'assistant') {
+            const el = document.getElementById(`msg-${lastMessage.id}`);
+            if (el) {
+                el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                return;
+            }
+        }
+
+        // Default behavior (user sending messages, typing indicators, etc.)
         scrollToBottom();
     }, [messages, isTyping]);
 
@@ -63,8 +80,12 @@ export default function ChatArea({
         content = content.replace(/\[\[LEARN:\s*(\{.*?\})\]\]/g, "");
         content = content.replace(/\[\[TRIGGER_BOOKING\]\]/g, "");
 
+        // Strip excessive newlines/gaps left behind by hidden tags or AI pacing
+        content = content.replace(/\n{3,}/g, '\n\n').trim();
+
+        // Use a strictly dark prose scheme to contrast against the white/70 frosted glass background
         return (
-            <div className="prose prose-invert prose-p:leading-relaxed prose-pre:bg-[#1a1b2e] prose-pre:border prose-pre:border-white/10 max-w-none text-gray-200 text-[15px]">
+            <div className="prose prose-slate prose-p:leading-relaxed prose-pre:bg-white/50 prose-pre:border prose-pre:border-slate-300 max-w-none text-slate-900 text-[15px] font-medium">
                 <ReactMarkdown>{content}</ReactMarkdown>
             </div>
         );
@@ -80,21 +101,21 @@ export default function ChatArea({
     };
 
     return (
-        <div className="flex-1 flex flex-col h-full bg-gradient-to-b from-[#1a1b2e] to-[#16172a] relative">
+        <div className="flex-1 flex flex-col h-full bg-white/10 backdrop-blur-[64px] border border-white/20 rounded-3xl shadow-[0_8px_32px_rgba(0,0,0,0.15)] relative overflow-hidden">
 
             {/* Top Navigation Bar */}
-            <div className="h-14 flex items-center justify-between px-4 border-b border-white/[0.06] shrink-0 z-10 bg-[#1a1b2e]/90 backdrop-blur-md sticky top-0">
+            <div className="h-16 flex items-center justify-between px-6 border-b border-white/20 shrink-0 z-10 bg-white/5 backdrop-blur-md sticky top-0">
                 <div className="flex items-center gap-3">
                     <button
                         onClick={toggleSidebar}
-                        className="p-2 -ml-2 rounded-lg text-gray-400 hover:text-gray-200 hover:bg-white/5 transition-all active:scale-[0.95]"
+                        className="p-2 -ml-2 rounded-lg text-white/70 hover:text-white hover:bg-white/10 transition-all active:scale-[0.95]"
                     >
                         <PanelLeftOpen className="w-5 h-5" />
                     </button>
 
-                    <div className="flex gap-2.5 font-semibold text-gray-200 items-center">
-                        <span>MyRA</span>
-                        <span className="text-[10px] bg-blue-500/10 text-blue-400 px-2 py-0.5 rounded-full uppercase tracking-wider font-bold border border-blue-500/20">Llama3.3 70B</span>
+                    <div className="flex gap-2.5 font-semibold text-white items-center">
+                        <span className="drop-shadow-sm">MyRA</span>
+                        <span className="text-[10px] bg-blue-500/20 text-blue-100 px-2 py-0.5 rounded-full uppercase tracking-wider font-bold border border-blue-500/30">Llama3.3 70B</span>
                     </div>
                 </div>
 
@@ -118,12 +139,12 @@ export default function ChatArea({
             {/* Main Scrollable Messages */}
             <div className="flex-1 overflow-y-auto custom-scrollbar overflow-x-hidden">
                 {messages.length === 0 ? (
-                    <div className="h-full flex flex-col items-center justify-center p-4 sm:p-8 max-w-4xl mx-auto w-full">
-                        <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-blue-600 to-blue-500 flex items-center justify-center mb-6 shadow-xl shadow-blue-600/20">
-                            <span className="font-serif text-white text-3xl font-bold tracking-tighter">m</span>
+                    <div className="h-full flex flex-col items-center justify-center p-4 sm:p-8 max-w-4xl mx-auto w-full relative z-10">
+                        <div className="w-16 h-16 rounded-2xl bg-white/20 backdrop-blur-md border border-white/30 flex items-center justify-center mb-6 shadow-[0_8px_32px_rgba(0,0,0,0.2)]">
+                            <span className="font-outfit text-white text-3xl font-bold tracking-tighter">RA</span>
                         </div>
-                        <h2 className="text-gray-200 text-2xl font-semibold mb-2 text-center">Hi, I'm MyRA.</h2>
-                        <p className="text-gray-400 text-[15px] mb-8 text-center max-w-lg">
+                        <h2 className="text-white text-2xl font-semibold mb-2 text-center drop-shadow-md">Hi, I'm MyRA.</h2>
+                        <p className="text-white/80 text-[15px] mb-8 text-center max-w-lg drop-shadow-sm">
                             I'm your virtual retirement strategist. Select a question below to get started, or ask me anything.
                         </p>
 
@@ -138,10 +159,10 @@ export default function ChatArea({
                                 <button
                                     key={i}
                                     onClick={() => sendMessage(promptTitle)}
-                                    className={`text-left p-4 rounded-xl border border-white/5 bg-white/[0.02] hover:bg-white/[0.06] transition-all hover:-translate-y-0.5 shadow-sm active:scale-[0.98] ${i === 4 ? "md:col-span-2 md:max-w-md md:mx-auto w-full" : ""
+                                    className={`text-left p-4 rounded-xl border border-white/20 bg-white/10 hover:bg-white/20 backdrop-blur-md transition-all hover:-translate-y-0.5 shadow-sm active:scale-[0.98] ${i === 4 ? "md:col-span-2 md:max-w-md md:mx-auto w-full" : ""
                                         }`}
                                 >
-                                    <p className="text-gray-300 text-[15px] leading-snug">{promptTitle}</p>
+                                    <p className="text-white/90 font-medium text-[15px] leading-snug">{promptTitle}</p>
                                 </button>
                             ))}
                         </div>
@@ -155,14 +176,15 @@ export default function ChatArea({
 
                             return (
                                 <div
+                                    id={`msg-${msg.id}`}
                                     key={msg.id}
                                     className={`flex w-full ${isUser ? 'justify-end' : 'justify-start'} animate-in fade-in slide-in-from-bottom-2 duration-300`}
                                 >
                                     {/* AI Avatar */}
                                     {!isUser && (
                                         <div className="shrink-0 mr-3 mt-1">
-                                            <div className="w-8 h-8 rounded-full bg-gradient-to-br from-blue-600 to-blue-500 flex items-center justify-center shadow-md shadow-blue-600/15">
-                                                <span className="font-serif text-white text-sm font-bold">m</span>
+                                            <div className="w-8 h-8 rounded-full bg-slate-900/90 backdrop-blur-md border border-slate-700/50 flex items-center justify-center shadow-lg">
+                                                <span className="font-outfit text-white text-sm font-bold">RA</span>
                                             </div>
                                         </div>
                                     )}
@@ -170,28 +192,28 @@ export default function ChatArea({
                                     {/* Message Bubble */}
                                     <div className={`max-w-[80%] ${isUser ? 'order-1' : 'order-2'}`}>
                                         {isUser ? (
-                                            <div className="bg-[#2d68ff] text-white px-5 py-3.5 rounded-2xl rounded-tr-md text-[15px] leading-relaxed shadow-md shadow-blue-600/15">
+                                            <div className="bg-slate-900/80 backdrop-blur-2xl border border-slate-700/50 text-white px-5 py-3.5 rounded-2xl rounded-tr-md text-[15px] leading-relaxed shadow-[0_8px_32px_rgba(0,0,0,0.12)]">
                                                 {msg.content}
                                             </div>
                                         ) : (
-                                            <div className="bg-[#22233a] border border-white/[0.06] rounded-2xl rounded-tl-md shadow-md overflow-hidden">
+                                            <div className="bg-white/70 backdrop-blur-2xl border border-white/50 text-slate-900 rounded-2xl rounded-tl-md shadow-[0_8px_32px_rgba(0,0,0,0.12)] overflow-hidden">
                                                 <div className="px-5 py-4">
                                                     {renderMessageContent(msg)}
                                                 </div>
                                                 {/* Action Footer */}
-                                                <div className="px-3 py-1.5 bg-white/[0.02] border-t border-white/[0.04] flex gap-1">
+                                                <div className="px-3 py-1.5 bg-white/40 border-t border-white/30 flex gap-1">
                                                     <button
                                                         onClick={() => handleCopy(msg.content)}
-                                                        className="p-1.5 text-gray-500 hover:text-gray-300 hover:bg-white/5 rounded-md transition-all active:scale-[0.95] flex items-center gap-1 text-xs"
+                                                        className="p-1.5 text-slate-700 hover:text-slate-900 hover:bg-white/50 rounded-md transition-all active:scale-[0.95] flex items-center gap-1 text-xs font-medium"
                                                     >
                                                         <Copy className="w-3.5 h-3.5" />
                                                         <span>Copy</span>
                                                     </button>
-                                                    <div className="w-px h-4 bg-white/[0.06] my-auto mx-0.5" />
-                                                    <button className="p-1.5 text-gray-500 hover:text-emerald-400 hover:bg-white/5 rounded-md transition-all active:scale-[0.95]">
+                                                    <div className="w-px h-4 bg-slate-400/30 my-auto mx-0.5" />
+                                                    <button className="p-1.5 text-slate-700 hover:text-emerald-600 hover:bg-white/50 rounded-md transition-all active:scale-[0.95]">
                                                         <ThumbsUp className="w-3.5 h-3.5" />
                                                     </button>
-                                                    <button className="p-1.5 text-gray-500 hover:text-red-400 hover:bg-white/5 rounded-md transition-all active:scale-[0.95]">
+                                                    <button className="p-1.5 text-slate-700 hover:text-red-600 hover:bg-white/50 rounded-md transition-all active:scale-[0.95]">
                                                         <ThumbsDown className="w-3.5 h-3.5" />
                                                     </button>
                                                 </div>
@@ -202,7 +224,7 @@ export default function ChatArea({
                                     {/* User Avatar */}
                                     {isUser && (
                                         <div className="shrink-0 ml-3 mt-1 order-3">
-                                            <div className="w-8 h-8 rounded-full bg-gradient-to-br from-[#ffd8bb] to-[#ffb37b] flex items-center justify-center text-[#9b5110] font-bold text-xs shadow-md">
+                                            <div className="w-8 h-8 rounded-full bg-white/20 backdrop-blur-md border border-white/40 flex items-center justify-center text-white font-bold text-xs shadow-md">
                                                 U
                                             </div>
                                         </div>
@@ -238,14 +260,14 @@ export default function ChatArea({
                         {isTyping && (
                             <div className="flex w-full justify-start animate-in fade-in duration-300">
                                 <div className="shrink-0 mr-3 mt-1">
-                                    <div className="w-8 h-8 rounded-full bg-gradient-to-br from-blue-600 to-blue-500 flex items-center justify-center shadow-md shadow-blue-600/15 animate-pulse">
-                                        <span className="font-serif text-white text-sm font-bold">m</span>
+                                    <div className="w-8 h-8 rounded-full bg-slate-900/90 backdrop-blur-md border border-slate-700/50 flex items-center justify-center shadow-lg">
+                                        <span className="font-outfit text-white text-sm font-bold">RA</span>
                                     </div>
                                 </div>
-                                <div className="bg-[#22233a] border border-white/[0.06] px-5 py-4 rounded-2xl rounded-tl-md shadow-md flex gap-1.5 items-center">
-                                    <span className="w-2 h-2 rounded-full bg-blue-400/60 animate-bounce" style={{ animationDelay: '0ms' }} />
-                                    <span className="w-2 h-2 rounded-full bg-blue-400/60 animate-bounce" style={{ animationDelay: '150ms' }} />
-                                    <span className="w-2 h-2 rounded-full bg-blue-400/60 animate-bounce" style={{ animationDelay: '300ms' }} />
+                                <div className="bg-white/70 backdrop-blur-2xl border border-white/50 px-5 py-4 rounded-2xl rounded-tl-md shadow-[0_8px_32px_rgba(0,0,0,0.12)] flex gap-1.5 items-center h-[52px]">
+                                    <span className="w-2 h-2 rounded-full bg-slate-500 animate-bounce" style={{ animationDelay: '0ms' }} />
+                                    <span className="w-2 h-2 rounded-full bg-slate-500 animate-bounce" style={{ animationDelay: '150ms' }} />
+                                    <span className="w-2 h-2 rounded-full bg-slate-500 animate-bounce" style={{ animationDelay: '300ms' }} />
                                 </div>
                             </div>
                         )}
@@ -254,16 +276,16 @@ export default function ChatArea({
                 )}
             </div>
 
-            {/* Input Area (Floating Bottom) */}
-            <div className="absolute bottom-0 left-0 right-0 pt-12 pb-5 px-4 bg-gradient-to-t from-[#16172a] via-[#16172a]/95 to-transparent pointer-events-none">
-                <div className="max-w-3xl mx-auto w-full relative pointer-events-auto">
+            {/* Input Area (Floating Bottom Pill) */}
+            <div className="absolute bottom-6 left-0 right-0 px-4 sm:px-8 pointer-events-none flex justify-center z-20">
+                <div className="max-w-3xl w-full relative pointer-events-auto">
                     <form
                         onSubmit={sendMessage}
-                        className="flex items-end bg-[#22233a] border border-white/[0.08] rounded-2xl shadow-xl shadow-black/20 p-1.5 focus-within:ring-1 focus-within:ring-blue-500/30 focus-within:border-white/15 transition-all"
+                        className="flex items-end bg-white/40 backdrop-blur-xl border border-white/40 rounded-[2rem] shadow-[0_8px_30px_rgb(0,0,0,0.2)] p-1.5 focus-within:ring-4 focus-within:ring-white/30 transition-all font-inter"
                     >
                         <button
                             type="button"
-                            className="p-2.5 text-gray-500 hover:text-gray-300 hover:bg-white/5 rounded-xl transition-all active:scale-[0.95] mb-0.5"
+                            className="p-3 text-slate-600 hover:text-slate-900 hover:bg-white/20 rounded-full transition-all active:scale-[0.95] mb-0.5"
                         >
                             <Plus className="w-5 h-5" />
                         </button>
@@ -273,7 +295,7 @@ export default function ChatArea({
                             onChange={(e) => setInput(e.target.value)}
                             onKeyDown={handleKeyDown}
                             placeholder="Message MyRA..."
-                            className="w-full max-h-48 min-h-[44px] bg-transparent border-none focus:ring-0 text-gray-200 resize-none py-3 px-2 text-[15px] placeholder:text-gray-500 custom-scrollbar outline-none"
+                            className="w-full max-h-48 min-h-[50px] bg-transparent border-none focus:ring-0 text-slate-900 placeholder:text-slate-700/70 font-medium resize-none py-3.5 px-3 text-[16px] custom-scrollbar outline-none"
                             rows={1}
                         />
 
@@ -281,13 +303,13 @@ export default function ChatArea({
                             <button
                                 type="submit"
                                 disabled={isLoading || !input.trim()}
-                                className="w-9 h-9 flex items-center justify-center bg-[#2d68ff] hover:bg-[#255ce6] disabled:opacity-30 disabled:cursor-not-allowed text-white rounded-xl transition-all active:scale-[0.9] shadow-md shadow-blue-600/20 ml-1"
+                                className="w-10 h-10 flex items-center justify-center bg-slate-900 hover:bg-slate-800 disabled:opacity-30 disabled:cursor-not-allowed text-white rounded-full transition-all active:scale-[0.9] shadow-md ml-1"
                             >
                                 <ArrowUp className="w-5 h-5 stroke-[2.5]" />
                             </button>
                         </div>
                     </form>
-                    <div className="text-center mt-2.5 text-[11px] text-gray-600">
+                    <div className="text-center mt-3 text-[11.5px] text-white/90 drop-shadow-md font-medium tracking-wide">
                         MyRA provides general education, not personalized financial advice.
                     </div>
                 </div>
