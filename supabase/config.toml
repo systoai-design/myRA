@@ -11,3 +11,47 @@ verify_jwt = false
 
 [functions.get-available-slots]
 verify_jwt = false
+
+[functions.aggregate-memories]
+enabled = true
+verify_jwt = true
+import_map = "./functions/aggregate-memories/deno.json"
+# Uncomment to specify a custom file path to the entrypoint.
+# Supported file extensions are: .ts, .js, .mjs, .jsx, .tsx
+entrypoint = "./functions/aggregate-memories/index.ts"
+# Specifies static files to be bundled with the function. Supports glob patterns.
+# For example, if you want to serve static HTML pages in your function:
+# static_files = [ "./functions/aggregate-memories/*.html" ]
+
+[functions.add-admin]
+enabled = true
+verify_jwt = false
+import_map = "./functions/add-admin/deno.json"
+# Uncomment to specify a custom file path to the entrypoint.
+# Supported file extensions are: .ts, .js, .mjs, .jsx, .tsx
+entrypoint = "./functions/add-admin/index.ts"
+# Specifies static files to be bundled with the function. Supports glob patterns.
+# For example, if you want to serve static HTML pages in your function:
+# static_files = [ "./functions/add-admin/*.html" ]
+
+[functions.get-team]
+enabled = true
+verify_jwt = true
+import_map = "./functions/get-team/deno.json"
+# Uncomment to specify a custom file path to the entrypoint.
+# Supported file extensions are: .ts, .js, .mjs, .jsx, .tsx
+entrypoint = "./functions/get-team/index.ts"
+# Specifies static files to be bundled with the function. Supports glob patterns.
+# For example, if you want to serve static HTML pages in your function:
+# static_files = [ "./functions/get-team/*.html" ]
+
+[functions.debug-smtp]
+enabled = true
+verify_jwt = true
+import_map = "./functions/debug-smtp/deno.json"
+# Uncomment to specify a custom file path to the entrypoint.
+# Supported file extensions are: .ts, .js, .mjs, .jsx, .tsx
+entrypoint = "./functions/debug-smtp/index.ts"
+# Specifies static files to be bundled with the function. Supports glob patterns.
+# For example, if you want to serve static HTML pages in your function:
+# static_files = [ "./functions/debug-smtp/*.html" ]

@@ -3,6 +3,7 @@ import { Copy, ThumbsUp, ThumbsDown, Plus, ArrowUp, PanelLeftOpen, Calendar } fr
 import { ChatMessage } from "@/hooks/useMyRAChat";
 import ReactMarkdown from 'react-markdown';
 import BookingModal from "@/components/BookingModal";
+import TrainAIModal from "@/components/chat-ui/TrainAIModal";
 import { toast } from "sonner";
 
 interface ChatAreaProps {
@@ -16,6 +17,7 @@ interface ChatAreaProps {
     showBookingPrompt?: boolean;
     userMemories?: { category: string; fact: string }[];
     isDeveloperMode?: boolean;
+    isAdmin?: boolean;
 }
 
 export default function ChatArea({
@@ -28,11 +30,13 @@ export default function ChatArea({
     toggleSidebar,
     showBookingPrompt = false,
     userMemories = [],
-    isDeveloperMode = false
+    isDeveloperMode = false,
+    isAdmin = false
 }: ChatAreaProps) {
 
     const messagesEndRef = useRef<HTMLDivElement>(null);
     const [bookingOpen, setBookingOpen] = useState(false);
+    const [trainModalOpen, setTrainModalOpen] = useState(false);
 
     const scrollToBottom = () => {
         messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -85,7 +89,7 @@ export default function ChatArea({
 
         // Use a strictly dark prose scheme to contrast against the white/70 frosted glass background
         return (
-            <div className="prose prose-slate prose-p:leading-relaxed prose-pre:bg-white/50 prose-pre:border prose-pre:border-slate-300 max-w-none text-slate-900 text-[15px] font-medium">
+            <div className="prose prose-invert prose-p:leading-relaxed prose-pre:bg-white/10 prose-pre:border prose-pre:border-white/20 max-w-none text-white/90 text-[15px] font-medium font-inter">
                 <ReactMarkdown>{content}</ReactMarkdown>
             </div>
         );
@@ -101,10 +105,10 @@ export default function ChatArea({
     };
 
     return (
-        <div className="flex-1 flex flex-col h-full bg-white/10 backdrop-blur-[64px] border border-white/20 rounded-3xl shadow-[0_8px_32px_rgba(0,0,0,0.15)] relative overflow-hidden">
+        <div className="flex-1 flex flex-col h-full bg-[#0c1222]/40 backdrop-blur-[64px] border border-white/10 rounded-3xl shadow-[0_20px_48px_rgba(0,0,0,0.4)] relative overflow-hidden">
 
             {/* Top Navigation Bar */}
-            <div className="h-16 flex items-center justify-between px-6 border-b border-white/20 shrink-0 z-10 bg-white/5 backdrop-blur-md sticky top-0">
+            <div className="h-16 flex items-center justify-between px-6 border-b border-white/10 shrink-0 z-10 bg-black/20 backdrop-blur-md sticky top-0">
                 <div className="flex items-center gap-3">
                     <button
                         onClick={toggleSidebar}
@@ -196,7 +200,7 @@ export default function ChatArea({
                                                 {msg.content}
                                             </div>
                                         ) : (
-                                            <div className="bg-white/70 backdrop-blur-2xl border border-white/50 text-slate-900 rounded-2xl rounded-tl-md shadow-[0_8px_32px_rgba(0,0,0,0.12)] overflow-hidden">
+                                            <div className="bg-[#0c1222]/80 backdrop-blur-2xl border border-white/[0.08] text-white/90 rounded-2xl rounded-tl-md shadow-[0_12px_40px_rgba(0,0,0,0.3)] overflow-hidden">
                                                 <div className="px-5 py-4">
                                                     {renderMessageContent(msg)}
                                                 </div>
@@ -281,7 +285,7 @@ export default function ChatArea({
                 <div className="max-w-3xl w-full relative pointer-events-auto">
                     <form
                         onSubmit={sendMessage}
-                        className="flex items-end bg-white/40 backdrop-blur-xl border border-white/40 rounded-[2rem] shadow-[0_8px_30px_rgb(0,0,0,0.2)] p-1.5 focus-within:ring-4 focus-within:ring-white/30 transition-all font-inter"
+                        className="flex items-end bg-black/40 backdrop-blur-2xl border border-white/10 rounded-[2rem] shadow-[0_20px_48px_rgba(0,0,0,0.3)] p-1.5 focus-within:ring-4 focus-within:ring-white/10 transition-all font-inter"
                     >
                         <button
                             type="button"
@@ -289,6 +293,17 @@ export default function ChatArea({
                         >
                             <Plus className="w-5 h-5" />
                         </button>
+                        
+                        {isAdmin && (
+                            <button
+                                type="button"
+                                onClick={() => setTrainModalOpen(true)}
+                                title="Train MyRA"
+                                className="p-3 text-primary/80 hover:text-primary hover:bg-white/20 rounded-full transition-all active:scale-[0.95] mb-0.5"
+                            >
+                                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m2 16 6 6"/><path d="m22 16-6 6"/><path d="m6 16 1.34-4.66a2 2 0 0 1 1.9-1.34h5.52a2 2 0 0 1 1.9 1.34L18 16"/><path d="M12 10V2"/><path d="M9 4l3-2 3 2"/></svg>
+                            </button>
+                        )}
 
                         <textarea
                             value={input}
@@ -320,6 +335,11 @@ export default function ChatArea({
                 onClose={() => setBookingOpen(false)}
                 prefillData={prefillData}
                 messages={messages}
+            />
+
+            <TrainAIModal 
+                isOpen={trainModalOpen} 
+                onClose={() => setTrainModalOpen(false)} 
             />
         </div>
     );

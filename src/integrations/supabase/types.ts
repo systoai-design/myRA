@@ -49,6 +49,42 @@ export type Database = {
           },
         ]
       }
+      global_knowledge_base: {
+        Row: {
+          id: string
+          category: string
+          insight: string
+          frequency_score: number
+          status: 'pending_review' | 'approved' | 'rejected'
+          source: 'ai_extraction' | 'manual_training'
+          is_active: boolean
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          category: string
+          insight: string
+          frequency_score?: number
+          status?: 'pending_review' | 'approved' | 'rejected'
+          source?: 'ai_extraction' | 'manual_training'
+          is_active?: boolean
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          category?: string
+          insight?: string
+          frequency_score?: number
+          status?: 'pending_review' | 'approved' | 'rejected'
+          source?: 'ai_extraction' | 'manual_training'
+          is_active?: boolean
+          created_at?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       user_memory: {
         Row: {
           id: string
@@ -82,6 +118,41 @@ export type Database = {
             referencedRelation: "users"
             referencedColumns: ["id"]
           },
+        ]
+      }
+      user_roles: {
+        Row: {
+          id: string
+          user_id: string
+          email: string
+          role: 'user' | 'admin'
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          user_id: string
+          email: string
+          role?: 'user' | 'admin'
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          user_id?: string
+          email?: string
+          role?: 'user' | 'admin'
+          created_at?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_roles_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: true
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          }
         ]
       }
     }

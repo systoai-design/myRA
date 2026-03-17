@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useMyRAChat } from "@/hooks/useMyRAChat";
 import ChatSidebar from "@/components/chat-ui/ChatSidebar";
 import ChatArea from "@/components/chat-ui/ChatArea";
+import { useAuth } from "@/contexts/AuthContext";
 
 export default function AgentChat() {
     const [sidebarOpen, setSidebarOpen] = useState(true);
@@ -11,6 +12,8 @@ export default function AgentChat() {
         chatId, chatList, switchChat, renameChat, deleteChat, userName,
         isDeveloperMode
     } = useMyRAChat();
+    const { role, testRole } = useAuth();
+    const effectiveRole = testRole || role;
 
     const toggleSidebar = () => setSidebarOpen(!sidebarOpen);
 
@@ -55,6 +58,7 @@ export default function AgentChat() {
                     isTyping={isTyping}
                     toggleSidebar={toggleSidebar}
                     isDeveloperMode={isDeveloperMode}
+                    isAdmin={effectiveRole === 'admin'}
                 />
             </div>
         </div>

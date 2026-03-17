@@ -8,9 +8,13 @@ import Index from "./pages/Index";
 import ThankYou from "./pages/ThankYou";
 import AgentChat from "./pages/AgentChat";
 import ResetPassword from "./pages/ResetPassword";
+import React, { lazy, Suspense } from "react";
 import NotFound from "./pages/NotFound";
 import { AuthProvider } from "@/contexts/AuthContext";
 import SplashScreen from "@/components/SplashScreen";
+import { RoleSwitcher } from "@/components/RoleSwitcher";
+
+const AdminDashboard = lazy(() => import("./pages/AdminDashboard"));
 
 const queryClient = new QueryClient();
 
@@ -41,9 +45,15 @@ const App = () => {
                 <Route path="/" element={<Index />} />
                 <Route path="/agent-chat" element={<AgentChat />} />
                 <Route path="/reset-password" element={<ResetPassword />} />
+                <Route path="/admin" element={
+                  <Suspense fallback={<div className="min-h-screen bg-black" />}>
+                    <AdminDashboard />
+                  </Suspense>
+                } />
                 {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
                 <Route path="*" element={<NotFound />} />
               </Routes>
+              <RoleSwitcher />
             </BrowserRouter>
           </AuthProvider>
         </TooltipProvider>

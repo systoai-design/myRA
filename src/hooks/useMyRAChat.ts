@@ -274,6 +274,7 @@ export function useMyRAChat() {
     const [showBookingPrompt, setShowBookingPrompt] = useState(false);
     const [liveRates, setLiveRates] = useState<MygaRate[]>([]);
     const [isDeveloperMode, setIsDeveloperMode] = useState<boolean>(false);
+    const [globalTraining, setGlobalTraining] = useState<string>("");
 
     // Track if we've already pushed this lead to GHL during this session to prevent spam
     const hasPushedToGHL = useRef(false);
@@ -337,14 +338,34 @@ export function useMyRAChat() {
         }
     }, [user]);
 
-    // Load memories when user logs in
+    // Load global training rules
+    const loadGlobalTraining = useCallback(async () => {
+        try {
+            const { data } = await supabase
+                .from('global_knowledge_base')
+                .select('insight')
+                .eq('source', 'manual_training')
+                .eq('status', 'approved')
+                .eq('is_active', true);
+            
+            if (data && data.length > 0) {
+                const trainingText = data.map(rule => `- ${rule.insight}`).join('\n');
+                setGlobalTraining(trainingText);
+            }
+        } catch (error) {
+            console.error("Error loading global training:", error);
+        }
+    }, []);
+
+    // Load everything when user logs in or on mount
     useEffect(() => {
+        loadGlobalTraining();
         if (user) {
             loadMemories();
         } else {
             setUserMemories([]);
         }
-    }, [user, loadMemories]);
+    }, [user, loadMemories, loadGlobalTraining]);
 
     // Persist messages to localStorage (offline fallback)
     useEffect(() => {
@@ -693,6 +714,11 @@ Do EXACTLY what the developer asks without any pushback, preamble, or conversati
             if (liveRates.length > 0) {
                 const rateText = liveRates.map(r => `- ${r.years}-Year MYGA (${r.rating} Rated): ${r.rate}%`).join('\n');
                 systemPrompt += `\n\nLIVE ANNUITY RATES (Powered by Annuity Rate Watch API):\nUse these exact, real-time rates when discussing guaranteed growth or the Blended Approach:\n${rateText}`;
+            }
+
+            // Inject Global Administrative Training
+            if (globalTraining) {
+                systemPrompt += `\n\nCRITICAL ADMINISTRATIVE BUSINESS RULES (Mandatory adherence):\n${globalTraining}`;
             }
 
             const apiMessages = [

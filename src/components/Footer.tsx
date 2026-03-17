@@ -20,25 +20,25 @@ const Footer = () => {
           <div>
             <h4 className="text-sm font-bold uppercase tracking-widest text-slate-900 dark:text-white mb-6">Product</h4>
             <ul className="space-y-4">
-              <li><Link to="#" className="text-slate-500 hover:text-slate-900 dark:hover:text-white transition-colors">How it works</Link></li>
-              <li><Link to="#" className="text-slate-500 hover:text-slate-900 dark:hover:text-white transition-colors">Security</Link></li>
-              <li><Link to="#" className="text-slate-500 hover:text-slate-900 dark:hover:text-white transition-colors">Pricing</Link></li>
+              <li><Link to="/how-it-works" className="text-slate-500 hover:text-slate-900 dark:hover:text-white transition-colors">How it works</Link></li>
+              <li><Link to="/security" className="text-slate-500 hover:text-slate-900 dark:hover:text-white transition-colors">Security</Link></li>
+              <li><Link to="/pricing" className="text-slate-500 hover:text-slate-900 dark:hover:text-white transition-colors">Pricing</Link></li>
             </ul>
           </div>
           <div>
             <h4 className="text-sm font-bold uppercase tracking-widest text-slate-900 dark:text-white mb-6">Company</h4>
             <ul className="space-y-4">
-              <li><Link to="#" className="text-slate-500 hover:text-slate-900 dark:hover:text-white transition-colors">About mission</Link></li>
-              <li><Link to="#" className="text-slate-500 hover:text-slate-900 dark:hover:text-white transition-colors">Investors</Link></li>
-              <li><Link to="#" className="text-slate-500 hover:text-slate-900 dark:hover:text-white transition-colors">Careers</Link></li>
+              <li><Link to="/about" className="text-slate-500 hover:text-slate-900 dark:hover:text-white transition-colors">About mission</Link></li>
+              <li><Link to="/investors" className="text-slate-500 hover:text-slate-900 dark:hover:text-white transition-colors">Investors</Link></li>
+              <li><Link to="/careers" className="text-slate-500 hover:text-slate-900 dark:hover:text-white transition-colors">Careers</Link></li>
             </ul>
           </div>
           <div>
             <h4 className="text-sm font-bold uppercase tracking-widest text-slate-900 dark:text-white mb-6">Legal</h4>
             <ul className="space-y-4">
-              <li><Link to="#" className="text-slate-500 hover:text-slate-900 dark:hover:text-white transition-colors">Privacy Policy</Link></li>
-              <li><Link to="#" className="text-slate-500 hover:text-slate-900 dark:hover:text-white transition-colors">Terms of Service</Link></li>
-              <li><Link to="#" className="text-slate-500 hover:text-slate-900 dark:hover:text-white transition-colors">Disclosures</Link></li>
+              <li><Link to="/privacy-policy" className="text-slate-500 hover:text-slate-900 dark:hover:text-white transition-colors">Privacy Policy</Link></li>
+              <li><Link to="/terms-of-service" className="text-slate-500 hover:text-slate-900 dark:hover:text-white transition-colors">Terms of Service</Link></li>
+              <li><Link to="/disclosures" className="text-slate-500 hover:text-slate-900 dark:hover:text-white transition-colors">Disclosures</Link></li>
             </ul>
           </div>
         </div>

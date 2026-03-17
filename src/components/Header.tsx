@@ -5,8 +5,9 @@ import { useAuth } from "@/contexts/AuthContext";
 
 const Header = () => {
   const [scrolled, setScrolled] = useState(false);
-  const { user } = useAuth();
+  const { user, role, testRole } = useAuth();
   const navigate = useNavigate();
+  const effectiveRole = testRole || role;
 
   useEffect(() => {
     const handleScroll = () => {
@@ -45,6 +46,15 @@ const Header = () => {
           <div className="flex-1" />
 
           <div className="flex items-center gap-2 pr-1 sm:pr-0">
+            {effectiveRole === "admin" && (
+              <button
+                onClick={() => navigate('/admin')}
+                className="hidden sm:inline-flex items-center justify-center rounded-full bg-primary/10 px-4 py-2 text-sm font-medium text-primary hover:bg-primary/20 transition-all active:scale-[0.97]"
+              >
+                Admin
+              </button>
+            )}
+            
             {/* Agent Chat */}
             <button
               onClick={(e) => {

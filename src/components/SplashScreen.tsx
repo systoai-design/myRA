@@ -40,7 +40,7 @@ export default function SplashScreen({ onComplete }: SplashScreenProps) {
 
     return (
         <div
-            className={`fixed inset-0 z-[9999] flex items-center justify-center bg-[#0a0e1a] transition-opacity duration-500 ${fadeOut ? "opacity-0 pointer-events-none" : "opacity-100"
+            className={`fixed inset-0 z-[9999] flex items-center justify-center bg-[#0a0e1a] transition-opacity duration-700 ${fadeOut ? "opacity-0 pointer-events-none" : "opacity-100"
                 }`}
         >
             <video
