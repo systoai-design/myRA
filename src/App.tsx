@@ -13,6 +13,8 @@ import NotFound from "./pages/NotFound";
 import { AuthProvider } from "@/contexts/AuthContext";
 import SplashScreen from "@/components/SplashScreen";
 import { RoleSwitcher } from "@/components/RoleSwitcher";
+import { ThemeProvider } from "@/components/theme-provider";
+import { SmoothScroll } from "@/components/SmoothScroll";
 
 const AdminDashboard = lazy(() => import("./pages/AdminDashboard"));
 
@@ -35,29 +37,33 @@ const App = () => {
   return (
     <>
       {showSplash && <SplashScreen onComplete={handleSplashComplete} />}
-      <QueryClientProvider client={queryClient}>
-        <TooltipProvider>
-          <AuthProvider>
-            <Toaster />
-            <Sonner />
-            <BrowserRouter>
-              <Routes>
-                <Route path="/" element={<Index />} />
-                <Route path="/agent-chat" element={<AgentChat />} />
-                <Route path="/reset-password" element={<ResetPassword />} />
-                <Route path="/admin" element={
-                  <Suspense fallback={<div className="min-h-screen bg-black" />}>
-                    <AdminDashboard />
-                  </Suspense>
-                } />
-                {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-                <Route path="*" element={<NotFound />} />
-              </Routes>
-              <RoleSwitcher />
-            </BrowserRouter>
-          </AuthProvider>
-        </TooltipProvider>
-      </QueryClientProvider>
+      <ThemeProvider defaultTheme="system" storageKey="myra-theme">
+        <QueryClientProvider client={queryClient}>
+          <TooltipProvider>
+            <AuthProvider>
+              <SmoothScroll>
+                <Toaster />
+                <Sonner />
+                <BrowserRouter>
+                  <Routes>
+                    <Route path="/" element={<Index />} />
+                    <Route path="/agent-chat" element={<AgentChat />} />
+                    <Route path="/reset-password" element={<ResetPassword />} />
+                    <Route path="/admin" element={
+                      <Suspense fallback={<div className="min-h-screen bg-black" />}>
+                        <AdminDashboard />
+                      </Suspense>
+                    } />
+                    {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+                    <Route path="*" element={<NotFound />} />
+                  </Routes>
+                  <RoleSwitcher />
+                </BrowserRouter>
+              </SmoothScroll>
+            </AuthProvider>
+          </TooltipProvider>
+        </QueryClientProvider>
+      </ThemeProvider>
     </>
   );
 };

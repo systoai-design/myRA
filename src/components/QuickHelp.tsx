@@ -37,7 +37,7 @@ const QuickHelp = () => {
 
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
                     {helpVideos.map((video) => (
-                        <div key={video.id} className="group relative rounded-3xl overflow-hidden cursor-pointer bg-slate-100 dark:bg-slate-800 shadow-sm hover:shadow-xl transition-all duration-300 hover:-translate-y-2">
+                        <div key={video.id} className="group relative rounded-3xl overflow-hidden cursor-pointer transition-all duration-300 hover:-translate-y-2 glass dark:glass-dark">
                             <div className="aspect-video relative overflow-hidden">
                                 <img
                                     src={video.thumbnail}

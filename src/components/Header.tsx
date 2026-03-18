@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { AuthModal } from "./auth/AuthModal";
 import { useAuth } from "@/contexts/AuthContext";
+import { ThemeToggle } from "./ThemeToggle";
 
 const Header = () => {
   const [scrolled, setScrolled] = useState(false);
@@ -22,8 +23,8 @@ const Header = () => {
       <div className="fixed top-6 left-0 right-0 z-50 flex justify-center pointer-events-none">
         <header
           className={`pointer-events-auto transition-all duration-500 ease-out
-            mx-4 w-full max-w-4xl rounded-2xl border border-white/20 shadow-lg shadow-black/[0.03]
-            backdrop-blur-[64px] bg-white/10 glass-shine
+            mx-4 w-full max-w-4xl rounded-2xl border border-slate-900/10 dark:border-white/10 shadow-lg shadow-black/[0.03]
+            backdrop-blur-[64px] bg-white/10 dark:bg-black/20 glass-shine
             flex items-center justify-between px-2 py-2 sm:px-3
             animate-in slide-in-from-top-4 fade-in duration-1000
             ${scrolled ? "scale-[0.98] shadow-xl shadow-black/[0.06]" : "scale-100"}
@@ -65,11 +66,12 @@ const Header = () => {
                   navigate('/agent-chat');
                 }
               }}
-              className="hidden sm:inline-flex items-center justify-center rounded-full bg-slate-900/5 px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-900/10 dark:text-slate-200 dark:bg-white/10 dark:hover:bg-white/15 transition-all active:scale-[0.97]"
+              className="hidden sm:inline-flex items-center justify-center rounded-full bg-slate-900/5 hover:bg-slate-900/10 px-4 py-2 text-sm font-semibold text-slate-800 dark:text-slate-100 dark:bg-white/10 dark:hover:bg-white/20 transition-all active:scale-[0.97]"
             >
               Agent Chat
             </button>
 
+            <ThemeToggle />
             <AuthModal />
           </div>
         </header>

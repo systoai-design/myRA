@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { ChevronDown, ChevronUp } from 'lucide-react';
+import { ChevronDown } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
 
 const faqs = [
     {
@@ -33,32 +34,43 @@ const FAQSection = () => {
                 <h2 className="text-3xl font-bold text-slate-900 dark:text-white mb-16 text-center">Frequently asked questions</h2>
 
                 <div className="space-y-4">
-                    {faqs.map((faq, index) => (
+                    {faqs.map((faq, index) => {
+                        const isOpen = openIndex === index;
+                        return (
                         <div
                             key={index}
-                            className="rounded-[2rem] border border-slate-100 dark:border-white/5 overflow-hidden transition-all duration-300"
+                            className={`rounded-[2rem] overflow-hidden transition-all duration-300 glass dark:glass-dark ${isOpen ? 'ring-1 ring-slate-900/5 dark:ring-white/10' : ''}`}
                         >
                             <button
-                                onClick={() => setOpenIndex(openIndex === index ? null : index)}
-                                className="w-full flex items-center justify-between p-8 text-left hover:bg-slate-50 dark:hover:bg-slate-900/50 transition-colors"
+                                onClick={() => setOpenIndex(isOpen ? null : index)}
+                                className="w-full flex items-center justify-between p-8 text-left hover:bg-black/5 dark:hover:bg-white/10 transition-colors"
                             >
                                 <span className="text-xl font-bold text-slate-900 dark:text-white">{faq.question}</span>
-                                {openIndex === index ? (
-                                    <ChevronUp className="w-6 h-6 text-slate-400" />
-                                ) : (
+                                <motion.div
+                                    animate={{ rotate: isOpen ? 180 : 0 }}
+                                    transition={{ type: "spring", stiffness: 300, damping: 20 }}
+                                >
                                     <ChevronDown className="w-6 h-6 text-slate-400" />
-                                )}
+                                </motion.div>
                             </button>
-                            <div
-                                className={`px-8 pb-8 transition-all duration-300 ease-in-out ${openIndex === index ? 'max-h-96 opacity-100' : 'max-h-0 opacity-0 overflow-hidden'
-                                    }`}
-                            >
-                                <p className="text-lg text-slate-600 dark:text-slate-400 leading-relaxed">
-                                    {faq.answer}
-                                </p>
-                            </div>
+                            <AnimatePresence initial={false}>
+                                {isOpen && (
+                                    <motion.div
+                                        initial={{ height: 0, opacity: 0 }}
+                                        animate={{ height: "auto", opacity: 1 }}
+                                        exit={{ height: 0, opacity: 0 }}
+                                        transition={{ type: "spring", stiffness: 300, damping: 25 }}
+                                    >
+                                        <div className="px-8 pb-8">
+                                            <p className="text-lg text-slate-600 dark:text-slate-400 leading-relaxed">
+                                                {faq.answer}
+                                            </p>
+                                        </div>
+                                    </motion.div>
+                                )}
+                            </AnimatePresence>
                         </div>
-                    ))}
+                    )})}
                 </div>
             </div>
         </section>

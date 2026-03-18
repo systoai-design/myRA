@@ -42,7 +42,7 @@ const WhoForSection = () => {
         </div>
 
         <div className="grid md:grid-cols-2 gap-8">
-          <div className="relative rounded-[2.5rem] p-8 md:p-10 h-full overflow-hidden liquid-glass-premium border-white/10">
+          <div className="relative rounded-[2.5rem] p-8 md:p-10 h-full overflow-hidden liquid-glass">
             <div className="absolute inset-0 bg-primary/5 pointer-events-none" />
             <div className="relative z-10">
               <div className="flex items-center gap-3 mb-8">
@@ -64,7 +64,7 @@ const WhoForSection = () => {
             </div>
           </div>
 
-          <div className="relative rounded-[2.5rem] p-8 md:p-10 h-full liquid-glass border-white/5 bg-white/[0.02]">
+          <div className="relative rounded-[2.5rem] p-8 md:p-10 h-full liquid-glass">
             <div className="flex items-center gap-3 mb-8">
               <div className="w-12 h-12 rounded-2xl bg-white/10 flex items-center justify-center">
                 <X className="w-6 h-6 text-white/40" />

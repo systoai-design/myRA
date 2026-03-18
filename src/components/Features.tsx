@@ -27,7 +27,7 @@ const Features = () => {
             <div className="mx-auto max-w-7xl px-6 lg:px-8">
 
                 {/* Metric Card (Layla Style) */}
-                <div className="mb-24 relative overflow-hidden rounded-[2.5rem] bg-slate-50 dark:bg-slate-900/50 p-12 border border-slate-100 dark:border-white/5 shadow-sm">
+                <div className="mb-24 relative overflow-hidden rounded-[2.5rem] p-12 glass dark:glass-dark">
                     <div className="flex flex-col md:flex-row items-center justify-between gap-12">
                         <div className="max-w-md text-center md:text-left">
                             <h2 className="text-3xl md:text-4xl font-bold text-slate-900 dark:text-white mb-4">
@@ -59,7 +59,7 @@ const Features = () => {
                 {/* 4 Feature Cards */}
                 <div className="grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-4 mb-16">
                     {/* Feature 1 */}
-                    <div className="relative group rounded-[2rem] bg-slate-50 dark:bg-slate-900/30 p-8 border border-slate-100 dark:border-white/5 transition-all duration-300 hover:shadow-xl hover:-translate-y-1">
+                    <div className="relative group rounded-[2rem] p-8 transition-all duration-300 hover:-translate-y-1 glass dark:glass-dark">
                         <div className="mb-6 inline-flex h-14 w-14 items-center justify-center rounded-2xl bg-white dark:bg-slate-800 shadow-sm text-slate-900 dark:text-white">
                             <span className="material-symbols-outlined text-[28px]">schedule</span>
                         </div>
@@ -72,7 +72,7 @@ const Features = () => {
                     </div>
 
                     {/* Feature 2 */}
-                    <div className="relative group rounded-[2rem] bg-slate-50 dark:bg-slate-900/30 p-8 border border-slate-100 dark:border-white/5 transition-all duration-300 hover:shadow-xl hover:-translate-y-1">
+                    <div className="relative group rounded-[2rem] p-8 transition-all duration-300 hover:-translate-y-1 glass dark:glass-dark">
                         <div className="mb-6 inline-flex h-14 w-14 items-center justify-center rounded-2xl bg-white dark:bg-slate-800 shadow-sm text-slate-900 dark:text-white">
                             <span className="material-symbols-outlined text-[28px]">savings</span>
                         </div>
@@ -85,7 +85,7 @@ const Features = () => {
                     </div>
 
                     {/* Feature 3 */}
-                    <div className="relative group rounded-[2rem] bg-slate-50 dark:bg-slate-900/30 p-8 border border-slate-100 dark:border-white/5 transition-all duration-300 hover:shadow-xl hover:-translate-y-1">
+                    <div className="relative group rounded-[2rem] p-8 transition-all duration-300 hover:-translate-y-1 glass dark:glass-dark">
                         <div className="mb-6 inline-flex h-14 w-14 items-center justify-center rounded-2xl bg-white dark:bg-slate-800 shadow-sm text-slate-900 dark:text-white">
                             <span className="material-symbols-outlined text-[28px]">balance</span>
                         </div>
@@ -98,7 +98,7 @@ const Features = () => {
                     </div>
 
                     {/* Feature 4 */}
-                    <div className="relative group rounded-[2rem] bg-slate-50 dark:bg-slate-900/30 p-8 border border-slate-100 dark:border-white/5 transition-all duration-300 hover:shadow-xl hover:-translate-y-1">
+                    <div className="relative group rounded-[2rem] p-8 transition-all duration-300 hover:-translate-y-1 glass dark:glass-dark">
                         <div className="mb-6 inline-flex h-14 w-14 items-center justify-center rounded-2xl bg-white dark:bg-slate-800 shadow-sm text-slate-900 dark:text-white">
                             <span className="material-symbols-outlined text-[28px]">psychology</span>
                         </div>
@@ -112,14 +112,14 @@ const Features = () => {
                 </div>
 
                 {/* Complete Confidentiality Block */}
-                <div className="mx-auto max-w-4xl bg-slate-900 dark:bg-slate-800 rounded-[2rem] p-8 sm:p-12 text-center shadow-2xl relative overflow-hidden group">
+                <div className="mx-auto max-w-4xl rounded-[2rem] p-8 sm:p-12 text-center relative overflow-hidden group glass dark:glass-dark">
                     <div className="absolute inset-0 bg-gradient-to-br from-blue-500/10 to-transparent pointer-events-none" />
-                    <div className="mb-6 inline-flex items-center justify-center w-20 h-20 rounded-full bg-white/10 text-white backdrop-blur-sm mx-auto shadow-inner border border-white/10 group-hover:scale-110 transition-transform duration-500">
+                    <div className="mb-6 inline-flex items-center justify-center w-20 h-20 rounded-full bg-slate-900/5 dark:bg-white/10 text-slate-900 dark:text-white backdrop-blur-sm mx-auto shadow-inner border border-slate-900/10 dark:border-white/10 group-hover:scale-110 transition-transform duration-500">
                         <span className="material-symbols-outlined text-4xl">lock</span>
                     </div>
-                    <h3 className="text-3xl font-bold text-white mb-4">Complete Confidentiality</h3>
-                    <p className="text-lg text-slate-300 max-w-2xl mx-auto leading-relaxed">
-                        Your privacy is our highest priority. All conversations and shared financial files are secured with <span className="text-white font-semibold">bank-level encryption</span>, ensuring your data remains completely private and protected at all times.
+                    <h3 className="text-3xl font-bold text-slate-900 dark:text-white mb-4">Complete Confidentiality</h3>
+                    <p className="text-lg text-slate-600 dark:text-slate-300 max-w-2xl mx-auto leading-relaxed">
+                        Your privacy is our highest priority. All conversations and shared financial files are secured with <span className="text-slate-900 dark:text-white font-semibold">bank-level encryption</span>, ensuring your data remains completely private and protected at all times.
                     </p>
                 </div>
             </div>

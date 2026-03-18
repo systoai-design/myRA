@@ -176,7 +176,7 @@ const Hero = () => {
                 {/* Smart Chat Panel */}
                 <div
                     ref={heroTextRef}
-                    className="opacity-0 w-full bg-white/10 backdrop-blur-[64px] border border-white/20 saturate-150 shadow-[0_32px_64px_rgba(0,0,0,0.4)] relative overflow-hidden flex flex-col rounded-[2.5rem] p-6 sm:p-10 max-h-[65vh] min-h-[50vh] glass-shine"
+                    className="opacity-0 w-full liquid-glass relative overflow-hidden flex flex-col rounded-[2.5rem] p-6 sm:p-10 max-h-[65vh] min-h-[50vh] glass-shine"
                 >
                     {/* Decorative reflection */}
                     <div className="absolute top-0 left-0 right-0 h-1/2 bg-gradient-to-b from-white/10 to-transparent pointer-events-none" />
