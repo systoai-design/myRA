@@ -8,6 +8,8 @@ export interface ChatMessage {
     id: string;
     role: "user" | "assistant" | "system";
     content: string;
+    timestamp?: string;
+    status?: 'sent' | 'delivered' | 'read';
 }
 
 // Direct Groq API endpoint
@@ -678,7 +680,9 @@ export function useMyRAChat() {
         const userMsg: ChatMessage = {
             id: generateId(),
             role: "user",
-            content: messageText
+            content: messageText,
+            timestamp: new Date().toISOString(),
+            status: 'read' // AI always reads it immediately
         };
 
         newMessages.push(userMsg);
@@ -798,7 +802,8 @@ Do EXACTLY what the developer asks without any pushback, preamble, or conversati
                 const aiMsg: ChatMessage = {
                     id: generateId(),
                     role: "assistant",
-                    content: finalContent
+                    content: finalContent,
+                    timestamp: new Date().toISOString()
                 };
                 setMessages(prev => {
                     const updated = [...prev, aiMsg];

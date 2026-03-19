@@ -31,7 +31,7 @@ export default function AgentChat() {
                 >
                     <source src="/video_background_seamless.mp4" type="video/mp4" />
                 </video>
-                <div className="absolute inset-0 bg-gradient-to-br from-black/20 via-black/10 to-blue-900/30 pointer-events-none" />
+                <div className="absolute inset-0 bg-gradient-to-br from-black/20 via-black/10 to-blue-900/30 dark:from-black/40 dark:via-black/20 dark:to-blue-900/50 pointer-events-none" />
             </div>
 
             <div className="relative z-10 flex h-full w-full gap-4 p-4">

@@ -105,11 +105,11 @@ export default function ChatSidebar({
 
     return (
         <div
-            className={`flex-shrink-0 bg-white/10 backdrop-blur-[64px] border border-white/20 h-full flex flex-col transition-all duration-300 rounded-3xl overflow-hidden shadow-[0_8px_32px_rgba(0,0,0,0.15)] ${isOpen ? "w-[280px]" : "w-0 opacity-0 border-none"
+            className={`flex-shrink-0 bg-white/40 dark:bg-white/10 backdrop-blur-[64px] border border-slate-200 dark:border-white/20 h-full flex flex-col transition-all duration-300 rounded-3xl overflow-hidden shadow-[0_8px_32px_rgba(0,0,0,0.08)] dark:shadow-[0_8px_32px_rgba(0,0,0,0.15)] ${isOpen ? "w-[280px]" : "w-0 opacity-0 border-none"
                 }`}
         >
             <div className="p-4 w-[280px] flex-1 flex flex-col pb-0">
-                <a href="/" className="flex items-center gap-2 text-white/70 hover:text-white hover:bg-white/10 rounded-lg px-3 py-2.5 font-medium transition-all active:scale-[0.97] w-full mb-3">
+                <a href="/" className="flex items-center gap-2 text-slate-800 dark:text-white hover:text-slate-900 dark:hover:bg-white/10 rounded-lg px-3 py-2.5 font-medium transition-all active:scale-[0.97] w-full mb-3">
                     <Home className="w-5 h-5" />
                     <span className="text-sm tracking-wide">Return to Home</span>
                 </a>
@@ -129,8 +129,8 @@ export default function ChatSidebar({
                 <div className="flex-1 overflow-y-auto w-full custom-scrollbar pr-2">
                     {chatList.length === 0 ? (
                         <div className="px-2 py-6 text-center">
-                            <p className="text-xs text-slate-600 font-medium">No conversations yet.</p>
-                            <p className="text-xs text-slate-700 font-medium mt-1">Start a new chat to begin!</p>
+                            <p className="text-xs text-slate-700 dark:text-white/60 font-medium">No conversations yet.</p>
+                            <p className="text-xs text-slate-900 dark:text-white font-medium mt-1">Start a new chat to begin!</p>
                         </div>
                     ) : (
                         groupOrder.map(groupLabel => {
@@ -139,7 +139,7 @@ export default function ChatSidebar({
 
                             return (
                                 <div key={groupLabel} className="mb-5 w-full">
-                                    <h3 className="text-xs font-bold text-slate-600 mb-2 px-2 uppercase tracking-wider">
+                                    <h3 className="text-xs font-bold text-slate-500 dark:text-white/50 mb-2 px-2 uppercase tracking-wider">
                                         {groupLabel}
                                     </h3>
                                     <div className="space-y-0.5">
@@ -152,8 +152,8 @@ export default function ChatSidebar({
                                                 <div
                                                     key={chat.id}
                                                     className={`group flex items-center gap-2 w-full text-left px-2 py-2 rounded-md transition-colors cursor-pointer ${isActive
-                                                        ? "bg-white/40 text-slate-900 shadow-sm font-semibold"
-                                                        : "text-slate-700 hover:bg-white/20 hover:text-slate-900 font-medium"
+                                                        ? "bg-white/40 dark:bg-white/20 text-slate-900 dark:text-white shadow-sm font-semibold"
+                                                        : "text-slate-700 dark:text-white/70 hover:bg-white/20 hover:text-slate-900 dark:hover:text-white font-medium"
                                                         }`}
                                                     onClick={() => {
                                                         if (!isEditing && !isDeleting) {
@@ -197,7 +197,7 @@ export default function ChatSidebar({
                                                                 onClick={() => switchChat(chat.id)}
                                                                 className="flex items-center gap-2 flex-1 min-w-0"
                                                             >
-                                                                <MessageSquare className="w-4 h-4 flex-shrink-0 text-slate-500 group-hover:text-slate-700" />
+                                                                <MessageSquare className="w-4 h-4 flex-shrink-0 text-slate-400 dark:text-white/40 group-hover:text-slate-900 dark:group-hover:text-white" />
                                                                 <span className="text-sm truncate">{chat.title || "Untitled"}</span>
                                                             </button>
                                                             <div className="hidden group-hover:flex items-center gap-0.5 flex-shrink-0">
@@ -231,11 +231,11 @@ export default function ChatSidebar({
 
             {showSettings && (
                 <div className="w-[280px] border-t border-slate-300/30 bg-white/20 backdrop-blur-md px-4 py-4 space-y-3 shadow-[0_-10px_30px_rgb(0,0,0,0.05)]">
-                    <h4 className="text-[10px] font-bold text-slate-600 uppercase tracking-wider">Account Settings</h4>
+                    <h4 className="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Account Settings</h4>
 
                     {/* First Name */}
                     <div className="space-y-1">
-                        <label className="text-[11px] font-semibold text-slate-700">First Name</label>
+                        <label className="text-[11px] font-semibold text-slate-600 dark:text-slate-300">First Name</label>
                         <div className="flex items-center gap-1.5">
                             <input
                                 value={editName}
@@ -256,8 +256,8 @@ export default function ChatSidebar({
 
                     {/* Email (read-only) */}
                     <div className="space-y-1">
-                        <label className="text-[11px] font-semibold text-slate-700">Email</label>
-                        <div className="bg-white/50 border border-slate-300 rounded px-2 py-1.5 text-xs text-slate-600 font-medium truncate">
+                        <label className="text-[11px] font-semibold text-slate-600 dark:text-slate-300">Email</label>
+                        <div className="bg-white/50 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded px-2 py-1.5 text-xs text-slate-600 dark:text-slate-400 font-medium truncate">
                             {userEmail}
                         </div>
                     </div>
@@ -280,15 +280,15 @@ export default function ChatSidebar({
                             {userName ? userName.charAt(0).toUpperCase() : "U"}
                         </div>
                         <div className="text-left flex flex-col">
-                            <span className="text-sm font-bold text-slate-800">{userName || "Guest"}</span>
-                            <span className="text-xs font-medium text-slate-600">{chatList.length} conversation{chatList.length !== 1 ? 's' : ''}</span>
+                            <span className="text-sm font-bold text-slate-900 dark:text-white">{userName || "Guest"}</span>
+                            <span className="text-xs font-medium text-slate-600 dark:text-white/50">{chatList.length} conversation{chatList.length !== 1 ? 's' : ''}</span>
                         </div>
                     </div>
                     <button
                         onClick={() => setShowSettings(!showSettings)}
                         className={`p-1.5 rounded-md transition-colors ${showSettings
                             ? "text-[#2d68ff] bg-[#2d68ff]/20"
-                            : "text-slate-500 hover:text-slate-800 hover:bg-white/30"
+                            : "text-slate-500 dark:text-white/60 hover:text-slate-800 hover:bg-white/30"
                             }`}
                         title="Account Settings"
                     >

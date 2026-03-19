@@ -20,62 +20,59 @@ const Header = () => {
 
   return (
     <>
-      <div className="fixed top-6 left-0 right-0 z-50 flex justify-center pointer-events-none">
-        <header
-          className={`pointer-events-auto transition-all duration-500 ease-out
-            mx-4 w-full max-w-4xl rounded-2xl border border-slate-900/10 dark:border-white/10 shadow-lg shadow-black/[0.03]
-            backdrop-blur-[64px] bg-white/10 dark:bg-black/20 glass-shine
-            flex items-center justify-between px-2 py-2 sm:px-3
-            animate-in slide-in-from-top-4 fade-in duration-1000
-            ${scrolled ? "scale-[0.98] shadow-xl shadow-black/[0.06]" : "scale-100"}
-          `}
-        >
-          {/* Logo Section */}
-          <Link to="/" className="flex items-center gap-3 pl-3 sm:pl-4 group">
-            <div className="relative">
-              <img
-                src="/logo.png"
-                alt="MyRA Logo"
-                className="h-9 w-9 rounded-full shadow-sm ring-2 ring-white/50 group-hover:scale-105 transition-transform duration-300"
-              />
-            </div>
-            <span className="text-xl font-bold tracking-tight text-slate-900 dark:text-white font-serif hidden sm:block">
-              MyRA
-            </span>
-          </Link>
-
-          <div className="flex-1" />
-
-          <div className="flex items-center gap-2 pr-1 sm:pr-0">
-            {effectiveRole === "admin" && (
-              <button
-                onClick={() => navigate('/admin')}
-                className="hidden sm:inline-flex items-center justify-center rounded-full bg-primary/10 px-4 py-2 text-sm font-medium text-primary hover:bg-primary/20 transition-all active:scale-[0.97]"
-              >
-                Admin
-              </button>
-            )}
-            
-            {/* Agent Chat */}
-            <button
-              onClick={(e) => {
-                if (!user) {
-                  e.preventDefault();
-                  document.getElementById('auth-modal-trigger')?.click();
-                } else {
-                  navigate('/agent-chat');
-                }
-              }}
-              className="hidden sm:inline-flex items-center justify-center rounded-full bg-slate-900/5 hover:bg-slate-900/10 px-4 py-2 text-sm font-semibold text-slate-800 dark:text-slate-100 dark:bg-white/10 dark:hover:bg-white/20 transition-all active:scale-[0.97]"
-            >
-              Agent Chat
-            </button>
-
-            <ThemeToggle />
-            <AuthModal />
+      <header
+        className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300
+          w-full border-b border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950/80 dark:backdrop-blur-md
+          flex items-center justify-between px-4 py-3 sm:px-8
+          ${scrolled ? "shadow-md" : "shadow-sm"}
+        `}
+      >
+        {/* Logo Section */}
+        <Link to="/" className="flex items-center gap-3 group">
+          <div className="relative">
+            <img
+              src="/logo.png"
+              alt="MyRA Logo"
+              className="h-9 w-9 rounded-full shadow-sm ring-2 ring-slate-100 group-hover:scale-105 transition-transform duration-300"
+            />
           </div>
-        </header>
-      </div>
+          <span className="text-xl font-bold tracking-tight text-slate-900 dark:text-white font-serif">
+            MyRA
+          </span>
+        </Link>
+
+        <div className="flex-1" />
+
+        <div className="flex items-center gap-3">
+          {effectiveRole === "admin" && (
+            <button
+              onClick={() => navigate('/admin')}
+              className="hidden sm:inline-flex items-center justify-center rounded-full bg-slate-100 dark:bg-white/10 px-4 py-2 text-sm font-medium text-slate-900 dark:text-white hover:bg-slate-200 dark:hover:bg-white/20 transition-all active:scale-[0.97]"
+            >
+              Admin
+            </button>
+          )}
+          
+          <ThemeToggle className="mr-1" />
+          
+          {/* Agent Chat */}
+          <button
+            onClick={(e) => {
+              if (!user) {
+                e.preventDefault();
+                document.getElementById('auth-modal-trigger')?.click();
+              } else {
+                navigate('/agent-chat');
+              }
+            }}
+            className="inline-flex items-center justify-center rounded-full bg-slate-900 dark:bg-blue-600 px-5 py-2.5 text-sm font-semibold text-white hover:bg-slate-800 dark:hover:bg-blue-500 transition-all active:scale-[0.97] shadow-sm border border-transparent dark:border-white/10"
+          >
+            Agent Chat
+          </button>
+
+          <AuthModal />
+        </div>
+      </header>
     </>
   );
 };
