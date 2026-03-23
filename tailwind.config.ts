@@ -52,7 +52,7 @@ export default {
       },
       fontFamily: {
         sans: ["Inter", "sans-serif"],
-        serif: ["Outfit", "sans-serif"],
+        serif: ['"Playfair Display"', "serif"],
         display: ["Outfit", "sans-serif"],
       },
       borderRadius: {

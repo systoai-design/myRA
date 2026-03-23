@@ -54,6 +54,13 @@ const Header = () => {
           )}
           
           <ThemeToggle className="mr-1" />
+
+          <button
+            onClick={() => navigate('/new-design')}
+            className="hidden sm:inline-flex items-center justify-center rounded-full bg-gradient-to-r from-purple-600 to-purple-500 px-4 py-2 text-sm font-medium text-white hover:from-purple-500 hover:to-purple-400 transition-all active:scale-[0.97] shadow-sm"
+          >
+            New Design
+          </button>
           
           {/* Agent Chat */}
           <button

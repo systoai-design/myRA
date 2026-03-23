@@ -17,6 +17,7 @@ import { ThemeProvider } from "@/components/theme-provider";
 import { SmoothScroll } from "@/components/SmoothScroll";
 
 const AdminDashboard = lazy(() => import("./pages/AdminDashboard"));
+const NewDesign = lazy(() => import("./pages/NewDesign"));
 
 const queryClient = new QueryClient();
 
@@ -49,6 +50,11 @@ const App = () => {
                     <Route path="/" element={<Index />} />
                     <Route path="/agent-chat" element={<AgentChat />} />
                     <Route path="/reset-password" element={<ResetPassword />} />
+                    <Route path="/new-design" element={
+                      <Suspense fallback={<div className="min-h-screen bg-black" />}>
+                        <NewDesign />
+                      </Suspense>
+                    } />
                     <Route path="/admin" element={
                       <Suspense fallback={<div className="min-h-screen bg-black" />}>
                         <AdminDashboard />
