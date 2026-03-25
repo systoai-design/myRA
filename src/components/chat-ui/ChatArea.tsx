@@ -382,14 +382,18 @@ export default function ChatArea({
                                                 </div>
                                                 {/* Action Footer */}
                                                 <div className="px-4 py-2 bg-black/20 border-t border-white/5 flex gap-1 items-center">
-                                                    <button
-                                                        onClick={() => handleCopy(msg.content)}
-                                                        className="p-1 px-2 text-white/40 hover:text-white hover:bg-white/10 rounded-md transition-all active:scale-[0.95] flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-wider"
-                                                    >
-                                                        <Copy className="w-3 h-3" />
-                                                        <span>Copy</span>
-                                                    </button>
-                                                    <div className="w-px h-3 bg-white/10 my-auto mx-1" />
+                                                    {isAdmin && (
+                                                        <>
+                                                            <button
+                                                                onClick={() => handleCopy(msg.content)}
+                                                                className="p-1 px-2 text-white/40 hover:text-white hover:bg-white/10 rounded-md transition-all active:scale-[0.95] flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-wider"
+                                                            >
+                                                                <Copy className="w-3 h-3" />
+                                                                <span>Copy</span>
+                                                            </button>
+                                                            <div className="w-px h-3 bg-white/10 my-auto mx-1" />
+                                                        </>
+                                                    )}
                                                     <button className="p-1.5 text-white/40 hover:text-emerald-400 hover:bg-white/10 rounded-md transition-all active:scale-[0.95]">
                                                         <ThumbsUp className="w-3.5 h-3.5" />
                                                     </button>

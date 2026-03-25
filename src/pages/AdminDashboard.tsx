@@ -12,7 +12,7 @@ import {
     LayoutDashboard, Users, Database, ShieldAlert, 
     User, Plus, Search, Trash2, Terminal, Archive, 
     RefreshCcw, LifeBuoy, FileText, MessageSquareText, FileUp, File,
-    Download, ClipboardCopy, ChevronRight, History
+    Download, ClipboardCopy, ChevronRight, History, Sparkles, Eye, Loader2
 } from "lucide-react";
 
 // Configure PDF.js worker to use CDN to avoid Vite build configuration issues
@@ -39,7 +39,7 @@ const TRANSCRIPT_CATEGORIES = [
 ];
 
 export default function AdminDashboard() {
-    const { role, testRole, loading: authLoading } = useAuth();
+    const { user, role, testRole, loading: authLoading } = useAuth();
     const effectiveRole = testRole || role;
 
     const [insights, setInsights] = useState<any[]>([]);
@@ -52,9 +52,12 @@ export default function AdminDashboard() {
     const [newTraining, setNewTraining] = useState({ category: "General", insight: "" });
     const [transcript, setTranscript] = useState({ category: "Client Transcript", content: "", label: "" });
     const [isSubmittingTranscript, setIsSubmittingTranscript] = useState(false);
+    const [isSummarizing, setIsSummarizing] = useState(false);
+    const [transcriptPreview, setTranscriptPreview] = useState<{ summary: string; keyPoints: string[] } | null>(null);
     const [isUploadingPdf, setIsUploadingPdf] = useState(false);
     const [allChats, setAllChats] = useState<any[]>([]);
     const [selectedChat, setSelectedChat] = useState<any | null>(null);
+    const [selectedUserEmail, setSelectedUserEmail] = useState<string | null>(null);
     const [searchQuery, setSearchQuery] = useState("");
     const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -195,10 +198,27 @@ export default function AdminDashboard() {
             .eq("id", id);
 
         if (error) {
-            toast.error("Failed to update status");
+            console.error("Archive toggle error:", error);
+            toast.error(`Failed to update: ${error.message}`, { duration: 8000 });
         } else {
-            toast.success(`Training ${!current ? 'Enabled' : 'Disabled'}`);
+            toast.success(`Training ${!current ? 'Enabled' : 'Archived'}`);
             setManualTraining(manualTraining.map(t => t.id === id ? { ...t, is_active: !current } : t));
+        }
+    };
+
+    const deleteTrainingRule = async (id: string) => {
+        if (!confirm('Permanently delete this knowledge rule?')) return;
+        const { error } = await supabase
+            .from("global_knowledge_base")
+            .delete()
+            .eq("id", id);
+
+        if (error) {
+            console.error("Delete error:", error);
+            toast.error(`Failed to delete: ${error.message}`, { duration: 8000 });
+        } else {
+            toast.success('Rule permanently deleted');
+            setManualTraining(manualTraining.filter(t => t.id !== id));
         }
     };
 
@@ -209,7 +229,7 @@ export default function AdminDashboard() {
             .from("global_knowledge_base")
             .insert({
                 category: newTraining.category,
-                insight: newTraining.insight,
+                insight: `[Added by: ${user?.email || 'unknown'}] ${newTraining.insight}`,
                 status: 'approved',
                 source: 'manual_training',
                 frequency_score: 100
@@ -224,14 +244,97 @@ export default function AdminDashboard() {
         }
     };
 
-    const submitTranscript = async () => {
+    const summarizeTranscript = async () => {
+        if (!transcript.content.trim()) return;
+        setIsSummarizing(true);
+        try {
+            // Use the LLM to summarize the transcript and extract key learning points
+            const { data: sessionData } = await supabase.auth.getSession();
+            const response = await supabase.functions.invoke('chat', {
+                body: {
+                    messages: [
+                        {
+                            role: 'system',
+                            content: 'You are a knowledge extraction assistant. Analyze the following transcript and return a JSON object with exactly this structure: {"summary": "A 2-3 sentence summary of the transcript", "keyPoints": ["Point 1", "Point 2", ...]}. Extract 3-8 key learning points that a retirement planning AI should learn from this transcript. Return ONLY valid JSON, no markdown.'
+                        },
+                        { role: 'user', content: transcript.content.substring(0, 8000) }
+                    ]
+                },
+                headers: { Authorization: `Bearer ${sessionData.session?.access_token}` }
+            });
+
+            if (response.error) throw new Error(response.error.message);
+
+            // Parse the AI response
+            const aiText = response.data?.reply || response.data?.message || '';
+            try {
+                const jsonMatch = aiText.match(/\{[\s\S]*\}/);
+                if (jsonMatch) {
+                    const parsed = JSON.parse(jsonMatch[0]);
+                    setTranscriptPreview({
+                        summary: parsed.summary || 'No summary generated',
+                        keyPoints: Array.isArray(parsed.keyPoints) ? parsed.keyPoints : []
+                    });
+                } else {
+                    // Fallback: use the AI text as summary
+                    setTranscriptPreview({
+                        summary: aiText.substring(0, 500),
+                        keyPoints: ['Full transcript will be chunked and stored as-is']
+                    });
+                }
+            } catch {
+                setTranscriptPreview({
+                    summary: aiText.substring(0, 500),
+                    keyPoints: ['Full transcript will be chunked and stored as-is']
+                });
+            }
+        } catch (error: any) {
+            console.error('Summarize error:', error);
+            // Fallback — let admin proceed without AI summary
+            setTranscriptPreview({
+                summary: `[AI summarization unavailable] ${transcript.content.substring(0, 200)}...`,
+                keyPoints: ['Transcript will be stored as raw chunks without AI processing']
+            });
+            toast.error('AI summarization failed — you can still ingest the raw transcript');
+        } finally {
+            setIsSummarizing(false);
+        }
+    };
+
+    const confirmAndIngestTranscript = async () => {
         if (!transcript.content.trim()) return;
         setIsSubmittingTranscript(true);
         try {
-            // Split long transcripts into ~2000-char chunks for better retrieval
-            const chunks = [];
+            const rows: any[] = [];
+
+            // 1. Insert the summary as a top-level knowledge entry
+            if (transcriptPreview?.summary) {
+                rows.push({
+                    category: transcript.category,
+                    insight: `[Added by: ${user?.email || 'unknown'}] ` + (transcript.label ? `[${transcript.label}] ` : '') + `SUMMARY: ${transcriptPreview.summary}`,
+                    status: 'approved',
+                    source: 'manual_training',
+                    frequency_score: 100
+                });
+            }
+
+            // 2. Insert each key point as individual knowledge entries
+            if (transcriptPreview?.keyPoints?.length) {
+                for (const point of transcriptPreview.keyPoints) {
+                    rows.push({
+                        category: transcript.category,
+                        insight: `[Added by: ${user?.email || 'unknown'}] ` + (transcript.label ? `[${transcript.label}] ` : '') + point,
+                        status: 'approved',
+                        source: 'manual_training',
+                        frequency_score: 100
+                    });
+                }
+            }
+
+            // 3. Also chunk the raw transcript for full context retrieval
             const raw = transcript.content.trim();
             const CHUNK_SIZE = 2000;
+            const chunks = [];
             if (raw.length <= CHUNK_SIZE) {
                 chunks.push(raw);
             } else {
@@ -239,27 +342,28 @@ export default function AdminDashboard() {
                     chunks.push(raw.substring(i, i + CHUNK_SIZE));
                 }
             }
-
             for (let i = 0; i < chunks.length; i++) {
-                const labelSuffix = chunks.length > 1 ? ` [Part ${i + 1}/${chunks.length}]` : "";
-                const { error } = await supabase
-                    .from("global_knowledge_base")
-                    .insert({
-                        category: transcript.category,
-                        insight: (transcript.label ? `[${transcript.label}] ` : "") + chunks[i] + labelSuffix,
-                        status: 'approved',
-                        source: 'manual_training',
-                        frequency_score: 100
-                    });
-                if (error) throw error;
+                const labelSuffix = chunks.length > 1 ? ` [Part ${i + 1}/${chunks.length}]` : '';
+                rows.push({
+                    category: transcript.category,
+                    insight: `[Added by: ${user?.email || 'unknown'}] ` + (transcript.label ? `[${transcript.label}] ` : '') + chunks[i] + labelSuffix,
+                    status: 'approved',
+                    source: 'manual_training',
+                    frequency_score: 80
+                });
             }
 
-            toast.success(`Transcript ingested successfully! (${chunks.length} chunk${chunks.length > 1 ? 's' : ''})`);
-            setTranscript({ category: "Client Transcript", content: "", label: "" });
+            // Batch insert all rows
+            const { error } = await supabase.from('global_knowledge_base').insert(rows);
+            if (error) throw error;
+
+            toast.success(`Transcript ingested! ${transcriptPreview?.keyPoints?.length || 0} key points + ${chunks.length} raw chunks`);
+            setTranscript({ category: 'Client Transcript', content: '', label: '' });
+            setTranscriptPreview(null);
             fetchData();
         } catch (error: any) {
             console.error(error);
-            toast.error(error.message || "Failed to ingest transcript");
+            toast.error(error.message || 'Failed to ingest transcript');
         } finally {
             setIsSubmittingTranscript(false);
         }
@@ -287,24 +391,29 @@ export default function AdminDashboard() {
                 throw new Error("Could not extract any text from this PDF.");
             }
 
-            // 2. Upload physical file to Supabase Storage
+            // 2. Try to upload physical file to Supabase Storage (fallback to text-only if bucket missing)
             const cleanFileName = file.name.replace(/[^a-zA-Z0-9.-]/g, '_');
             const fileName = `${Date.now()}_${cleanFileName}`;
+            let publicUrl = '';
             
-            const { data: storageData, error: storageError } = await supabase.storage
-                .from('knowledge_base')
-                .upload(fileName, file, { cacheControl: '3600', upsert: false });
+            try {
+                const { data: storageData, error: storageError } = await supabase.storage
+                    .from('knowledge_base')
+                    .upload(fileName, file, { cacheControl: '3600', upsert: false });
 
-            if (storageError) {
-                // Helpful message if bucket doesn't exist
-                if (storageError.message?.toLowerCase().includes("not found") || storageError.name === 'StorageApiError') {
-                    throw new Error("The 'knowledge_base' storage bucket does not exist. Please create a public bucket named 'knowledge_base' in your Supabase dashboard.");
+                if (storageError) {
+                    console.warn('Storage upload failed (proceeding with text-only):', storageError.message);
+                    toast.info('File storage unavailable — ingesting extracted text only', { duration: 5000 });
+                } else {
+                    const { data: publicUrlData } = supabase.storage.from('knowledge_base').getPublicUrl(fileName);
+                    publicUrl = publicUrlData.publicUrl;
                 }
-                throw storageError;
+            } catch (storageErr) {
+                console.warn('Storage upload failed:', storageErr);
+                toast.info('File storage unavailable — ingesting extracted text only', { duration: 5000 });
             }
 
-            const { data: publicUrlData } = supabase.storage.from('knowledge_base').getPublicUrl(fileName);
-            const publicUrl = publicUrlData.publicUrl;
+            // publicUrl already set above if storage succeeded
 
             // 3. Insert into global_knowledge_base chunked
             const chunks = [];
@@ -324,7 +433,7 @@ export default function AdminDashboard() {
                     .from("global_knowledge_base")
                     .insert({
                         category: "Document",
-                        insight: `[Source: ${file.name}] (${publicUrl})\n\n` + chunks[i] + labelSuffix,
+                        insight: `[Added by: ${user?.email || 'unknown'}] [Source: ${file.name}]${publicUrl ? ` (${publicUrl})` : ''}\n\n` + chunks[i] + labelSuffix,
                         status: 'approved',
                         source: 'manual_training',
                         frequency_score: 100
@@ -904,11 +1013,18 @@ export default function AdminDashboard() {
                                             <div key={rule.id} className={`p-5 rounded-2xl border transition-all ${rule.is_active ? 'bg-white/5 border-white/10' : 'bg-white/[0.02] border-white/5 opacity-60'}`}>
                                                 <div className="flex items-start justify-between gap-4">
                                                     <div className="space-y-2 flex-1">
-                                                        <div className="flex items-center gap-2">
+                                                        <div className="flex items-center gap-2 flex-wrap">
                                                             <span className="text-[10px] font-bold uppercase tracking-wider text-primary px-2 py-0.5 bg-primary/10 rounded border border-primary/20">{rule.category}</span>
                                                             {!rule.is_active && <span className="text-[10px] font-bold uppercase tracking-wider text-white/30 px-2 py-0.5 bg-white/5 rounded">Archived</span>}
+                                                            {rule.insight?.match(/\[Added by: ([^\]]+)\]/) && (
+                                                                <span className="text-[10px] text-white/40 font-mono">
+                                                                    by {rule.insight.match(/\[Added by: ([^\]]+)\]/)?.[1]}
+                                                                </span>
+                                                            )}
                                                         </div>
-                                                        <p className="text-sm text-white/90 leading-relaxed font-light">{rule.insight}</p>
+                                                        <p className="text-sm text-white/90 leading-relaxed font-light break-words overflow-wrap-anywhere whitespace-pre-wrap max-h-[200px] overflow-y-auto custom-scrollbar pr-2">
+                                                            {rule.insight?.replace(/\[Added by: [^\]]+\]\s*/, '')}
+                                                        </p>
                                                         <p className="text-[10px] text-white/30 italic">Added {new Date(rule.created_at).toLocaleDateString()}</p>
                                                     </div>
                                                     <div className="flex flex-col gap-2">
@@ -916,10 +1032,19 @@ export default function AdminDashboard() {
                                                             variant="ghost" 
                                                             size="icon" 
                                                             title={rule.is_active ? "Archive/Disable" : "Enable"}
-                                                            className={`h-8 w-8 rounded-lg border border-white/5 ${rule.is_active ? 'text-white/40 hover:text-red-400 hover:bg-red-400/10' : 'text-primary hover:bg-primary/10'}`}
+                                                            className={`h-8 w-8 rounded-lg border border-white/5 ${rule.is_active ? 'text-white/40 hover:text-amber-400 hover:bg-amber-400/10' : 'text-primary hover:bg-primary/10'}`}
                                                             onClick={() => toggleTrainingActive(rule.id, rule.is_active)}
                                                         >
                                                             {rule.is_active ? <Archive className="w-4 h-4" /> : <RefreshCcw className="w-4 h-4" />}
+                                                        </Button>
+                                                        <Button 
+                                                            variant="ghost" 
+                                                            size="icon" 
+                                                            title="Permanently Delete"
+                                                            className="h-8 w-8 rounded-lg border border-white/5 text-white/20 hover:text-red-400 hover:bg-red-400/10"
+                                                            onClick={() => deleteTrainingRule(rule.id)}
+                                                        >
+                                                            <Trash2 className="w-4 h-4" />
                                                         </Button>
                                                     </div>
                                                 </div>
@@ -983,23 +1108,75 @@ export default function AdminDashboard() {
                                                 {transcript.content.length > 0 ? `${transcript.content.length.toLocaleString()} characters · ~${Math.ceil(transcript.content.length / 2000)} chunk${Math.ceil(transcript.content.length / 2000) !== 1 ? 's' : ''}` : 'No content yet'}
                                             </p>
                                             <Button
-                                                onClick={submitTranscript}
-                                                disabled={isSubmittingTranscript || !transcript.content.trim()}
-                                                className="h-10 px-8 rounded-xl bg-primary hover:bg-primary/90 text-white font-bold shadow-lg shadow-primary/20 flex items-center gap-2"
+                                                onClick={summarizeTranscript}
+                                                disabled={isSummarizing || isSubmittingTranscript || !transcript.content.trim()}
+                                                className="h-10 px-8 rounded-xl bg-violet-600 hover:bg-violet-500 text-white font-bold shadow-lg shadow-violet-600/20 flex items-center gap-2"
                                             >
-                                                {isSubmittingTranscript ? (
+                                                {isSummarizing ? (
                                                     <>
-                                                        <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                                                        Ingesting...
+                                                        <Loader2 className="w-4 h-4 animate-spin" />
+                                                        Analyzing...
                                                     </>
                                                 ) : (
                                                     <>
-                                                        <FileText className="w-4 h-4" />
-                                                        Ingest into Knowledge Base
+                                                        <Sparkles className="w-4 h-4" />
+                                                        Summarize & Preview
                                                     </>
                                                 )}
                                             </Button>
                                         </div>
+
+                                        {/* AI Summary Preview Card */}
+                                        {transcriptPreview && (
+                                            <div className="mt-6 p-6 rounded-2xl border border-violet-500/30 bg-violet-500/5 space-y-4">
+                                                <div className="flex items-center gap-2 mb-2">
+                                                    <Eye className="w-5 h-5 text-violet-400" />
+                                                    <h4 className="text-lg font-bold text-violet-300">AI Summary Preview</h4>
+                                                </div>
+                                                <p className="text-sm text-white/80 leading-relaxed bg-black/30 p-4 rounded-xl border border-white/5">
+                                                    {transcriptPreview.summary}
+                                                </p>
+                                                {transcriptPreview.keyPoints.length > 0 && (
+                                                    <div className="space-y-2">
+                                                        <p className="text-[10px] uppercase tracking-widest text-violet-400 font-bold">Key Learning Points</p>
+                                                        <ul className="space-y-1.5">
+                                                            {transcriptPreview.keyPoints.map((point, i) => (
+                                                                <li key={i} className="flex items-start gap-2 text-sm text-white/70">
+                                                                    <span className="text-violet-400 mt-0.5">•</span>
+                                                                    {point}
+                                                                </li>
+                                                            ))}
+                                                        </ul>
+                                                    </div>
+                                                )}
+                                                <div className="flex items-center gap-3 pt-4 border-t border-white/10">
+                                                    <Button
+                                                        onClick={confirmAndIngestTranscript}
+                                                        disabled={isSubmittingTranscript}
+                                                        className="h-10 px-8 rounded-xl bg-primary hover:bg-primary/90 text-white font-bold shadow-lg shadow-primary/20 flex items-center gap-2"
+                                                    >
+                                                        {isSubmittingTranscript ? (
+                                                            <>
+                                                                <Loader2 className="w-4 h-4 animate-spin" />
+                                                                Ingesting...
+                                                            </>
+                                                        ) : (
+                                                            <>
+                                                                <FileText className="w-4 h-4" />
+                                                                Confirm & Ingest
+                                                            </>
+                                                        )}
+                                                    </Button>
+                                                    <Button
+                                                        variant="ghost"
+                                                        onClick={() => setTranscriptPreview(null)}
+                                                        className="h-10 px-6 rounded-xl text-white/50 hover:text-white hover:bg-white/5"
+                                                    >
+                                                        Cancel
+                                                    </Button>
+                                                </div>
+                                            </div>
+                                        )}
                                     </div>
                                 </div>
                             </div>
@@ -1056,22 +1233,29 @@ export default function AdminDashboard() {
                     </TabsContent>
                     <TabsContent value="conversations" className="outline-none">
                         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                            {/* Conversations List */}
+                            {/* User List + Conversations */}
                             <div className="lg:col-span-1 bg-white/[0.03] border border-white/10 rounded-[32px] p-8 flex flex-col h-[700px]">
                                 <div className="flex items-center justify-between mb-6">
                                     <div className="flex items-center gap-3">
                                         <History className="w-6 h-6 text-primary" />
-                                        <h3 className="text-xl font-bold font-serif">Recent Chats</h3>
+                                        <h3 className="text-xl font-bold font-serif">{selectedUserEmail ? 'Chats' : 'Client Users'}</h3>
                                     </div>
-                                    <Button variant="ghost" size="icon" onClick={fetchData} className="h-8 w-8 rounded-lg hover:bg-white/5">
-                                        <RefreshCcw className="w-4 h-4" />
-                                    </Button>
+                                    <div className="flex gap-2">
+                                        {selectedUserEmail && (
+                                            <Button variant="ghost" size="sm" onClick={() => { setSelectedUserEmail(null); setSelectedChat(null); }} className="text-xs text-white/50 hover:text-white">
+                                                ← All Users
+                                            </Button>
+                                        )}
+                                        <Button variant="ghost" size="icon" onClick={fetchData} className="h-8 w-8 rounded-lg hover:bg-white/5">
+                                            <RefreshCcw className="w-4 h-4" />
+                                        </Button>
+                                    </div>
                                 </div>
 
                                 <div className="relative mb-6">
                                     <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white/30" />
                                     <Input 
-                                        placeholder="Search by email or title..." 
+                                        placeholder={selectedUserEmail ? 'Search chats...' : 'Search users...'}
                                         className="h-10 pl-10 rounded-xl bg-black/40 border-white/10"
                                         value={searchQuery}
                                         onChange={(e) => setSearchQuery(e.target.value)}
@@ -1079,35 +1263,111 @@ export default function AdminDashboard() {
                                 </div>
 
                                 <div className="flex-1 overflow-y-auto space-y-2 pr-2 custom-scrollbar">
-                                    {allChats
-                                        .filter(c => 
-                                            c.user_email?.toLowerCase().includes(searchQuery.toLowerCase()) || 
-                                            c.title?.toLowerCase().includes(searchQuery.toLowerCase())
-                                        )
-                                        .map((chat) => (
-                                            <div 
-                                                key={chat.id} 
-                                                onClick={() => setSelectedChat(chat)}
-                                                className={`p-4 rounded-2xl border transition-all cursor-pointer group ${
-                                                    selectedChat?.id === chat.id 
-                                                        ? 'bg-primary/20 border-primary/40 shadow-lg shadow-primary/10' 
-                                                        : 'bg-white/5 border-white/10 hover:bg-white/[0.08] hover:border-white/20'
-                                                }`}
-                                            >
-                                                <div className="flex items-start justify-between">
-                                                    <div className="space-y-1 flex-1 min-w-0">
-                                                        <h4 className="text-sm font-bold text-white truncate">{chat.title || "Untitled Conversation"}</h4>
-                                                        <p className="text-[10px] text-primary/70 font-mono truncate">{chat.user_email}</p>
+                                    {!selectedUserEmail ? (
+                                        /* User Cards */
+                                        (() => {
+                                            const userGroups: Record<string, any[]> = {};
+                                            allChats.forEach(c => {
+                                                const email = c.user_email || 'Unknown User';
+                                                if (!userGroups[email]) userGroups[email] = [];
+                                                userGroups[email].push(c);
+                                            });
+                                            const users = Object.entries(userGroups)
+                                                .filter(([email]) => email.toLowerCase().includes(searchQuery.toLowerCase()))
+                                                .sort((a, b) => {
+                                                    const latestA = Math.max(...a[1].map((c: any) => new Date(c.updated_at).getTime()));
+                                                    const latestB = Math.max(...b[1].map((c: any) => new Date(c.updated_at).getTime()));
+                                                    return latestB - latestA;
+                                                });
+                                            if (users.length === 0) return <p className="text-center py-10 text-white/20 italic">No users found.</p>;
+                                            return users.map(([email, chats]) => {
+                                                const totalMessages = chats.reduce((sum: number, c: any) => sum + (c.messages?.length || 0), 0);
+                                                const lastActive = new Date(Math.max(...chats.map((c: any) => new Date(c.updated_at).getTime())));
+                                                return (
+                                                    <div
+                                                        key={email}
+                                                        onClick={() => { setSelectedUserEmail(email); setSearchQuery(''); setSelectedChat(null); }}
+                                                        className="p-5 rounded-2xl border bg-white/5 border-white/10 hover:bg-white/[0.08] hover:border-white/20 transition-all cursor-pointer group"
+                                                    >
+                                                        <div className="flex items-center gap-3">
+                                                            <div className="w-10 h-10 rounded-full bg-gradient-to-tr from-primary to-accent flex items-center justify-center text-xs font-bold shrink-0">
+                                                                {email.substring(0, 2).toUpperCase()}
+                                                            </div>
+                                                            <div className="flex-1 min-w-0">
+                                                                <h4 className="text-sm font-bold text-white truncate">{email}</h4>
+                                                                <div className="flex items-center gap-3 text-[9px] text-white/40 uppercase tracking-widest font-bold mt-1">
+                                                                    <span>{chats.length} chat{chats.length !== 1 ? 's' : ''}</span>
+                                                                    <span>{totalMessages} msgs</span>
+                                                                </div>
+                                                            </div>
+                                                            <ChevronRight className="w-4 h-4 text-white/20 group-hover:text-primary transition-colors" />
+                                                        </div>
+                                                        <p className="text-[9px] text-white/30 mt-2">Last active: {lastActive.toLocaleDateString()}</p>
                                                     </div>
-                                                    <ChevronRight className={`w-4 h-4 text-white/20 group-hover:text-primary transition-colors ${selectedChat?.id === chat.id ? 'rotate-90 text-primary' : ''}`} />
-                                                </div>
-                                                <div className="mt-3 flex items-center justify-between text-[9px] text-white/40 uppercase tracking-widest font-bold">
-                                                    <span>{chat.messages?.length || 0} Messages</span>
-                                                    <span>{new Date(chat.updated_at).toLocaleDateString()}</span>
-                                                </div>
-                                            </div>
-                                        ))
-                                    }
+                                                );
+                                            });
+                                        })()
+                                    ) : (
+                                        /* Selected User's Chats */
+                                        (() => {
+                                            const userChats = allChats
+                                                .filter(c => c.user_email === selectedUserEmail)
+                                                .filter(c =>
+                                                    c.title?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                                                    c.id?.includes(searchQuery)
+                                                );
+                                            if (userChats.length === 0) return <p className="text-center py-10 text-white/20 italic">No chats found.</p>;
+
+                                            return (
+                                                <>
+                                                    {/* Export All button */}
+                                                    <Button
+                                                        variant="outline"
+                                                        size="sm"
+                                                        className="w-full mb-4 rounded-xl border-primary/30 text-primary hover:bg-primary/10 text-xs gap-2"
+                                                        onClick={() => {
+                                                            let allText = `All Conversations for ${selectedUserEmail}\n${'='.repeat(50)}\n\n`;
+                                                            userChats.forEach((chat: any) => {
+                                                                allText += `--- ${chat.title || 'Untitled'} (${new Date(chat.created_at).toLocaleString()}) ---\n\n`;
+                                                                chat.messages?.forEach((msg: any) => {
+                                                                    allText += `${msg.role === 'user' ? 'CLIENT' : 'MYRA'}:\n${msg.content}\n\n`;
+                                                                });
+                                                                allText += '\n\n';
+                                                            });
+                                                            navigator.clipboard.writeText(allText);
+                                                            toast.success(`All ${userChats.length} conversations copied!`);
+                                                        }}
+                                                    >
+                                                        <ClipboardCopy className="w-3.5 h-3.5" />
+                                                        Export All ({userChats.length} chats)
+                                                    </Button>
+
+                                                    {userChats.map((chat: any) => (
+                                                        <div 
+                                                            key={chat.id} 
+                                                            onClick={() => setSelectedChat(chat)}
+                                                            className={`p-4 rounded-2xl border transition-all cursor-pointer group ${
+                                                                selectedChat?.id === chat.id 
+                                                                    ? 'bg-primary/20 border-primary/40 shadow-lg shadow-primary/10' 
+                                                                    : 'bg-white/5 border-white/10 hover:bg-white/[0.08] hover:border-white/20'
+                                                            }`}
+                                                        >
+                                                            <div className="flex items-start justify-between">
+                                                                <div className="space-y-1 flex-1 min-w-0">
+                                                                    <h4 className="text-sm font-bold text-white truncate">{chat.title || "Untitled Conversation"}</h4>
+                                                                </div>
+                                                                <ChevronRight className={`w-4 h-4 text-white/20 group-hover:text-primary transition-colors ${selectedChat?.id === chat.id ? 'rotate-90 text-primary' : ''}`} />
+                                                            </div>
+                                                            <div className="mt-3 flex items-center justify-between text-[9px] text-white/40 uppercase tracking-widest font-bold">
+                                                                <span>{chat.messages?.length || 0} Messages</span>
+                                                                <span>{new Date(chat.updated_at).toLocaleDateString()}</span>
+                                                            </div>
+                                                        </div>
+                                                    ))}
+                                                </>
+                                            );
+                                        })()
+                                    )}
                                 </div>
                             </div>
 
