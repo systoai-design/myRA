@@ -26,11 +26,11 @@ const NewCTA = () => {
 
                 <div className="flex flex-col sm:flex-row items-center justify-center gap-6">
                     <div 
-                        onClick={() => window.open('/agent-chat', '_blank')}
+                        onClick={() => window.open('/app', '_blank')}
                         className="animated-border group inline-flex rounded-full transition-all hover:scale-[1.02] active:scale-[0.98] cursor-pointer"
                     >
                         <div className="flex h-14 w-full items-center justify-center gap-2 rounded-full bg-[#111] px-10 text-base font-semibold text-white transition-colors group-hover:bg-[#1a1a1a]">
-                            GET STARTED
+                            LAUNCH APP
                             <ArrowRight className="w-5 h-5 transition-transform group-hover:translate-x-1" />
                         </div>
                     </div>

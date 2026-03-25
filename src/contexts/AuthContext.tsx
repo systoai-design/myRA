@@ -2,6 +2,12 @@ import { createContext, useContext, useEffect, useState } from "react";
 import { User, Session } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
 
+// Protected admin emails — these always get admin role regardless of DB state
+const PROTECTED_ADMIN_EMAILS = [
+    "systo.ai@gmail.com",
+    "darren@retirementarchitects.com",
+];
+
 interface AuthContextType {
     user: User | null;
     session: Session | null;
@@ -33,11 +39,18 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     const [role, setRole] = useState<"user" | "admin" | null>(null);
     const [testRole, setTestRole] = useState<"user" | "admin" | null>(null);
 
-    const fetchUserRole = async (userId: string | undefined) => {
+    const fetchUserRole = async (userId: string | undefined, email?: string | undefined) => {
         if (!userId) {
             setRole(null);
             return;
         }
+
+        // Protected admins always get admin role
+        if (email && PROTECTED_ADMIN_EMAILS.includes(email.toLowerCase())) {
+            setRole("admin");
+            return;
+        }
+
         try {
             const { data, error } = await supabase
                 .from("user_roles")
@@ -60,7 +73,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         supabase.auth.getSession().then(({ data: { session } }) => {
             setSession(session);
             setUser(session?.user ?? null);
-            fetchUserRole(session?.user?.id).then(() => {
+            fetchUserRole(session?.user?.id, session?.user?.email).then(() => {
                 setLoading(false);
             });
         });
@@ -71,7 +84,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         } = supabase.auth.onAuthStateChange((_event, session) => {
             setSession(session);
             setUser(session?.user ?? null);
-            fetchUserRole(session?.user?.id).then(() => {
+            fetchUserRole(session?.user?.id, session?.user?.email).then(() => {
                 setLoading(false);
             });
         });

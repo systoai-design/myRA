@@ -1,4 +1,5 @@
 import { ArrowRight } from "lucide-react";
+import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
 
 const NewHero = () => {
@@ -9,10 +10,7 @@ const NewHero = () => {
                 {/* Fallback massive radial gradient if no image */}
                 <div className="absolute inset-0 aurora-bg opacity-80" />
                 
-                {/* Simulated Origin Cloud Background */}
-                <div 
-                    className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1534447677768-be436bb09401?q=80&w=2694&auto=format&fit=crop')] bg-cover bg-center bg-no-repeat opacity-30 mix-blend-overlay"
-                />
+
                 
                 {/* Gradient fades for seamless blending */}
                 <div className="absolute inset-0 bg-gradient-to-t from-[#030508] via-transparent to-[#030508]/50" />
@@ -62,23 +60,25 @@ const NewHero = () => {
                     </div>
                 </motion.div>
 
-                {/* Glassmorphism Chat Input Simulation */}
+                {/* Glassmorphism Chat Input Simulation -> Link to Offer */}
                 <motion.div 
                     initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.5, duration: 0.8 }}
                     className="w-full max-w-2xl mx-auto relative group cursor-pointer transition-transform duration-500 hover:scale-[1.01]"
                 >
-                    {/* Outer glow */}
-                    <div className="absolute -inset-1 bg-white/10 rounded-[2rem] blur-xl opacity-0 group-hover:opacity-100 transition duration-500" />
-                    
-                    <div className="relative glass-premium rounded-[2rem] p-2 flex items-center pr-4">
-                        <div className="flex-1 py-4 px-6 text-left">
-                            <span className="text-white/50 text-lg font-sans">How should I invest for...</span>
-                            <span className="inline-block w-[2px] h-5 bg-white ml-2 animate-pulse align-middle" />
+                    <Link to="/offer" target="_blank" className="block relative outline-none focus:outline-none">
+                        {/* Outer glow */}
+                        <div className="absolute -inset-1 bg-white/10 rounded-[2rem] blur-xl opacity-0 group-hover:opacity-100 transition duration-500" />
+                        
+                        <div className="relative glass-premium rounded-[2rem] p-2 flex items-center pr-4">
+                            <div className="flex-1 py-4 px-6 text-left">
+                                <span className="text-white/50 text-lg font-sans">How should I invest for...</span>
+                                <span className="inline-block w-[2px] h-5 bg-white ml-2 animate-pulse align-middle" />
+                            </div>
+                            <div className="w-12 h-12 rounded-full bg-white/10 group-hover:bg-white/20 flex items-center justify-center transition-colors border border-white/10">
+                                <ArrowRight className="w-5 h-5 text-white" />
+                            </div>
                         </div>
-                        <button className="w-12 h-12 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center transition-colors border border-white/10">
-                            <ArrowRight className="w-5 h-5 text-white" />
-                        </button>
-                    </div>
+                    </Link>
                 </motion.div>
                 
                 <p className="mt-8 text-white/40 text-sm font-sans tracking-wide">

@@ -19,19 +19,9 @@ export default function AgentChat() {
 
     return (
         <div className="relative flex h-screen w-full text-gray-100 overflow-hidden font-sans">
-            {/* Background Video (matching Hero) */}
-            <div className="absolute inset-0 z-0 overflow-hidden bg-slate-900 pointer-events-none">
-                <video
-                    className="absolute inset-0 w-full h-full object-cover scale-105 pointer-events-none"
-                    autoPlay
-                    loop
-                    muted
-                    playsInline
-                    preload="auto"
-                >
-                    <source src="/video_background_seamless.mp4" type="video/mp4" />
-                </video>
-                <div className="absolute inset-0 bg-gradient-to-br from-black/20 via-black/10 to-blue-900/30 dark:from-black/40 dark:via-black/20 dark:to-blue-900/50 pointer-events-none" />
+            {/* Ambient Background */}
+            <div className="absolute inset-0 z-0 bg-[#030508] pointer-events-none overflow-hidden">
+                <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-blue-900/10 via-[#030508] to-[#030508]" />
             </div>
 
             <div className="relative z-10 flex h-full w-full gap-4 p-4">

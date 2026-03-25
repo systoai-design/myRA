@@ -18,6 +18,12 @@ const GROQ_API_KEY = import.meta.env.VITE_GROQ_API_KEY || "";
 const GHL_API_KEY = import.meta.env.VITE_GHL_API_KEY || "";
 const GHL_LOCATION_ID = import.meta.env.VITE_GHL_LOCATION_ID || "";
 
+export interface ChartData {
+    type: 'pie' | 'bar' | 'area';
+    title: string;
+    data: any[];
+}
+
 const SYSTEM_PROMPT = `You are MyRA (My Retirement Advisor), an AI virtual advisor specializing in retirement income planning.
 
 YOUR CORE PURPOSE:
@@ -47,10 +53,12 @@ PHASE 2 - Get Their Name:
 After they respond to your greeting, ask for their first name. Keep it casual.
 
 PHASE 3 - Holistic Discovery (Age & Lifestyle):
-Use their name naturally. Before talking dollars, ask foundational questions ONE BY ONE:
+Use their name naturally. Before talking dollars, ask foundational questions ONE BY ONE (Do not group them):
 1. Ask for their age and when they plan to retire (or if they are already retired). (Wait for answer)
-2. Ask about their lifestyle expectations in retirement (travel, hobbies, pace of life). (Wait for answer)
-3. Ask if they have any legacy goals, like leaving money to children or charity. (Wait for answer)
+2. Ask what US State they live in. (Wait for answer)
+3. Ask if they file taxes as Married Filing Jointly, Single, or Head of Household. (Wait for answer)
+4. If Married: Ask for their spouse's age. (Wait for answer)
+5. Ask about their lifestyle expectations in retirement (travel, hobbies) and legacy goals. (Wait for answer)
 
 PHASE 4 - Investment History & Mindset:
 Acknowledge their journey as an investor. Ask ONE by ONE:
@@ -162,7 +170,9 @@ Categories to use:
 - "employer_match" - 401k match details
 - "product_aversions" - Products or strategies they dislike
 - "occupation" - Their job or career background
-- "marital_status" - Married, single, etc.
+- "marital_status" - Married, single, head of household, etc.
+- "spouse_age" - Their spouse's age (if married)
+- "state" - What US state they live in
 - "legal_name" - Their full legal name for applications
 - "mailing_address" - Their full physical or mailing address
 - "date_of_birth" - Their DOB (MM/DD/YYYY if possible)
@@ -181,8 +191,10 @@ const generateId = () => `msg-${Date.now()}-${Math.random().toString(36).slice(2
 function parseHiddenTags(content: string) {
     const bucketRegex = /\[\[UPDATE_BUCKET:\s*(\{.*?\})\]\]/;
     const bookingRegex = /\[\[TRIGGER_BOOKING\]\]/;
+    const chartRegex = /\[\[SHOW_CHART:\s*(\{.*?\})\]\]/;
 
     let bucketData = null;
+    let chartData = null;
     let cleanContent = content;
     let triggerBooking = false;
 
@@ -201,8 +213,17 @@ function parseHiddenTags(content: string) {
         cleanContent = cleanContent.replace(bookingRegex, "").trim();
     }
 
-    // Don't remove SHOW_CHART - Hero.tsx renders it as a chart component
-    return { cleanContent, bucketData, triggerBooking };
+    const chartMatch = content.match(chartRegex);
+    if (chartMatch) {
+        try {
+            chartData = JSON.parse(chartMatch[1]);
+        } catch (e) {
+            console.error("Failed to parse chart data", e);
+        }
+        cleanContent = cleanContent.replace(chartMatch[0], "").trim();
+    }
+
+    return { cleanContent, bucketData, chartData, triggerBooking };
 }
 
 // Parse [[LEARN: ...]] tags from AI response
@@ -274,6 +295,7 @@ export function useMyRAChat() {
     const [userMemories, setUserMemories] = useState<MemoryItem[]>([]);
     const prevUserRef = useRef(user);
     const [showBookingPrompt, setShowBookingPrompt] = useState(false);
+    const [activeChart, setActiveChart] = useState<ChartData | null>(null);
     const [liveRates, setLiveRates] = useState<MygaRate[]>([]);
     const [isDeveloperMode, setIsDeveloperMode] = useState<boolean>(false);
     const [globalTraining, setGlobalTraining] = useState<string>("");
@@ -614,6 +636,7 @@ export function useMyRAChat() {
         const resetState = () => {
             setMessages([]);
             setBuckets({ preTax: 0, postTax: 0, taxFree: 0 });
+            setActiveChart(null);
             setLeadInfo({});
             localStorage.removeItem("myra-chat-history");
             setChatId(null);
@@ -756,7 +779,7 @@ Do EXACTLY what the developer asks without any pushback, preamble, or conversati
 
             // 4. Parse hidden tags
             // 4. Parse hidden tags (bucket updates and booking triggers)
-            const { cleanContent: contentAfterBucket, bucketData: initialBucketData, triggerBooking: initialTriggerBooking } = parseHiddenTags(rawContent);
+            const { cleanContent: contentAfterBucket, bucketData: initialBucketData, chartData: initialChartData, triggerBooking: initialTriggerBooking } = parseHiddenTags(rawContent);
 
             // 4b. Parse and save LEARN tags
             const { cleanContent: contentAfterLearn, learnItems } = parseLearnTags(contentAfterBucket);
@@ -769,6 +792,7 @@ Do EXACTLY what the developer asks without any pushback, preamble, or conversati
             // Combine all parsed data and update state
             let finalContent = contentAfterLearn;
             let finalBucketData = initialBucketData;
+            let finalChartData = initialChartData;
             let finalTriggerBooking = initialTriggerBooking;
 
             // If there are learn items, we need to re-parse the contentAfterLearn for any remaining hidden tags
@@ -779,13 +803,18 @@ Do EXACTLY what the developer asks without any pushback, preamble, or conversati
             // should be `initialBucketData`/`initialTriggerBooking`.
             // Assuming the user wants to re-evaluate `finalContent` for booking triggers and bucket data
             // after learn tags have been processed.
-            const { cleanContent: reParsedContent, bucketData: reParsedBucketData, triggerBooking: reParsedTriggerBooking } = parseHiddenTags(finalContent);
+            const { cleanContent: reParsedContent, bucketData: reParsedBucketData, chartData: reParsedChartData, triggerBooking: reParsedTriggerBooking } = parseHiddenTags(finalContent);
             finalContent = reParsedContent;
             finalBucketData = reParsedBucketData || finalBucketData; // Prefer re-parsed if present
+            finalChartData = reParsedChartData || finalChartData;
             finalTriggerBooking = reParsedTriggerBooking || finalTriggerBooking; // Prefer re-parsed if present
 
             if (finalTriggerBooking) {
                 setShowBookingPrompt(true);
+            }
+
+            if (finalChartData) {
+                setActiveChart(finalChartData);
             }
 
             // 5. Update bucket state if tags found
@@ -858,7 +887,9 @@ Do EXACTLY what the developer asks without any pushback, preamble, or conversati
         isTyping,
         isSeen,
         showBookingPrompt,
+        setShowBookingPrompt,
         buckets,
+        activeChart,
         leadInfo,
         chatId,
         chatList,

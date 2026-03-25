@@ -31,7 +31,12 @@ serve(async (req) => {
       .eq('user_id', user.id)
       .maybeSingle()
 
-    const isOwner = user.email === 'systo.ai@gmail.com'
+    const PROTECTED_ADMIN_EMAILS = [
+      "systo.ai@gmail.com",
+      "darren@retirementarchitects.com",
+    ];
+    
+    const isOwner = PROTECTED_ADMIN_EMAILS.includes(user.email?.toLowerCase() || '')
     if (!isOwner && (!roleData || roleData.role !== 'admin')) {
       throw new Error('Unauthorized: Admin access required')
     }

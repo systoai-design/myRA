@@ -30,6 +30,13 @@ serve(async (req) => {
     
     if (authError || !user) throw new Error("Unauthorized: Invalid session");
 
+    const PROTECTED_ADMIN_EMAILS = [
+      "systo.ai@gmail.com",
+      "darren@retirementarchitects.com",
+    ];
+
+    const isOwner = PROTECTED_ADMIN_EMAILS.includes(user.email?.toLowerCase() || '');
+
     // Ensure the calling user is actually an admin
     const { data: currentRoleData } = await supabaseAdmin
       .from('user_roles')
@@ -37,7 +44,7 @@ serve(async (req) => {
       .eq('user_id', user.id)
       .single();
 
-    if (!currentRoleData || currentRoleData.role !== 'admin') {
+    if (!isOwner && (!currentRoleData || currentRoleData.role !== 'admin')) {
       throw new Error("Forbidden: Only admins can promote users");
     }
 

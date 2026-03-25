@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Plus, MessageSquare, Home, Pencil, Trash2, Check, X, Settings, LogOut } from "lucide-react";
+import { Plus, MessageSquare, Home, Pencil, Trash2, Check, X, Settings, LogOut, ShieldAlert, Loader2, LogIn } from "lucide-react";
 import { Link } from "react-router-dom";
 import { ChatHistoryItem } from "@/hooks/useMyRAChat";
 import { supabase } from "@/integrations/supabase/client";
@@ -45,6 +45,141 @@ function groupByTime(chats: ChatHistoryItem[]): Record<string, ChatHistoryItem[]
     return groups;
 }
 
+// Inline Auth Form for unauthenticated users
+function InlineAuthForm() {
+    const [authTab, setAuthTab] = useState<'login' | 'signup'>('login');
+    const [email, setEmail] = useState("");
+    const [password, setPassword] = useState("");
+    const [firstName, setFirstName] = useState("");
+    const [isSubmitting, setIsSubmitting] = useState(false);
+
+    const handleLogin = async (e: React.FormEvent) => {
+        e.preventDefault();
+        if (!email || !password) return;
+        setIsSubmitting(true);
+        try {
+            const { error } = await supabase.auth.signInWithPassword({ email, password });
+            if (error) {
+                if (error.message.includes("Invalid login credentials")) {
+                    toast.error("Invalid email or password");
+                } else {
+                    toast.error(error.message);
+                }
+            } else {
+                toast.success("Welcome back!");
+            }
+        } catch {
+            toast.error("An error occurred during login");
+        } finally {
+            setIsSubmitting(false);
+        }
+    };
+
+    const handleSignup = async (e: React.FormEvent) => {
+        e.preventDefault();
+        if (!email || !password || !firstName) return;
+        setIsSubmitting(true);
+        try {
+            const { error } = await supabase.auth.signUp({
+                email,
+                password,
+                options: { data: { first_name: firstName } },
+            });
+            if (error) {
+                toast.error(error.message);
+            } else {
+                toast.success("Account created! Welcome aboard, " + firstName + "!");
+            }
+        } catch {
+            toast.error("An error occurred during signup");
+        } finally {
+            setIsSubmitting(false);
+        }
+    };
+
+    return (
+        <div className="w-[280px] border-t border-white/10 bg-[#030508]/90 backdrop-blur-xl px-4 py-4 space-y-3">
+            {/* Tab Switcher */}
+            <div className="flex rounded-lg bg-white/5 border border-white/10 p-0.5">
+                <button
+                    onClick={() => setAuthTab('login')}
+                    className={`flex-1 text-[11px] font-bold py-1.5 rounded-md transition-all ${authTab === 'login'
+                        ? 'bg-white text-black shadow-sm'
+                        : 'text-white/60 hover:text-white'
+                    }`}
+                >
+                    Sign In
+                </button>
+                <button
+                    onClick={() => setAuthTab('signup')}
+                    className={`flex-1 text-[11px] font-bold py-1.5 rounded-md transition-all ${authTab === 'signup'
+                        ? 'bg-white text-black shadow-sm'
+                        : 'text-white/60 hover:text-white'
+                    }`}
+                >
+                    Sign Up
+                </button>
+            </div>
+
+            <form onSubmit={authTab === 'login' ? handleLogin : handleSignup} className="space-y-2.5">
+                {authTab === 'signup' && (
+                    <div className="space-y-1">
+                        <label className="text-[10px] font-semibold text-white/60 uppercase tracking-wider">First Name</label>
+                        <input
+                            value={firstName}
+                            onChange={e => setFirstName(e.target.value)}
+                            placeholder="John"
+                            className="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-xs text-white placeholder:text-white/30 focus:outline-none focus:ring-1 focus:ring-white/30 focus:border-white/20 transition-all"
+                            required
+                        />
+                    </div>
+                )}
+                <div className="space-y-1">
+                    <label className="text-[10px] font-semibold text-white/60 uppercase tracking-wider">Email</label>
+                    <input
+                        type="email"
+                        value={email}
+                        onChange={e => setEmail(e.target.value)}
+                        placeholder="you@example.com"
+                        className="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-xs text-white placeholder:text-white/30 focus:outline-none focus:ring-1 focus:ring-white/30 focus:border-white/20 transition-all"
+                        required
+                    />
+                </div>
+                <div className="space-y-1">
+                    <label className="text-[10px] font-semibold text-white/60 uppercase tracking-wider">Password</label>
+                    <input
+                        type="password"
+                        value={password}
+                        onChange={e => setPassword(e.target.value)}
+                        placeholder="••••••"
+                        className="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-xs text-white placeholder:text-white/30 focus:outline-none focus:ring-1 focus:ring-white/30 focus:border-white/20 transition-all"
+                        required
+                        minLength={6}
+                    />
+                </div>
+                <button
+                    type="submit"
+                    disabled={isSubmitting}
+                    className="w-full flex items-center justify-center gap-2 bg-white hover:bg-white/90 disabled:opacity-50 disabled:cursor-not-allowed text-black rounded-lg px-3 py-2.5 text-xs font-bold transition-all active:scale-[0.97] shadow-sm mt-1"
+                >
+                    {isSubmitting ? (
+                        <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                    ) : (
+                        <LogIn className="w-3.5 h-3.5" />
+                    )}
+                    {authTab === 'login' ? 'Sign In' : 'Create Account'}
+                </button>
+            </form>
+
+            <p className="text-[10px] text-white/30 text-center leading-relaxed">
+                {authTab === 'login'
+                    ? 'Sign in to save your chats and retirement plan.'
+                    : 'Create an account to save your progress.'}
+            </p>
+        </div>
+    );
+}
+
 export default function ChatSidebar({
     isOpen, toggleSidebar, clearChat,
     chatList, activeChatId, switchChat, renameChat, deleteChat, userName
@@ -55,7 +190,8 @@ export default function ChatSidebar({
     const [showSettings, setShowSettings] = useState(false);
     const [editName, setEditName] = useState(userName || "");
     const [isSavingName, setIsSavingName] = useState(false);
-    const { user, signOut } = useAuth();
+    const { user, signOut, role, testRole } = useAuth();
+    const effectiveRole = testRole || role;
 
     const handleStartRename = (chat: ChatHistoryItem) => {
         setEditingId(chat.id);
@@ -105,14 +241,21 @@ export default function ChatSidebar({
 
     return (
         <div
-            className={`flex-shrink-0 bg-white/40 dark:bg-white/10 backdrop-blur-[64px] border border-slate-200 dark:border-white/20 h-full flex flex-col transition-all duration-300 rounded-3xl overflow-hidden shadow-[0_8px_32px_rgba(0,0,0,0.08)] dark:shadow-[0_8px_32px_rgba(0,0,0,0.15)] ${isOpen ? "w-[280px]" : "w-0 opacity-0 border-none"
+            className={`flex-shrink-0 bg-[#030508]/60 backdrop-blur-2xl border-r border-white/10 h-full flex flex-col transition-all duration-300 rounded-r-3xl md:rounded-3xl overflow-hidden shadow-2xl ${isOpen ? "w-[280px]" : "w-0 opacity-0 border-none"
                 }`}
         >
             <div className="p-4 w-[280px] flex-1 flex flex-col pb-0">
-                <a href="/" className="flex items-center gap-2 text-slate-800 dark:text-white hover:text-slate-900 dark:hover:bg-white/10 rounded-lg px-3 py-2.5 font-medium transition-all active:scale-[0.97] w-full mb-3">
+                <a href="/" className="flex items-center gap-2 text-white/80 hover:text-white hover:bg-white/10 rounded-lg px-3 py-2.5 font-medium transition-all active:scale-[0.97] w-full mb-1">
                     <Home className="w-5 h-5" />
                     <span className="text-sm tracking-wide">Return to Home</span>
                 </a>
+
+                {effectiveRole === "admin" && (
+                    <a href="/admin" className="flex items-center gap-2 text-primary/80 hover:text-primary hover:bg-primary/10 rounded-lg px-3 py-2.5 font-medium transition-all active:scale-[0.97] w-full mb-3">
+                        <ShieldAlert className="w-5 h-5" />
+                        <span className="text-sm tracking-wide">Admin Dashboard</span>
+                    </a>
+                )}
 
                 <button
                     onClick={() => {
@@ -120,7 +263,7 @@ export default function ChatSidebar({
                         // Close sidebar on mobile
                         if (window.innerWidth < 1024) toggleSidebar();
                     }}
-                    className="flex items-center gap-2 bg-[#2d68ff] hover:bg-[#255ce6] text-white rounded-lg px-3 py-3 font-medium transition-colors w-full mb-6 shadow-sm"
+                    className="flex items-center gap-2 bg-white hover:bg-white/90 text-black rounded-lg px-3 py-3 font-semibold transition-colors w-full mb-6 shadow-sm"
                 >
                     <Plus className="w-5 h-5" />
                     <span className="text-sm">New Chat</span>
@@ -129,8 +272,8 @@ export default function ChatSidebar({
                 <div className="flex-1 overflow-y-auto w-full custom-scrollbar pr-2">
                     {chatList.length === 0 ? (
                         <div className="px-2 py-6 text-center">
-                            <p className="text-xs text-slate-700 dark:text-white/60 font-medium">No conversations yet.</p>
-                            <p className="text-xs text-slate-900 dark:text-white font-medium mt-1">Start a new chat to begin!</p>
+                            <p className="text-xs text-white/60 font-medium">No conversations yet.</p>
+                            <p className="text-xs text-white font-medium mt-1">Start a new chat to begin!</p>
                         </div>
                     ) : (
                         groupOrder.map(groupLabel => {
@@ -139,7 +282,7 @@ export default function ChatSidebar({
 
                             return (
                                 <div key={groupLabel} className="mb-5 w-full">
-                                    <h3 className="text-xs font-bold text-slate-500 dark:text-white/50 mb-2 px-2 uppercase tracking-wider">
+                                    <h3 className="text-xs font-bold text-white/40 mb-2 px-2 uppercase tracking-wider">
                                         {groupLabel}
                                     </h3>
                                     <div className="space-y-0.5">
@@ -152,8 +295,8 @@ export default function ChatSidebar({
                                                 <div
                                                     key={chat.id}
                                                     className={`group flex items-center gap-2 w-full text-left px-2 py-2 rounded-md transition-colors cursor-pointer ${isActive
-                                                        ? "bg-white/40 dark:bg-white/20 text-slate-900 dark:text-white shadow-sm font-semibold"
-                                                        : "text-slate-700 dark:text-white/70 hover:bg-white/20 hover:text-slate-900 dark:hover:text-white font-medium"
+                                                        ? "bg-white/10 text-white shadow-sm font-semibold border border-white/5"
+                                                        : "text-white/60 hover:bg-white/5 hover:text-white font-medium"
                                                         }`}
                                                     onClick={() => {
                                                         if (!isEditing && !isDeleting) {
@@ -172,22 +315,22 @@ export default function ChatSidebar({
                                                                     if (e.key === 'Enter') handleConfirmRename();
                                                                     if (e.key === 'Escape') setEditingId(null);
                                                                 }}
-                                                                className="flex-1 min-w-0 bg-white/50 border border-slate-300 rounded px-2 py-1 text-xs text-slate-900 focus:outline-none focus:ring-1 focus:ring-[#2d68ff]"
+                                                                className="flex-1 min-w-0 bg-white/5 border border-white/20 rounded px-2 py-1 text-xs text-white focus:outline-none focus:ring-1 focus:ring-white/30"
                                                             />
-                                                            <button onClick={handleConfirmRename} className="p-1 text-emerald-600 hover:text-emerald-500">
+                                                            <button onClick={handleConfirmRename} className="p-1 text-emerald-400 hover:text-emerald-300">
                                                                 <Check className="w-3.5 h-3.5" />
                                                             </button>
-                                                            <button onClick={() => setEditingId(null)} className="p-1 text-slate-500 hover:text-slate-800">
+                                                            <button onClick={() => setEditingId(null)} className="p-1 text-white/50 hover:text-white">
                                                                 <X className="w-3.5 h-3.5" />
                                                             </button>
                                                         </div>
                                                     ) : isDeleting ? (
                                                         <div className="flex items-center gap-2 flex-1 min-w-0">
-                                                            <span className="text-xs text-red-600 font-bold truncate flex-1">Delete this chat?</span>
-                                                            <button onClick={() => handleConfirmDelete(chat.id)} className="p-1 text-red-600 hover:text-red-500">
+                                                            <span className="text-xs text-red-500 font-bold truncate flex-1">Delete this chat?</span>
+                                                            <button onClick={() => handleConfirmDelete(chat.id)} className="p-1 text-red-500 hover:text-red-400">
                                                                 <Check className="w-3.5 h-3.5" />
                                                             </button>
-                                                            <button onClick={() => setDeletingId(null)} className="p-1 text-slate-500 hover:text-slate-800">
+                                                            <button onClick={() => setDeletingId(null)} className="p-1 text-white/50 hover:text-white">
                                                                 <X className="w-3.5 h-3.5" />
                                                             </button>
                                                         </div>
@@ -197,20 +340,20 @@ export default function ChatSidebar({
                                                                 onClick={() => switchChat(chat.id)}
                                                                 className="flex items-center gap-2 flex-1 min-w-0"
                                                             >
-                                                                <MessageSquare className="w-4 h-4 flex-shrink-0 text-slate-400 dark:text-white/40 group-hover:text-slate-900 dark:group-hover:text-white" />
+                                                                <MessageSquare className="w-4 h-4 flex-shrink-0 text-white/40 group-hover:text-white" />
                                                                 <span className="text-sm truncate">{chat.title || "Untitled"}</span>
                                                             </button>
                                                             <div className="hidden group-hover:flex items-center gap-0.5 flex-shrink-0">
                                                                 <button
                                                                     onClick={e => { e.stopPropagation(); handleStartRename(chat); }}
-                                                                    className="p-1 text-slate-500 hover:text-slate-800 hover:bg-white/30 rounded transition-colors"
+                                                                    className="p-1 text-white/50 hover:text-white hover:bg-white/10 rounded transition-colors"
                                                                     title="Rename"
                                                                 >
                                                                     <Pencil className="w-3.5 h-3.5" />
                                                                 </button>
                                                                 <button
                                                                     onClick={e => { e.stopPropagation(); setDeletingId(chat.id); }}
-                                                                    className="p-1 text-slate-500 hover:text-red-600 hover:bg-white/30 rounded transition-colors"
+                                                                    className="p-1 text-white/50 hover:text-red-500 hover:bg-white/10 rounded transition-colors"
                                                                     title="Delete"
                                                                 >
                                                                     <Trash2 className="w-3.5 h-3.5" />
@@ -229,73 +372,80 @@ export default function ChatSidebar({
                 </div>
             </div>
 
-            {showSettings && (
-                <div className="w-[280px] border-t border-slate-300/30 bg-white/20 backdrop-blur-md px-4 py-4 space-y-3 shadow-[0_-10px_30px_rgb(0,0,0,0.05)]">
-                    <h4 className="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Account Settings</h4>
+            {/* Auth Section: Show inline auth form for guests, or account settings for logged-in users */}
+            {!user ? (
+                <InlineAuthForm />
+            ) : (
+                <>
+                    {showSettings && (
+                        <div className="w-[280px] border-t border-white/10 bg-[#030508]/90 backdrop-blur-xl px-4 py-4 space-y-3">
+                            <h4 className="text-[10px] font-bold text-white/50 uppercase tracking-wider">Account Settings</h4>
 
-                    {/* First Name */}
-                    <div className="space-y-1">
-                        <label className="text-[11px] font-semibold text-slate-600 dark:text-slate-300">First Name</label>
-                        <div className="flex items-center gap-1.5">
-                            <input
-                                value={editName}
-                                onChange={e => setEditName(e.target.value)}
-                                onKeyDown={e => { if (e.key === 'Enter') handleSaveName(); }}
-                                className="flex-1 min-w-0 bg-white/50 border border-slate-300 rounded px-2 py-1.5 text-xs text-slate-900 font-medium focus:outline-none focus:ring-1 focus:ring-[#2d68ff] transition-colors"
-                                placeholder="Your name"
-                            />
+                            {/* First Name */}
+                            <div className="space-y-1">
+                                <label className="text-[11px] font-semibold text-white/70">First Name</label>
+                                <div className="flex items-center gap-1.5">
+                                    <input
+                                        value={editName}
+                                        onChange={e => setEditName(e.target.value)}
+                                        onKeyDown={e => { if (e.key === 'Enter') handleSaveName(); }}
+                                        className="flex-1 min-w-0 bg-white/5 border border-white/20 rounded px-2 py-1.5 text-xs text-white font-medium focus:outline-none focus:ring-1 focus:ring-white/30 transition-colors"
+                                        placeholder="Your name"
+                                    />
+                                    <button
+                                        onClick={handleSaveName}
+                                        disabled={isSavingName || editName.trim() === (userName || "")}
+                                        className="px-2.5 py-1.5 bg-white text-black hover:bg-white/90 disabled:opacity-40 disabled:cursor-not-allowed text-[11px] rounded font-semibold transition-colors flex-shrink-0"
+                                    >
+                                        {isSavingName ? "..." : "Save"}
+                                    </button>
+                                </div>
+                            </div>
+
+                            {/* Email (read-only) */}
+                            <div className="space-y-1">
+                                <label className="text-[11px] font-semibold text-white/70">Email</label>
+                                <div className="bg-white/5 border border-white/10 rounded px-2 py-1.5 text-xs text-white/50 font-medium truncate">
+                                    {userEmail}
+                                </div>
+                            </div>
+
+                            {/* Sign Out */}
                             <button
-                                onClick={handleSaveName}
-                                disabled={isSavingName || editName.trim() === (userName || "")}
-                                className="px-2.5 py-1.5 bg-[#2d68ff] hover:bg-[#255ce6] disabled:opacity-40 disabled:cursor-not-allowed text-white text-[11px] rounded font-medium transition-colors flex-shrink-0"
+                                onClick={handleSignOut}
+                                className="flex items-center gap-2 w-full px-2 py-2 text-xs font-bold text-red-500 hover:text-red-400 hover:bg-red-500/10 rounded transition-colors"
                             >
-                                {isSavingName ? "..." : "Save"}
+                                <LogOut className="w-3.5 h-3.5" />
+                                Sign Out
+                            </button>
+                        </div>
+                    )}
+
+                    <div className="p-3 w-[280px]">
+                        <div className="flex items-center justify-between w-full px-2 py-2 rounded-md hover:bg-white/5 transition-colors">
+                            <div className="flex items-center gap-3">
+                                <div className="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center text-white font-bold text-sm shadow-sm ring-1 ring-white/20">
+                                    {userName ? userName.charAt(0).toUpperCase() : "U"}
+                                </div>
+                                <div className="text-left flex flex-col">
+                                    <span className="text-sm font-bold text-white">{userName || "Guest"}</span>
+                                    <span className="text-xs font-medium text-white/50">{chatList.length} conversation{chatList.length !== 1 ? 's' : ''}</span>
+                                </div>
+                            </div>
+                            <button
+                                onClick={() => setShowSettings(!showSettings)}
+                                className={`p-1.5 rounded-md transition-colors ${showSettings
+                                    ? "text-white bg-white/20"
+                                    : "text-white/50 hover:text-white hover:bg-white/10"
+                                    }`}
+                                title="Account Settings"
+                            >
+                                <Settings className="w-4 h-4" />
                             </button>
                         </div>
                     </div>
-
-                    {/* Email (read-only) */}
-                    <div className="space-y-1">
-                        <label className="text-[11px] font-semibold text-slate-600 dark:text-slate-300">Email</label>
-                        <div className="bg-white/50 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded px-2 py-1.5 text-xs text-slate-600 dark:text-slate-400 font-medium truncate">
-                            {userEmail}
-                        </div>
-                    </div>
-
-                    {/* Sign Out */}
-                    <button
-                        onClick={handleSignOut}
-                        className="flex items-center gap-2 w-full px-2 py-2 text-xs font-bold text-red-600 hover:text-red-700 hover:bg-red-500/10 rounded transition-colors"
-                    >
-                        <LogOut className="w-3.5 h-3.5" />
-                        Sign Out
-                    </button>
-                </div>
+                </>
             )}
-
-            <div className="p-3 w-[280px]">
-                <div className="flex items-center justify-between w-full px-2 py-2 rounded-md hover:bg-white/20 transition-colors">
-                    <div className="flex items-center gap-3">
-                        <div className="w-8 h-8 rounded-full bg-gradient-to-br from-[#ffd8bb] to-[#ffb37b] flex items-center justify-center text-[#9b5110] font-bold text-sm shadow-sm ring-1 ring-white/50">
-                            {userName ? userName.charAt(0).toUpperCase() : "U"}
-                        </div>
-                        <div className="text-left flex flex-col">
-                            <span className="text-sm font-bold text-slate-900 dark:text-white">{userName || "Guest"}</span>
-                            <span className="text-xs font-medium text-slate-600 dark:text-white/50">{chatList.length} conversation{chatList.length !== 1 ? 's' : ''}</span>
-                        </div>
-                    </div>
-                    <button
-                        onClick={() => setShowSettings(!showSettings)}
-                        className={`p-1.5 rounded-md transition-colors ${showSettings
-                            ? "text-[#2d68ff] bg-[#2d68ff]/20"
-                            : "text-slate-500 dark:text-white/60 hover:text-slate-800 hover:bg-white/30"
-                            }`}
-                        title="Account Settings"
-                    >
-                        <Settings className="w-4 h-4" />
-                    </button>
-                </div>
-            </div>
         </div>
     );
 }

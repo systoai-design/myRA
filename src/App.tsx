@@ -6,7 +6,10 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { useState } from "react";
 import Index from "./pages/Index";
 import ThankYou from "./pages/ThankYou";
-import AgentChat from "./pages/AgentChat";
+import MyRAChatPage from "./pages/MyRAChatPage";
+import PortfolioPage from "./pages/PortfolioPage";
+import ProfilePage from "./pages/ProfilePage";
+import SettingsPage from "./pages/SettingsPage";
 import ResetPassword from "./pages/ResetPassword";
 import React, { lazy, Suspense } from "react";
 import NotFound from "./pages/NotFound";
@@ -18,6 +21,9 @@ import { SmoothScroll } from "@/components/SmoothScroll";
 
 const AdminDashboard = lazy(() => import("./pages/AdminDashboard"));
 const NewDesign = lazy(() => import("./pages/NewDesign"));
+const SignUpOffer = lazy(() => import("./pages/SignUpOffer"));
+import AppLayout from "./layouts/AppLayout";
+import DashboardHome from "./components/app/DashboardHome";
 
 const queryClient = new QueryClient();
 
@@ -48,7 +54,13 @@ const App = () => {
                 <BrowserRouter>
                   <Routes>
                     <Route path="/" element={<Index />} />
-                    <Route path="/agent-chat" element={<AgentChat />} />
+                    <Route path="/app" element={<AppLayout><DashboardHome /></AppLayout>} />
+                    <Route path="/app/chat" element={<AppLayout><MyRAChatPage /></AppLayout>} />
+                    <Route path="/agent-chat" element={<AppLayout><MyRAChatPage /></AppLayout>} />
+                    <Route path="/dashboard" element={<AppLayout><MyRAChatPage /></AppLayout>} />
+                    <Route path="/app/portfolio" element={<AppLayout><PortfolioPage /></AppLayout>} />
+                    <Route path="/app/profile" element={<AppLayout><ProfilePage /></AppLayout>} />
+                    <Route path="/app/settings" element={<AppLayout><SettingsPage /></AppLayout>} />
                     <Route path="/reset-password" element={<ResetPassword />} />
                     <Route path="/new-design" element={
                       <Suspense fallback={<div className="min-h-screen bg-black" />}>
@@ -58,6 +70,11 @@ const App = () => {
                     <Route path="/admin" element={
                       <Suspense fallback={<div className="min-h-screen bg-black" />}>
                         <AdminDashboard />
+                      </Suspense>
+                    } />
+                    <Route path="/offer" element={
+                      <Suspense fallback={<div className="min-h-screen flex items-center justify-center bg-black"><span className="text-white">Loading...</span></div>}>
+                        <SignUpOffer />
                       </Suspense>
                     } />
                     {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}

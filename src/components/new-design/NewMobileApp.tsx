@@ -87,75 +87,76 @@ const NewMobileApp = () => {
     }, []);
 
     return (
-        <section className="py-24 lg:py-40 bg-[#020305] relative overflow-hidden flex flex-col lg:flex-row items-center justify-center max-w-7xl mx-auto px-6 gap-16 lg:gap-24">
+        <section className="py-24 lg:py-40 w-full bg-[#020305] relative overflow-hidden">
             
             {/* Background Glow */}
             <div className={`absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] blur-[140px] -z-10 rounded-full pointer-events-none transition-colors duration-1000 opacity-20 ${activeTab === 0 ? 'bg-blue-600' : activeTab === 1 ? 'bg-emerald-600' : 'bg-purple-600'}`} />
 
-            {/* LEFT Col: Header and Text */}
-            <div className="w-full lg:w-1/2 text-center lg:text-left z-20">
-                <div className="inline-flex items-center gap-2 px-4 py-2 mb-8 rounded-full bg-white/5 border border-white/10 text-xs font-semibold text-white/70">
-                    <Apple className="w-4 h-4" />
-                    iOS App Coming Soon
-                </div>
-
-                <h2 className="text-4xl md:text-5xl lg:text-6xl font-serif text-white mb-6 tracking-tight leading-tight">
-                    Your entire financial life, in your pocket.
-                </h2>
-                
-                <p className="text-lg text-white/60 font-light mb-10 max-w-lg mx-auto lg:mx-0">
-                    We are currently building the ultimate mobile experience. Soon, you will be able to track your net worth, execute AI tax loss harvesting, and chat with MyRA directly from your iPhone.
-                </p>
-
-                {/* Interactive State Indicators */}
-                <div className="flex items-center justify-center lg:justify-start gap-4">
-                     {tabs.map((tab, idx) => (
-                         <button
-                             key={tab.id}
-                             onClick={() => setActiveTab(idx)}
-                             className={`h-2 rounded-full transition-all duration-300 ${
-                                 activeTab === idx 
-                                 ? "w-12 bg-white" 
-                                 : "w-4 bg-white/20 hover:bg-white/40"
-                             }`}
-                             aria-label={`View ${tab.label} mock`}
-                         />
-                     ))}
-                 </div>
-            </div>
-
-            {/* RIGHT Col: 3D iPhone Mockup */}
-            <div className="w-full lg:w-1/2 flex justify-center perspective-[2000px] z-20 mt-12 lg:mt-0">
-                <div 
-                    className="relative w-[280px] h-[580px] lg:w-[320px] lg:h-[660px]"
-                    style={{ 
-                        transform: "translateZ(80px) rotateY(-15deg) rotateX(10deg) rotateZ(2deg)",
-                        transformStyle: "preserve-3d"
-                    }}
-                >
-                    {/* iPhone Thickness Layers */}
-                    <div className="absolute inset-0 rounded-[3.5rem] bg-[#1a1a1b] shadow-[-20px_40px_100px_rgba(0,0,0,0.8)]" style={{ transform: "translateZ(-15px)" }} />
-                    <div className="absolute inset-0 rounded-[3.5rem] bg-[#2a2a2b]" style={{ transform: "translateZ(-8px)" }} />
-                    <div className="absolute inset-0 rounded-[3.5rem] bg-[#333]" style={{ transform: "translateZ(-4px)" }} />
-                    
-                    {/* iPhone Base */}
-                    <div className="absolute inset-0 border-[6px] lg:border-[8px] border-[#3a3a3a] rounded-[3.5rem] bg-black overflow-hidden pointer-events-none" style={{ transform: "translateZ(0px)" }}>
+            <div className="flex flex-col lg:flex-row items-center justify-center max-w-7xl mx-auto px-6 gap-16 lg:gap-24 relative z-20">
+                {/* LEFT Col: Header and Text */}
+                <div className="w-full lg:w-1/2 text-center lg:text-left z-20">
+                    <div className="inline-flex items-center gap-2 px-4 py-2 mb-8 rounded-full bg-white/5 border border-white/10 text-xs font-semibold text-white/70">
+                        <Apple className="w-4 h-4" />
+                        iOS App Coming Soon
                     </div>
 
-                    {/* Dynamic Island */}
-                    <div className="absolute top-[16px] lg:top-[20px] left-1/2 -translate-x-1/2 w-[80px] lg:w-[100px] h-[22px] lg:h-[28px] bg-black rounded-full pointer-events-none" style={{ transform: "translateZ(2px)" }} />
+                    <h2 className="text-4xl md:text-5xl lg:text-6xl font-serif text-white mb-6 tracking-tight leading-tight">
+                        Your entire financial life, in your pocket.
+                    </h2>
                     
-                    {/* Screens Container */}
-                    <div className="absolute inset-x-[6px] lg:inset-x-[8px] inset-y-[6px] lg:inset-y-[8px] rounded-[3rem] bg-[#050505] overflow-hidden" style={{ transform: "translateZ(1px)" }}>
-                        <AnimatePresence mode="wait">
-                             {activeTab === 0 && <MobileNetWorth key="networth" />}
-                             {activeTab === 1 && <MobileCashflow key="cashflow" />}
-                             {activeTab === 2 && <MobilePortfolio key="portfolio" />}
-                        </AnimatePresence>
+                    <p className="text-lg text-white/60 font-light mb-10 max-w-lg mx-auto lg:mx-0">
+                        We are currently building the ultimate mobile experience. Soon, you will be able to track your net worth, execute AI tax loss harvesting, and chat with MyRA directly from your iPhone.
+                    </p>
+
+                    {/* Interactive State Indicators */}
+                    <div className="flex items-center justify-center lg:justify-start gap-4">
+                        {tabs.map((tab, idx) => (
+                            <button
+                                key={tab.id}
+                                onClick={() => setActiveTab(idx)}
+                                className={`h-2 rounded-full transition-all duration-300 ${
+                                    activeTab === idx 
+                                    ? "w-12 bg-white" 
+                                    : "w-4 bg-white/20 hover:bg-white/40"
+                                }`}
+                                aria-label={`View ${tab.label} mock`}
+                            />
+                        ))}
+                    </div>
+                </div>
+
+                {/* RIGHT Col: 3D iPhone Mockup */}
+                <div className="w-full lg:w-1/2 flex justify-center perspective-[2000px] z-20 mt-12 lg:mt-0">
+                    <div 
+                        className="relative w-[280px] h-[580px] lg:w-[320px] lg:h-[660px]"
+                        style={{ 
+                            transform: "translateZ(80px) rotateY(-15deg) rotateX(10deg) rotateZ(2deg)",
+                            transformStyle: "preserve-3d"
+                        }}
+                    >
+                        {/* iPhone Thickness Layers */}
+                        <div className="absolute inset-0 rounded-[3.5rem] bg-[#1a1a1b] shadow-[-20px_40px_100px_rgba(0,0,0,0.8)]" style={{ transform: "translateZ(-15px)" }} />
+                        <div className="absolute inset-0 rounded-[3.5rem] bg-[#2a2a2b]" style={{ transform: "translateZ(-8px)" }} />
+                        <div className="absolute inset-0 rounded-[3.5rem] bg-[#333]" style={{ transform: "translateZ(-4px)" }} />
+                        
+                        {/* iPhone Base */}
+                        <div className="absolute inset-0 border-[6px] lg:border-[8px] border-[#3a3a3a] rounded-[3.5rem] bg-black overflow-hidden pointer-events-none" style={{ transform: "translateZ(0px)" }}>
+                        </div>
+
+                        {/* Dynamic Island */}
+                        <div className="absolute top-[16px] lg:top-[20px] left-1/2 -translate-x-1/2 w-[80px] lg:w-[100px] h-[22px] lg:h-[28px] bg-black rounded-full pointer-events-none" style={{ transform: "translateZ(2px)" }} />
+                        
+                        {/* Screens Container */}
+                        <div className="absolute inset-x-[6px] lg:inset-x-[8px] inset-y-[6px] lg:inset-y-[8px] rounded-[3rem] bg-[#050505] overflow-hidden" style={{ transform: "translateZ(1px)" }}>
+                            <AnimatePresence mode="wait">
+                                {activeTab === 0 && <MobileNetWorth key="networth" />}
+                                {activeTab === 1 && <MobileCashflow key="cashflow" />}
+                                {activeTab === 2 && <MobilePortfolio key="portfolio" />}
+                            </AnimatePresence>
+                        </div>
                     </div>
                 </div>
             </div>
-
         </section>
     );
 };
