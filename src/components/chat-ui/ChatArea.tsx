@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+﻿import React, { useState, useEffect, useRef } from "react";
 import { Copy, ThumbsUp, ThumbsDown, Plus, ArrowUp, PanelLeftOpen, Calendar, Check, CheckCheck, History, MessageSquare, Pencil, Trash2, X, ClipboardCopy } from "lucide-react";
 import { ChatMessage, ChatHistoryItem } from "@/hooks/useMyRAChat";
 import ReactMarkdown from 'react-markdown';
@@ -147,15 +147,15 @@ export default function ChatArea({
     };
 
     return (
-        <div className="flex-1 flex flex-col h-full bg-[#030508]/60 backdrop-blur-2xl border border-white/5 rounded-3xl shadow-2xl relative overflow-hidden">
+        <div className="flex-1 flex flex-col h-full bg-background/60 backdrop-blur-2xl border border-border dark:border-white/5 rounded-3xl shadow-2xl relative overflow-hidden">
 
             {/* Top Navigation Bar */}
-            <div className="h-16 flex items-center justify-between px-6 border-b border-white/5 shrink-0 z-10 bg-[#030508]/80 backdrop-blur-md sticky top-0">
+            <div className="h-16 flex items-center justify-between px-6 border-b border-border dark:border-white/5 shrink-0 z-10 bg-background/80 backdrop-blur-md sticky top-0">
                 <div className="flex items-center gap-3">
                     <Popover open={isHistoryOpen} onOpenChange={setIsHistoryOpen}>
                         <PopoverTrigger asChild>
                             <button
-                                className="p-2 -ml-2 rounded-lg text-white/70 hover:text-white hover:bg-white/10 transition-all active:scale-[0.95] flex items-center gap-2 cursor-pointer"
+                                className="p-2 -ml-2 rounded-lg text-foreground/70 hover:text-foreground hover:bg-black/[0.04] dark:bg-white/10 transition-all active:scale-[0.95] flex items-center gap-2 cursor-pointer"
                                 title="Chat History"
                             >
                                 <History className="w-5 h-5" />
@@ -168,8 +168,8 @@ export default function ChatArea({
                             </button>
                         </PopoverTrigger>
                         <PopoverContent className="w-80 p-2 bg-[#0a0b10]/95 backdrop-blur-3xl border border-white/10 rounded-2xl shadow-[0_20px_60px_rgba(0,0,0,0.8)] ml-4 mt-2" align="start">
-                            <div className="flex items-center justify-between px-2 pb-2 mb-2 border-b border-white/5">
-                                <span className="text-xs font-bold text-white/50 uppercase tracking-widest">Chat History</span>
+                            <div className="flex items-center justify-between px-2 pb-2 mb-2 border-b border-border dark:border-white/5">
+                                <span className="text-xs font-bold text-muted-foreground uppercase tracking-widest">Chat History</span>
                                 <button onClick={() => { clearChat(); setIsHistoryOpen(false); }} className="text-xs font-semibold text-primary hover:text-blue-400 transition-colors flex items-center gap-1">
                                     <Plus className="w-3.5 h-3.5" />
                                     New Chat
@@ -177,7 +177,7 @@ export default function ChatArea({
                             </div>
                             <div className="max-h-[60vh] overflow-y-auto custom-scrollbar pr-1 flex flex-col gap-1">
                                 {chatList.length === 0 ? (
-                                    <div className="py-6 text-center text-xs text-white/40">No previous conversations.</div>
+                                    <div className="py-6 text-center text-xs text-muted-foreground">No previous conversations.</div>
                                 ) : (
                                     chatList.map(chat => {
                                         const isActive = chat.id === activeChatId;
@@ -188,8 +188,8 @@ export default function ChatArea({
                                             <div
                                                 key={chat.id}
                                                 className={`group flex items-center gap-2 w-full text-left px-3 py-2.5 rounded-xl transition-colors cursor-pointer ${isActive
-                                                    ? "bg-white/10 text-white shadow-sm font-semibold border border-white/5"
-                                                    : "text-white/60 hover:bg-white/5 hover:text-white font-medium"
+                                                    ? "bg-black/[0.04] dark:bg-white/10 text-foreground shadow-sm font-semibold border border-border dark:border-white/5"
+                                                    : "text-muted-foreground hover:bg-white/5 hover:text-foreground font-medium"
                                                     }`}
                                                 onClick={() => {
                                                     if (!isEditing && !isDeleting) {
@@ -209,12 +209,12 @@ export default function ChatArea({
                                                                 if (e.key === 'Escape') setEditingId(null);
                                                             }}
                                                             onClick={e => e.stopPropagation()}
-                                                            className="flex-1 min-w-0 bg-white/5 border border-white/20 rounded px-2 py-1 text-xs text-white focus:outline-none focus:ring-1 focus:ring-white/30"
+                                                            className="flex-1 min-w-0 bg-white/5 border border-white/20 rounded px-2 py-1 text-xs text-foreground focus:outline-none focus:ring-1 focus:ring-white/30"
                                                         />
                                                         <button onClick={(e) => { e.stopPropagation(); handleConfirmRename(); }} className="p-1 text-emerald-400 hover:text-emerald-300">
                                                             <Check className="w-3.5 h-3.5" />
                                                         </button>
-                                                        <button onClick={(e) => { e.stopPropagation(); setEditingId(null); }} className="p-1 text-white/50 hover:text-white">
+                                                        <button onClick={(e) => { e.stopPropagation(); setEditingId(null); }} className="p-1 text-muted-foreground hover:text-white">
                                                             <X className="w-3.5 h-3.5" />
                                                         </button>
                                                     </div>
@@ -224,25 +224,25 @@ export default function ChatArea({
                                                         <button onClick={(e) => { e.stopPropagation(); handleConfirmDelete(chat.id); }} className="p-1 text-red-500 hover:text-red-400">
                                                             <Check className="w-3.5 h-3.5" />
                                                         </button>
-                                                        <button onClick={(e) => { e.stopPropagation(); setDeletingId(null); }} className="p-1 text-white/50 hover:text-white">
+                                                        <button onClick={(e) => { e.stopPropagation(); setDeletingId(null); }} className="p-1 text-muted-foreground hover:text-white">
                                                             <X className="w-3.5 h-3.5" />
                                                         </button>
                                                     </div>
                                                 ) : (
                                                     <>
-                                                        <MessageSquare className={`w-4 h-4 flex-shrink-0 ${isActive ? 'text-primary' : 'text-white/40 group-hover:text-white'}`} />
+                                                        <MessageSquare className={`w-4 h-4 flex-shrink-0 ${isActive ? 'text-primary' : 'text-muted-foreground group-hover:text-white'}`} />
                                                         <span className="text-sm truncate flex-1">{chat.title || "Untitled"}</span>
                                                         <div className="hidden group-hover:flex items-center gap-0.5 flex-shrink-0">
                                                             <button
                                                                 onClick={e => { e.stopPropagation(); handleStartRename(chat); }}
-                                                                className="p-1 text-white/50 hover:text-white hover:bg-white/10 rounded transition-colors"
+                                                                className="p-1 text-muted-foreground hover:text-foreground hover:bg-black/[0.04] dark:bg-white/10 rounded transition-colors"
                                                                 title="Rename"
                                                             >
                                                                 <Pencil className="w-3.5 h-3.5" />
                                                             </button>
                                                             <button
                                                                 onClick={e => { e.stopPropagation(); setDeletingId(chat.id); }}
-                                                                className="p-1 text-white/50 hover:text-red-500 hover:bg-white/10 rounded transition-colors"
+                                                                className="p-1 text-muted-foreground hover:text-red-500 hover:bg-black/[0.04] dark:bg-white/10 rounded transition-colors"
                                                                 title="Delete"
                                                             >
                                                                 <Trash2 className="w-3.5 h-3.5" />
@@ -258,7 +258,7 @@ export default function ChatArea({
                         </PopoverContent>
                     </Popover>
 
-                    <div className="flex gap-2.5 font-semibold text-white items-center">
+                    <div className="flex gap-2.5 font-semibold text-foreground items-center">
                         <span className="drop-shadow-sm">MyRA</span>
                         <span className="text-[10px] bg-blue-500/20 text-blue-100 px-2 py-0.5 rounded-full uppercase tracking-wider font-bold border border-blue-500/30">Llama3.3 70B</span>
                     </div>
@@ -280,7 +280,7 @@ export default function ChatArea({
                                 navigator.clipboard.writeText(transcript);
                                 toast.success('Transcript copied to clipboard');
                             }}
-                            className="text-xs bg-white/5 text-white/50 border border-white/10 px-3 py-1.5 rounded-lg hover:bg-white/10 hover:text-white transition-all flex items-center gap-1.5 cursor-pointer"
+                            className="text-xs bg-white/5 text-muted-foreground border border-white/10 px-3 py-1.5 rounded-lg hover:bg-black/[0.04] dark:bg-white/10 hover:text-foreground transition-all flex items-center gap-1.5 cursor-pointer"
                         >
                             <ClipboardCopy className="w-3 h-3" />
                             Copy Transcript
@@ -316,33 +316,33 @@ export default function ChatArea({
                         {/* Logo + Welcome */}
                         <div className="relative z-10 flex flex-col items-center">
                             <div className="w-20 h-20 rounded-[2rem] bg-gradient-to-br from-primary/20 to-purple-500/20 backdrop-blur-2xl border border-white/10 flex items-center justify-center mb-6 shadow-2xl shadow-primary/20 animate-float">
-                                <span className="font-serif text-white text-4xl font-bold tracking-tighter">RA</span>
+                                <span className="font-serif text-foreground text-4xl font-bold tracking-tighter">RA</span>
                             </div>
-                            <h2 className="text-white text-4xl font-serif font-semibold mb-3 text-center">
+                            <h2 className="text-foreground text-4xl font-serif font-semibold mb-3 text-center">
                                 Hi, I'm <span className="bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent">MyRA</span>.
                             </h2>
-                            <p className="text-white/50 text-base font-light mb-10 text-center max-w-md leading-relaxed">
+                            <p className="text-muted-foreground text-base font-light mb-10 text-center max-w-md leading-relaxed">
                                 Your AI retirement strategist. Ask me anything about retirement planning, Social Security, tax optimization, or portfolio strategy.
                             </p>
                         </div>
 
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-3 w-full max-w-3xl relative z-10">
                             {[
-                                { prompt: "How much do I need to retire comfortably?", icon: "💰" },
-                                { prompt: "When should I claim Social Security?", icon: "🏛️" },
-                                { prompt: "How should I invest for retirement?", icon: "📊" },
-                                { prompt: "What withdrawal strategy should I use?", icon: "🔄" },
-                                { prompt: "How will healthcare costs affect my plan?", icon: "🏥" },
+                                { prompt: "How much do I need to retire comfortably?", icon: "ðŸ’°" },
+                                { prompt: "When should I claim Social Security?", icon: "ðŸ›ï¸" },
+                                { prompt: "How should I invest for retirement?", icon: "ðŸ“Š" },
+                                { prompt: "What withdrawal strategy should I use?", icon: "ðŸ”„" },
+                                { prompt: "How will healthcare costs affect my plan?", icon: "ðŸ¥" },
                             ].map((item, i) => (
                                 <button
                                     key={i}
                                     onClick={() => sendMessage(item.prompt)}
-                                    className={`text-left p-5 rounded-2xl border border-white/5 bg-white/[0.03] hover:bg-white/[0.07] hover:border-white/15 backdrop-blur-md transition-all duration-300 hover:-translate-y-0.5 shadow-sm active:scale-[0.98] cursor-pointer group ${i === 4 ? "md:col-span-2 md:max-w-md md:mx-auto w-full" : ""
+                                    className={`text-left p-5 rounded-2xl border border-border dark:border-white/5 bg-white/[0.03] hover:bg-white/[0.07] hover:border-white/15 backdrop-blur-md transition-all duration-300 hover:-translate-y-0.5 shadow-sm active:scale-[0.98] cursor-pointer group ${i === 4 ? "md:col-span-2 md:max-w-md md:mx-auto w-full" : ""
                                         }`}
                                 >
                                     <div className="flex items-center gap-3">
                                         <span className="text-xl shrink-0">{item.icon}</span>
-                                        <p className="text-white/70 font-medium text-[14px] leading-snug group-hover:text-white/90 transition-colors">{item.prompt}</p>
+                                        <p className="text-foreground/70 font-medium text-[14px] leading-snug group-hover:text-white/90 transition-colors">{item.prompt}</p>
                                     </div>
                                 </button>
                             ))}
@@ -365,39 +365,39 @@ export default function ChatArea({
                                     {!isUser && (
                                         <div className="shrink-0 mr-3 mt-1">
                                             <div className="w-8 h-8 rounded-full bg-white/5 backdrop-blur-md border border-white/10 flex items-center justify-center shadow-lg">
-                                                <span className="font-serif text-white text-sm font-bold">RA</span>
+                                                <span className="font-serif text-foreground text-sm font-bold">RA</span>
                                             </div>
                                         </div>
                                     )}
 
                                     <div className={`sm:max-w-[80%] max-w-[85%] flex flex-col ${isUser ? 'items-end order-1' : 'items-start order-2'}`}>
                                         {isUser ? (
-                                            <div className="bg-white/10 backdrop-blur-2xl border border-white/10 text-white px-5 py-3.5 rounded-3xl rounded-tr-md text-[15px] leading-relaxed shadow-lg font-light">
+                                            <div className="bg-black/[0.04] dark:bg-white/10 backdrop-blur-2xl border border-white/10 text-foreground px-5 py-3.5 rounded-3xl rounded-tr-md text-[15px] leading-relaxed shadow-lg font-light">
                                                 {msg.content}
                                             </div>
                                         ) : (
-                                            <div className="bg-white/[0.04] backdrop-blur-3xl border border-white/10 text-white/90 rounded-3xl rounded-tl-md shadow-2xl overflow-hidden glass-premium">
+                                            <div className="bg-white/80 dark:bg-white/[0.04] backdrop-blur-3xl border border-white/10 text-white/90 rounded-3xl rounded-tl-md shadow-2xl overflow-hidden glass-premium">
                                                 <div className="px-5 py-4">
                                                     {renderMessageContent(msg)}
                                                 </div>
                                                 {/* Action Footer */}
-                                                <div className="px-4 py-2 bg-black/20 border-t border-white/5 flex gap-1 items-center">
+                                                <div className="px-4 py-2 bg-black/[0.03] dark:bg-black/20 border-t border-border dark:border-white/5 flex gap-1 items-center">
                                                     {isAdmin && (
                                                         <>
                                                             <button
                                                                 onClick={() => handleCopy(msg.content)}
-                                                                className="p-1 px-2 text-white/40 hover:text-white hover:bg-white/10 rounded-md transition-all active:scale-[0.95] flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-wider"
+                                                                className="p-1 px-2 text-muted-foreground hover:text-foreground hover:bg-black/[0.04] dark:bg-white/10 rounded-md transition-all active:scale-[0.95] flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-wider"
                                                             >
                                                                 <Copy className="w-3 h-3" />
                                                                 <span>Copy</span>
                                                             </button>
-                                                            <div className="w-px h-3 bg-white/10 my-auto mx-1" />
+                                                            <div className="w-px h-3 bg-black/[0.04] dark:bg-white/10 my-auto mx-1" />
                                                         </>
                                                     )}
-                                                    <button className="p-1.5 text-white/40 hover:text-emerald-400 hover:bg-white/10 rounded-md transition-all active:scale-[0.95]">
+                                                    <button className="p-1.5 text-muted-foreground hover:text-emerald-400 hover:bg-black/[0.04] dark:bg-white/10 rounded-md transition-all active:scale-[0.95]">
                                                         <ThumbsUp className="w-3.5 h-3.5" />
                                                     </button>
-                                                    <button className="p-1.5 text-white/40 hover:text-red-500 hover:bg-white/10 rounded-md transition-all active:scale-[0.95]">
+                                                    <button className="p-1.5 text-muted-foreground hover:text-red-500 hover:bg-black/[0.04] dark:bg-white/10 rounded-md transition-all active:scale-[0.95]">
                                                         <ThumbsDown className="w-3.5 h-3.5" />
                                                     </button>
                                                 </div>
@@ -405,7 +405,7 @@ export default function ChatArea({
                                         )}
 
                                         {/* Metadata Row */}
-                                        <div className={`mt-1.5 flex items-center gap-1.5 text-[10px] font-medium text-white/40 px-1 ${isUser ? 'flex-row-reverse' : 'flex-row'}`}>
+                                        <div className={`mt-1.5 flex items-center gap-1.5 text-[10px] font-medium text-muted-foreground px-1 ${isUser ? 'flex-row-reverse' : 'flex-row'}`}>
                                             <span>{formatTime(msg.timestamp)}</span>
                                             {isUser && (
                                                 <div className="flex items-center">
@@ -422,7 +422,7 @@ export default function ChatArea({
                                     {/* User Avatar */}
                                     {isUser && (
                                         <div className="shrink-0 ml-3 mt-1 order-3">
-                                            <div className="w-8 h-8 rounded-full bg-white/10 backdrop-blur-md border border-white/20 flex items-center justify-center text-white font-bold text-xs shadow-md">
+                                            <div className="w-8 h-8 rounded-full bg-black/[0.04] dark:bg-white/10 backdrop-blur-md border border-white/20 flex items-center justify-center text-foreground font-bold text-xs shadow-md">
                                                 U
                                             </div>
                                         </div>
@@ -434,14 +434,14 @@ export default function ChatArea({
                         {/* Inline Booking Card (Only shown when triggered) */}
                         {showBookingPrompt && (
                             <div className="flex w-full justify-center pt-4 pb-2 animate-in fade-in slide-in-from-bottom-4 duration-500">
-                                <div className="bg-[#030508]/80 backdrop-blur-2xl border border-emerald-500/20 p-6 rounded-3xl shadow-[0_30px_60px_rgba(0,0,0,0.6)] max-w-md w-full text-center relative overflow-hidden">
+                                <div className="bg-background/80 backdrop-blur-2xl border border-emerald-500/20 p-6 rounded-3xl shadow-[0_30px_60px_rgba(0,0,0,0.6)] max-w-md w-full text-center relative overflow-hidden">
                                     <div className="absolute top-0 right-0 w-32 h-32 bg-emerald-500/20 blur-[50px] rounded-full pointer-events-none" />
 
                                     <div className="w-12 h-12 rounded-2xl bg-emerald-500/10 flex items-center justify-center mx-auto mb-4 border border-emerald-500/30">
                                         <Calendar className="w-6 h-6 text-emerald-400" />
                                     </div>
-                                    <h3 className="text-xl font-bold text-white mb-2">Ready to take the next step?</h3>
-                                    <p className="text-sm text-white/60 mb-6">
+                                    <h3 className="text-xl font-bold text-foreground mb-2">Ready to take the next step?</h3>
+                                    <p className="text-sm text-muted-foreground mb-6">
                                         Schedule a free, no-obligation consultation with a licensed professional to review your custom roadmap.
                                     </p>
                                     <button
@@ -459,10 +459,10 @@ export default function ChatArea({
                             <div className="flex w-full justify-start animate-in fade-in duration-300">
                                 <div className="shrink-0 mr-3 mt-1">
                                     <div className="w-8 h-8 rounded-full bg-white/5 backdrop-blur-md border border-white/10 flex items-center justify-center shadow-lg">
-                                        <span className="font-serif text-white text-sm font-bold">RA</span>
+                                        <span className="font-serif text-foreground text-sm font-bold">RA</span>
                                     </div>
                                 </div>
-                                <div className="bg-white/[0.04] backdrop-blur-3xl border border-white/10 px-5 py-4 rounded-3xl rounded-tl-md shadow-2xl flex gap-1.5 items-center h-[52px]">
+                                <div className="bg-white/80 dark:bg-white/[0.04] backdrop-blur-3xl border border-white/10 px-5 py-4 rounded-3xl rounded-tl-md shadow-2xl flex gap-1.5 items-center h-[52px]">
                                     <span className="w-2 h-2 rounded-full bg-white/40 animate-bounce" style={{ animationDelay: '0ms' }} />
                                     <span className="w-2 h-2 rounded-full bg-white/40 animate-bounce" style={{ animationDelay: '150ms' }} />
                                     <span className="w-2 h-2 rounded-full bg-white/40 animate-bounce" style={{ animationDelay: '300ms' }} />
@@ -483,7 +483,7 @@ export default function ChatArea({
                     >
                         <button
                             type="button"
-                            className="p-3 text-white/50 hover:text-white hover:bg-white/10 rounded-full transition-all active:scale-[0.95] mb-0.5"
+                            className="p-3 text-muted-foreground hover:text-foreground hover:bg-black/[0.04] dark:bg-white/10 rounded-full transition-all active:scale-[0.95] mb-0.5"
                         >
                             <Plus className="w-5 h-5" />
                         </button>
@@ -493,7 +493,7 @@ export default function ChatArea({
                                 type="button"
                                 onClick={() => setTrainModalOpen(true)}
                                 title="Train MyRA"
-                                className="p-3 text-blue-400 hover:text-blue-300 hover:bg-white/10 rounded-full transition-all active:scale-[0.95] mb-0.5"
+                                className="p-3 text-blue-400 hover:text-blue-300 hover:bg-black/[0.04] dark:bg-white/10 rounded-full transition-all active:scale-[0.95] mb-0.5"
                             >
                                 <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m2 16 6 6"/><path d="m22 16-6 6"/><path d="m6 16 1.34-4.66a2 2 0 0 1 1.9-1.34h5.52a2 2 0 0 1 1.9 1.34L18 16"/><path d="M12 10V2"/><path d="M9 4l3-2 3 2"/></svg>
                             </button>
@@ -504,7 +504,7 @@ export default function ChatArea({
                             onChange={(e) => setInput(e.target.value)}
                             onKeyDown={handleKeyDown}
                             placeholder="Message MyRA..."
-                            className="w-full max-h-48 min-h-[50px] bg-transparent border-none focus:ring-0 text-white placeholder:text-white/30 font-light resize-none py-3.5 px-3 text-[16px] custom-scrollbar outline-none"
+                            className="w-full max-h-48 min-h-[50px] bg-transparent border-none focus:ring-0 text-foreground placeholder:text-white/30 font-light resize-none py-3.5 px-3 text-[16px] custom-scrollbar outline-none"
                             rows={1}
                         />
 

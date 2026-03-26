@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+﻿import { useState, useEffect } from "react";
 import { useMyRAChat } from "@/hooks/useMyRAChat";
 import { useAuth } from "@/contexts/AuthContext";
 import PortfolioOverview from "@/components/dashboard/PortfolioOverview";
@@ -81,7 +81,7 @@ export default function PortfolioPage() {
             {/* Profile Survey Modal */}
             {showSurvey && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
-                    <div className="bg-[#050810] border border-white/10 rounded-3xl shadow-2xl w-full max-w-2xl relative overflow-hidden animate-in fade-in zoom-in duration-300">
+                    <div className="bg-[#050810] border border-border rounded-3xl shadow-2xl w-full max-w-2xl relative overflow-hidden animate-in fade-in zoom-in duration-300">
                         <div className="absolute top-0 w-full h-1 bg-gradient-to-r from-blue-500 via-primary to-purple-500" />
                         <InitialProfileSurvey onComplete={() => setShowSurvey(false)} />
                     </div>
@@ -97,7 +97,7 @@ export default function PortfolioPage() {
                     </div>
                     <button 
                         onClick={() => setShowSurvey(true)}
-                        className="px-4 py-2 bg-blue-500 hover:bg-blue-400 text-white text-xs font-bold rounded-lg transition-colors shadow-lg shadow-blue-500/20 cursor-pointer"
+                        className="px-4 py-2 bg-blue-500 hover:bg-blue-400 text-foreground text-xs font-bold rounded-lg transition-colors shadow-lg shadow-blue-500/20 cursor-pointer"
                     >
                         Start Survey
                     </button>
@@ -108,8 +108,8 @@ export default function PortfolioPage() {
             <div>
                 <div className="flex items-center justify-between mb-6">
                     <div>
-                        <h2 className="text-2xl font-serif font-bold text-white mb-1">Connect Your Accounts</h2>
-                        <p className="text-white/40 text-sm">Link your financial institutions for automatic portfolio tracking.</p>
+                        <h2 className="text-2xl font-serif font-bold text-foreground mb-1">Connect Your Accounts</h2>
+                        <p className="text-muted-foreground text-sm">Link your financial institutions for automatic portfolio tracking.</p>
                     </div>
                     <div className="px-3 py-1.5 rounded-full bg-amber-500/10 border border-amber-500/20 text-amber-400 text-[10px] font-bold uppercase tracking-widest">
                         Coming Soon
@@ -129,7 +129,7 @@ export default function PortfolioPage() {
                                 </div>
                                 <div className="text-center">
                                     <p className="text-sm font-semibold text-white">{app.name}</p>
-                                    <p className="text-[10px] text-white/30 mt-1 flex items-center gap-1 justify-center">
+                                    <p className="text-[10px] text-muted-foreground/60 mt-1 flex items-center gap-1 justify-center">
                                         <Link2 className="w-3 h-3" /> Connect
                                     </p>
                                 </div>
@@ -140,7 +140,7 @@ export default function PortfolioPage() {
             </div>
 
             {/* Manual Entry Section */}
-            <div className="glass-premium rounded-[32px] p-8 border border-white/5 bg-white/[0.02]">
+            <div className="glass-premium rounded-[32px] p-8 border border-border bg-black/[0.02] dark:bg-white/[0.02]">
                 <div className="flex items-center justify-between mb-6">
                     <div className="flex items-center gap-3">
                         <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center">
@@ -148,7 +148,7 @@ export default function PortfolioPage() {
                         </div>
                         <div>
                             <h3 className="text-lg font-bold font-serif text-white">Add Assets Manually</h3>
-                            <p className="text-xs text-white/40">Quick add your accounts and balances.</p>
+                            <p className="text-xs text-muted-foreground">Quick add your accounts and balances.</p>
                         </div>
                     </div>
                     {!showManualEntry && (
@@ -165,34 +165,34 @@ export default function PortfolioPage() {
                     <div className="space-y-4 animate-in fade-in slide-in-from-top-2 duration-300">
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                             <div className="space-y-2">
-                                <label className="text-[10px] font-bold text-white/40 uppercase tracking-widest">Account Name</label>
+                                <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Account Name</label>
                                 <input 
                                     value={manualAsset.name}
                                     onChange={e => setManualAsset({...manualAsset, name: e.target.value})}
                                     placeholder="e.g. Fidelity 401(k)"
-                                    className="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-3 text-white placeholder-white/20 focus:outline-none focus:border-primary/50 transition-colors text-sm"
+                                    className="w-full bg-black/[0.03] dark:bg-black/40 border border-border rounded-xl px-4 py-3 text-foreground placeholder-white/20 focus:outline-none focus:border-primary/50 transition-colors text-sm"
                                 />
                             </div>
                             <div className="space-y-2">
-                                <label className="text-[10px] font-bold text-white/40 uppercase tracking-widest">Account Type</label>
+                                <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Account Type</label>
                                 <select 
                                     value={manualAsset.type}
                                     onChange={e => setManualAsset({...manualAsset, type: e.target.value})}
-                                    className="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-primary/50 transition-colors text-sm appearance-none"
+                                    className="w-full bg-black/[0.03] dark:bg-black/40 border border-border rounded-xl px-4 py-3 text-foreground focus:outline-none focus:border-primary/50 transition-colors text-sm appearance-none"
                                 >
                                     {ASSET_TYPES.map(t => <option key={t} value={t}>{t}</option>)}
                                 </select>
                             </div>
                             <div className="space-y-2">
-                                <label className="text-[10px] font-bold text-white/40 uppercase tracking-widest">Balance ($)</label>
+                                <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Balance ($)</label>
                                 <div className="relative">
-                                    <DollarSign className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white/30" />
+                                    <DollarSign className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground/60" />
                                     <input 
                                         type="number"
                                         value={manualAsset.value}
                                         onChange={e => setManualAsset({...manualAsset, value: e.target.value})}
                                         placeholder="250,000"
-                                        className="w-full bg-black/40 border border-white/10 rounded-xl pl-9 pr-4 py-3 text-white placeholder-white/20 focus:outline-none focus:border-primary/50 transition-colors text-sm"
+                                        className="w-full bg-black/[0.03] dark:bg-black/40 border border-border rounded-xl pl-9 pr-4 py-3 text-foreground placeholder-white/20 focus:outline-none focus:border-primary/50 transition-colors text-sm"
                                     />
                                 </div>
                             </div>
@@ -200,14 +200,14 @@ export default function PortfolioPage() {
                         <div className="flex gap-3 justify-end">
                             <button 
                                 onClick={() => setShowManualEntry(false)}
-                                className="px-4 py-2 text-white/50 hover:text-white text-sm font-medium cursor-pointer"
+                                className="px-4 py-2 text-muted-foreground hover:text-foreground text-sm font-medium cursor-pointer"
                             >
                                 Cancel
                             </button>
                             <button 
                                 onClick={handleSaveManualAsset}
                                 disabled={saving}
-                                className="px-6 py-2.5 bg-primary hover:bg-primary/80 text-white font-semibold rounded-xl transition-all cursor-pointer flex items-center gap-2 text-sm disabled:opacity-50"
+                                className="px-6 py-2.5 bg-primary hover:bg-primary/80 text-foreground font-semibold rounded-xl transition-all cursor-pointer flex items-center gap-2 text-sm disabled:opacity-50"
                             >
                                 {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <CheckCircle2 className="w-4 h-4" />}
                                 Save Asset
@@ -223,19 +223,19 @@ export default function PortfolioPage() {
             </div>
 
             {/* CTA to Chat */}
-            <div className="glass-premium rounded-[32px] p-8 border border-white/5 bg-white/[0.02] flex flex-col sm:flex-row items-center justify-between gap-6">
+            <div className="glass-premium rounded-[32px] p-8 border border-border bg-black/[0.02] dark:bg-white/[0.02] flex flex-col sm:flex-row items-center justify-between gap-6">
                 <div className="flex items-center gap-4">
                     <div className="w-12 h-12 rounded-2xl bg-primary/10 flex items-center justify-center">
                         <MessageSquare className="w-6 h-6 text-primary" />
                     </div>
                     <div>
-                        <h3 className="text-lg font-bold font-serif text-white mb-0.5">Prefer to tell MyRA?</h3>
-                        <p className="text-sm text-white/40">Describe your accounts in chat and she'll update your portfolio automatically.</p>
+                        <h3 className="text-lg font-bold font-serif text-foreground mb-0.5">Prefer to tell MyRA?</h3>
+                        <p className="text-sm text-muted-foreground">Describe your accounts in chat and she'll update your portfolio automatically.</p>
                     </div>
                 </div>
                 <button 
                     onClick={() => navigate('/app/chat')}
-                    className="px-6 py-3 bg-primary hover:bg-primary/80 text-white font-semibold rounded-2xl transition-all flex items-center gap-2 shadow-lg shadow-primary/20 cursor-pointer active:scale-[0.97] whitespace-nowrap"
+                    className="px-6 py-3 bg-primary hover:bg-primary/80 text-foreground font-semibold rounded-2xl transition-all flex items-center gap-2 shadow-lg shadow-primary/20 cursor-pointer active:scale-[0.97] whitespace-nowrap"
                 >
                     Open MyRA Chat
                     <ArrowRight className="w-4 h-4" />

@@ -3,7 +3,7 @@ import { LineChart, Calendar, Plus, Car, Utensils, Infinity, PieChart, Activity,
 
 const NewFeatures = () => {
     return (
-        <section className="relative py-32 bg-[#030508] overflow-hidden">
+        <section className="relative py-32 bg-background overflow-hidden">
             {/* Subtle glow behind features */}
             <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] aurora-bg opacity-30 pointer-events-none blur-[100px]" />
 
@@ -17,10 +17,10 @@ const NewFeatures = () => {
                     transition={{ duration: 0.8 }}
                     className="text-center mb-20"
                 >
-                    <h2 className="text-5xl md:text-6xl font-serif text-white mb-6">
+                    <h2 className="text-5xl md:text-6xl font-serif text-foreground mb-6">
                         <span className="italic font-light">Simplify</span> your future
                     </h2>
-                    <p className="max-w-2xl mx-auto text-lg text-white/50 font-sans font-light">
+                    <p className="max-w-2xl mx-auto text-lg text-muted-foreground font-sans font-light">
                         Connect all your accounts to see your retirement in one<br className="hidden sm:block" />
                         place—easy to find, easy to understand.
                     </p>
@@ -75,8 +75,8 @@ const NewFeatures = () => {
 
                         {/* Text Content */}
                         <div className="relative z-10 p-8 pt-6 pb-10">
-                            <h4 className="text-xl font-sans font-bold text-white mb-2">Monitor your spending</h4>
-                            <p className="text-sm font-sans text-white/60">See every transaction, automatically categorized.</p>
+                            <h4 className="text-xl font-sans font-bold text-foreground mb-2">Monitor your spending</h4>
+                            <p className="text-sm font-sans text-muted-foreground">See every transaction, automatically categorized.</p>
                         </div>
                     </motion.div>
 
@@ -164,8 +164,8 @@ const NewFeatures = () => {
 
                         {/* Text Content */}
                         <div className="relative z-10 p-8 pt-6 pb-10">
-                            <h4 className="text-xl font-sans font-bold text-white mb-2">Build a budget</h4>
-                            <p className="text-sm font-sans text-white/60">AI sets up your budget and helps you track progress all month long.</p>
+                            <h4 className="text-xl font-sans font-bold text-foreground mb-2">Build a budget</h4>
+                            <p className="text-sm font-sans text-muted-foreground">AI sets up your budget and helps you track progress all month long.</p>
                         </div>
                     </motion.div>
 
@@ -295,8 +295,8 @@ const NewFeatures = () => {
 
                         {/* Text Content */}
                         <div className="relative z-10 p-8 pt-6 pb-10">
-                            <h4 className="text-xl font-sans font-bold text-white mb-2">Cancel unwanted subscriptions</h4>
-                            <p className="text-sm font-sans text-white/60">Find, manage, and cancel subscriptions in seconds.</p>
+                            <h4 className="text-xl font-sans font-bold text-foreground mb-2">Cancel unwanted subscriptions</h4>
+                            <p className="text-sm font-sans text-muted-foreground">Find, manage, and cancel subscriptions in seconds.</p>
                         </div>
                     </motion.div>
 

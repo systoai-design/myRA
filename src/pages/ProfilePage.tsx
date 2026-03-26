@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+﻿import { useState, useEffect, useCallback } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -102,16 +102,16 @@ export default function ProfilePage() {
             {/* Header */}
             <div className="flex items-center justify-between">
                 <div>
-                    <h2 className="text-3xl font-serif font-bold text-white mb-2">Your Profile</h2>
-                    <p className="text-white/40 text-sm font-medium">MyRA uses this data to personalize your retirement strategy.</p>
+                    <h2 className="text-3xl font-serif font-bold text-foreground mb-2">Your Profile</h2>
+                    <p className="text-muted-foreground text-sm font-medium">MyRA uses this data to personalize your retirement strategy.</p>
                 </div>
                 <div className="flex items-center gap-3">
-                    <div className="px-4 py-2 rounded-2xl bg-white/5 border border-white/10 flex items-center gap-3">
+                    <div className="px-4 py-2 rounded-2xl bg-black/[0.03] dark:bg-white/5 border border-border flex items-center gap-3">
                         <div className="w-8 h-8 rounded-full bg-emerald-500/20 flex items-center justify-center">
                             <CheckCircle2 className="w-4 h-4 text-emerald-400" />
                         </div>
                         <div>
-                            <p className="text-[10px] uppercase tracking-widest text-white/40 font-bold">Completion</p>
+                            <p className="text-[10px] uppercase tracking-widest text-muted-foreground font-bold">Completion</p>
                             <p className="text-sm font-bold text-white">{completionPct}%</p>
                         </div>
                     </div>
@@ -119,12 +119,12 @@ export default function ProfilePage() {
             </div>
 
             {/* Completion Progress */}
-            <div className="glass-premium rounded-[32px] p-6 border border-white/5 bg-white/[0.02]">
+            <div className="glass-premium rounded-[32px] p-6 border border-border bg-black/[0.02] dark:bg-white/[0.02]">
                 <div className="flex items-center justify-between mb-3">
-                    <span className="text-xs font-bold text-white/40 uppercase tracking-widest">Profile Calibration</span>
-                    <span className="text-xs font-bold text-white/60">{completionCount}/{FIELD_CONFIG.length} fields</span>
+                    <span className="text-xs font-bold text-muted-foreground uppercase tracking-widest">Profile Calibration</span>
+                    <span className="text-xs font-bold text-muted-foreground">{completionCount}/{FIELD_CONFIG.length} fields</span>
                 </div>
-                <div className="h-2 w-full bg-white/5 rounded-full overflow-hidden">
+                <div className="h-2 w-full bg-black/[0.03] dark:bg-white/5 rounded-full overflow-hidden">
                     <div 
                         className="h-full bg-gradient-to-r from-primary to-emerald-500 rounded-full transition-all duration-700"
                         style={{ width: `${completionPct}%` }}
@@ -152,19 +152,19 @@ export default function ProfilePage() {
                         return (
                             <div 
                                 key={field.category}
-                                className="glass-premium rounded-[24px] p-6 border border-white/5 bg-white/[0.02] group relative hover:border-white/10 transition-all"
+                                className="glass-premium rounded-[24px] p-6 border border-border bg-black/[0.02] dark:bg-white/[0.02] group relative hover:border-border transition-all"
                             >
                                 <div className="flex items-center justify-between mb-4">
                                     <div className="flex items-center gap-2">
                                         <div className="w-8 h-8 rounded-xl bg-primary/10 flex items-center justify-center">
                                             <Icon className="w-4 h-4 text-primary" />
                                         </div>
-                                        <span className="text-[10px] font-bold uppercase tracking-widest text-white/40">{field.label}</span>
+                                        <span className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">{field.label}</span>
                                     </div>
                                     {!isEditing && (
                                         <button 
                                             onClick={() => startEditing(field.category)}
-                                            className="p-1.5 text-white/30 hover:text-white hover:bg-white/10 rounded-lg transition-all opacity-0 group-hover:opacity-100 cursor-pointer"
+                                            className="p-1.5 text-muted-foreground/60 hover:text-foreground hover:bg-black/[0.04] dark:bg-white/10 rounded-lg transition-all opacity-0 group-hover:opacity-100 cursor-pointer"
                                         >
                                             <Edit3 className="w-3.5 h-3.5" />
                                         </button>
@@ -177,7 +177,7 @@ export default function ProfilePage() {
                                             <select 
                                                 value={editValue} 
                                                 onChange={e => setEditValue(e.target.value)}
-                                                className="flex-1 bg-black/40 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-primary/50 transition-colors appearance-none text-sm"
+                                                className="flex-1 bg-black/40 border border-border rounded-xl px-4 py-3 text-foreground focus:outline-none focus:border-primary/50 transition-colors appearance-none text-sm"
                                             >
                                                 <option value="" disabled>Select State</option>
                                                 {STATES.map(s => <option key={s} value={s}>{s}</option>)}
@@ -186,7 +186,7 @@ export default function ProfilePage() {
                                             <select 
                                                 value={editValue} 
                                                 onChange={e => setEditValue(e.target.value)}
-                                                className="flex-1 bg-black/40 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-primary/50 transition-colors appearance-none text-sm"
+                                                className="flex-1 bg-black/40 border border-border rounded-xl px-4 py-3 text-foreground focus:outline-none focus:border-primary/50 transition-colors appearance-none text-sm"
                                             >
                                                 {TAX_STATUSES.map(s => <option key={s} value={s}>{s}</option>)}
                                             </select>
@@ -197,14 +197,14 @@ export default function ProfilePage() {
                                                 onChange={e => setEditValue(e.target.value)}
                                                 onKeyDown={e => { if (e.key === 'Enter') handleSave(field.category); }}
                                                 placeholder={field.placeholder}
-                                                className="flex-1 bg-black/40 border border-white/10 rounded-xl px-4 py-3 text-white placeholder-white/20 focus:outline-none focus:border-primary/50 transition-colors text-sm"
+                                                className="flex-1 bg-black/40 border border-border rounded-xl px-4 py-3 text-foreground placeholder-white/20 focus:outline-none focus:border-primary/50 transition-colors text-sm"
                                                 autoFocus
                                             />
                                         )}
                                         <button 
                                             onClick={() => handleSave(field.category)}
                                             disabled={saving}
-                                            className="p-3 bg-primary hover:bg-primary/80 rounded-xl text-white transition-all cursor-pointer disabled:opacity-50"
+                                            className="p-3 bg-primary hover:bg-primary/80 rounded-xl text-foreground transition-all cursor-pointer disabled:opacity-50"
                                         >
                                             {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
                                         </button>
@@ -228,13 +228,13 @@ export default function ProfilePage() {
             )}
 
             {/* Security Badge */}
-            <div className="glass-premium rounded-[24px] p-6 border border-white/5 bg-white/[0.02] flex items-center gap-4">
+            <div className="glass-premium rounded-[24px] p-6 border border-border bg-black/[0.02] dark:bg-white/[0.02] flex items-center gap-4">
                 <div className="w-10 h-10 rounded-xl bg-emerald-500/10 flex items-center justify-center">
                     <Shield className="w-5 h-5 text-emerald-400" />
                 </div>
                 <div>
                     <p className="text-sm font-semibold text-white">Your data is encrypted and secure</p>
-                    <p className="text-xs text-white/40 mt-0.5">All profile information is stored with AES-256 encryption via Supabase.</p>
+                    <p className="text-xs text-muted-foreground mt-0.5">All profile information is stored with AES-256 encryption via Supabase.</p>
                 </div>
             </div>
         </div>

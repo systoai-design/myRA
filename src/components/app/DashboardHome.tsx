@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from "react";
+﻿import { useState, useEffect, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
@@ -35,9 +35,9 @@ import {
     TrendingDown,
 } from "lucide-react";
 
-// ═══════════════════════════════════════════
-// MOCK DATA — matching user reference screenshots
-// ═══════════════════════════════════════════
+// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+// MOCK DATA â€” matching user reference screenshots
+// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 
 const netWorthTrendData = [
     { name: "Jan", value: 980000 },
@@ -72,11 +72,11 @@ const assetAllocation = [
 ];
 
 const recentTransactions = [
-    { name: "Whole Foods Market", category: "Groceries", amount: -142.50, icon: DollarSign, color: "text-white/60 bg-white/5" },
+    { name: "Whole Foods Market", category: "Groceries", amount: -142.50, icon: DollarSign, color: "text-muted-foreground bg-black/[0.03] dark:bg-white/5" },
     { name: "Vanguard 401(k) Contribution", category: "Investing", amount: -1200.00, icon: TrendingUp, color: "text-blue-400 bg-blue-500/10" },
     { name: "Acme Corp Salary", category: "Income", amount: 6200.00, icon: DollarSign, color: "text-emerald-400 bg-emerald-500/10" },
-    { name: "Netflix Subscription", category: "Entertainment", amount: -15.99, icon: Building2, color: "text-white/60 bg-white/5" },
-    { name: "Equinox Gym", category: "Health", amount: -250.00, icon: Activity, color: "text-white/60 bg-white/5" },
+    { name: "Netflix Subscription", category: "Entertainment", amount: -15.99, icon: Building2, color: "text-muted-foreground bg-black/[0.03] dark:bg-white/5" },
+    { name: "Equinox Gym", category: "Health", amount: -250.00, icon: Activity, color: "text-muted-foreground bg-black/[0.03] dark:bg-white/5" },
 ];
 
 const activityLog = [
@@ -138,8 +138,8 @@ export default function DashboardHome() {
     return (
         <div className="space-y-8 animate-in fade-in duration-700">
 
-            {/* ───────── Hero Welcome ───────── */}
-            <div className="relative overflow-hidden rounded-[28px] bg-gradient-to-br from-primary/10 via-blue-600/5 to-purple-600/10 border border-white/5 p-8 lg:p-10">
+            {/* â”€â”€â”€â”€â”€â”€â”€â”€â”€ Hero Welcome â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
+            <div className="relative overflow-hidden rounded-[28px] bg-gradient-to-br from-primary/10 via-blue-600/5 to-purple-600/10 border border-border p-8 lg:p-10">
                 <div className="absolute top-0 right-0 w-64 h-64 bg-primary/15 blur-[100px] rounded-full pointer-events-none animate-orb" />
                 <div className="absolute bottom-0 left-0 w-48 h-48 bg-purple-500/10 blur-[80px] rounded-full pointer-events-none animate-orb-delayed" />
                 
@@ -149,21 +149,21 @@ export default function DashboardHome() {
                             <Sparkles className="w-4 h-4 text-primary" />
                             <span className="text-[10px] font-bold uppercase tracking-[0.3em] text-primary/80">{greeting}</span>
                         </div>
-                        <h2 className="text-4xl font-bold text-white mb-2">
+                        <h2 className="text-4xl font-bold text-foreground mb-2">
                             Welcome back, <span className="bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent">{userName}</span>
                         </h2>
-                        <p className="text-white/40 text-sm font-medium tracking-wide max-w-lg">
+                        <p className="text-muted-foreground text-sm font-medium tracking-wide max-w-lg">
                             Your retirement plan is being actively monitored. Here's your financial overview.
                         </p>
                     </div>
                     
                     <div className="flex items-center gap-4 shrink-0">
-                        <div className="px-5 py-3 rounded-2xl bg-black/30 backdrop-blur-xl border border-emerald-500/20 flex items-center gap-3">
+                        <div className="px-5 py-3 rounded-2xl bg-black/[0.04] dark:bg-black/30 backdrop-blur-xl border border-emerald-500/20 flex items-center gap-3">
                             <div className="w-10 h-10 rounded-xl bg-emerald-500/10 flex items-center justify-center">
                                 <ArrowUpRight className="w-5 h-5 text-emerald-400" />
                             </div>
                             <div>
-                                <p className="text-[10px] uppercase tracking-widest text-white/40 font-bold">Total Gain</p>
+                                <p className="text-[10px] uppercase tracking-widest text-muted-foreground font-bold">Total Gain</p>
                                 <p className="text-lg font-bold text-emerald-400">+12.5%</p>
                             </div>
                         </div>
@@ -171,7 +171,7 @@ export default function DashboardHome() {
                 </div>
             </div>
 
-            {/* ───────── Quick Actions ───────── */}
+            {/* â”€â”€â”€â”€â”€â”€â”€â”€â”€ Quick Actions â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 {quickActions.map((action) => {
                     const Icon = action.icon;
@@ -183,29 +183,29 @@ export default function DashboardHome() {
                         >
                             <div className="relative z-10 flex items-center justify-between">
                                 <div className="flex items-center gap-3">
-                                    <div className="w-10 h-10 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center">
+                                    <div className="w-10 h-10 rounded-xl bg-black/[0.03] dark:bg-white/5 border border-border dark:border-white/10 flex items-center justify-center">
                                         <Icon className={`w-5 h-5 ${action.iconColor}`} />
                                     </div>
                                     <div>
-                                        <p className="text-white font-bold text-sm">{action.label}</p>
-                                        <p className="text-white/40 text-xs mt-0.5">{action.description}</p>
+                                        <p className="text-foreground font-bold text-sm">{action.label}</p>
+                                        <p className="text-muted-foreground text-xs mt-0.5">{action.description}</p>
                                     </div>
                                 </div>
-                                <ArrowRight className="w-4 h-4 text-white/20 group-hover:text-white/60 group-hover:translate-x-1 transition-all" />
+                                <ArrowRight className="w-4 h-4 text-muted-foreground/40 group-hover:text-muted-foreground group-hover:translate-x-1 transition-all" />
                             </div>
                         </button>
                     );
                 })}
             </div>
 
-            {/* ═══════════ TOTAL NET WORTH ═══════════ */}
-            <div className="glass-premium rounded-[28px] p-8 border border-white/5 bg-white/[0.02] relative overflow-hidden group">
+            {/* â•â•â•â•â•â•â•â•â•â•â• TOTAL NET WORTH â•â•â•â•â•â•â•â•â•â•â• */}
+            <div className="glass-card rounded-[28px] p-8 relative overflow-hidden group">
                 <div className="absolute -bottom-20 -right-20 w-80 h-80 bg-blue-600/5 blur-[100px] rounded-full group-hover:bg-blue-600/10 transition-all duration-700" />
                 
                 <div className="relative z-10">
                     <div className="flex items-center justify-between mb-6">
                         <div>
-                            <p className="text-xs text-white/40 font-bold uppercase tracking-widest mb-1">Total Net Worth</p>
+                            <p className="text-xs text-muted-foreground font-bold uppercase tracking-widest mb-1">Total Net Worth</p>
                             <h2 className="text-5xl font-bold text-white tracking-tight">{formatCurrency(1204500)}</h2>
                         </div>
                         <div className="px-4 py-2 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex items-center gap-2">
@@ -244,13 +244,13 @@ export default function DashboardHome() {
                         {netWorthBreakdown.map((item) => {
                             const Icon = item.icon;
                             return (
-                                <div key={item.label} className="bg-white/[0.03] rounded-2xl p-4 border border-white/5 flex items-center gap-3">
+                                <div key={item.label} className="bg-black/[0.02] dark:bg-white/[0.03] rounded-2xl p-4 border border-border flex items-center gap-3">
                                     <div className={`w-9 h-9 rounded-xl ${item.bg} flex items-center justify-center`}>
                                         <Icon className={`w-4 h-4 ${item.color}`} />
                                     </div>
                                     <div>
-                                        <p className="text-[10px] text-white/40 font-bold uppercase tracking-widest">{item.label}</p>
-                                        <p className="text-lg font-bold text-white">{formatCurrency(item.value)}</p>
+                                        <p className="text-[10px] text-muted-foreground font-bold uppercase tracking-widest">{item.label}</p>
+                                        <p className="text-lg font-bold text-foreground">{formatCurrency(item.value)}</p>
                                     </div>
                                 </div>
                             );
@@ -259,12 +259,12 @@ export default function DashboardHome() {
                 </div>
             </div>
 
-            {/* ═══════════ CASHFLOW + TRANSACTIONS ROW ═══════════ */}
+            {/* â•â•â•â•â•â•â•â•â•â•â• CASHFLOW + TRANSACTIONS ROW â•â•â•â•â•â•â•â•â•â•â• */}
             <div className="grid grid-cols-1 lg:grid-cols-5 gap-8">
                 
-                {/* Monthly Cashflow — Donut */}
-                <div className="lg:col-span-2 glass-premium rounded-[28px] p-8 border border-white/5 bg-white/[0.02]">
-                    <h3 className="text-lg font-bold text-white mb-6">Monthly Cashflow</h3>
+                {/* Monthly Cashflow â€” Donut */}
+                <div className="lg:col-span-2 glass-card rounded-[28px] p-8">
+                    <h3 className="text-lg font-bold text-foreground mb-6">Monthly Cashflow</h3>
                     
                     <div className="flex flex-col items-center">
                         <div className="relative w-[180px] h-[180px]">
@@ -290,7 +290,7 @@ export default function DashboardHome() {
                             </ResponsiveContainer>
                             <div className="absolute inset-0 flex flex-col items-center justify-center">
                                 <span className="text-2xl font-bold text-emerald-400">+${(surplus / 1000).toFixed(1)}k</span>
-                                <span className="text-[10px] text-white/40 font-bold uppercase tracking-widest">Surplus</span>
+                                <span className="text-[10px] text-muted-foreground font-bold uppercase tracking-widest">Surplus</span>
                             </div>
                         </div>
 
@@ -298,40 +298,40 @@ export default function DashboardHome() {
                             <div className="flex items-center justify-between">
                                 <div className="flex items-center gap-2">
                                     <ArrowDownRight className="w-3.5 h-3.5 text-emerald-400" />
-                                    <span className="text-sm text-white/60 font-medium">Income</span>
+                                    <span className="text-sm text-muted-foreground font-medium">Income</span>
                                 </div>
-                                <span className="text-sm font-bold text-white">{formatCurrency(12400)}</span>
+                                <span className="text-sm font-bold text-foreground">{formatCurrency(12400)}</span>
                             </div>
                             <div className="flex items-center justify-between">
                                 <div className="flex items-center gap-2">
                                     <ArrowUpRight className="w-3.5 h-3.5 text-red-400" />
-                                    <span className="text-sm text-white/60 font-medium">Expenses</span>
+                                    <span className="text-sm text-muted-foreground font-medium">Expenses</span>
                                 </div>
-                                <span className="text-sm font-bold text-white">{formatCurrency(8200)}</span>
+                                <span className="text-sm font-bold text-foreground">{formatCurrency(8200)}</span>
                             </div>
                         </div>
                     </div>
                 </div>
 
                 {/* Recent Transactions */}
-                <div className="lg:col-span-3 glass-premium rounded-[28px] p-8 border border-white/5 bg-white/[0.02]">
-                    <h3 className="text-lg font-bold text-white mb-6">Recent Transactions</h3>
+                <div className="lg:col-span-3 glass-card rounded-[28px] p-8">
+                    <h3 className="text-lg font-bold text-foreground mb-6">Recent Transactions</h3>
                     
                     <div className="space-y-3">
                         {recentTransactions.map((tx, i) => {
                             const Icon = tx.icon;
                             return (
-                                <div key={i} className="flex items-center justify-between p-4 rounded-2xl bg-white/[0.03] border border-white/5 hover:bg-white/[0.05] transition-colors">
+                                <div key={i} className="flex items-center justify-between p-4 rounded-2xl bg-black/[0.02] dark:bg-white/[0.03] border border-border hover:bg-black/[0.03] dark:bg-white/[0.05] transition-colors">
                                     <div className="flex items-center gap-3">
                                         <div className={`w-10 h-10 rounded-xl ${tx.color} flex items-center justify-center`}>
                                             <Icon className="w-4 h-4" />
                                         </div>
                                         <div>
-                                            <p className="text-sm font-bold text-white">{tx.name}</p>
-                                            <p className="text-[10px] text-white/30 font-medium uppercase tracking-widest">{tx.category}</p>
+                                            <p className="text-sm font-bold text-foreground">{tx.name}</p>
+                                            <p className="text-[10px] text-muted-foreground/60 font-medium uppercase tracking-widest">{tx.category}</p>
                                         </div>
                                     </div>
-                                    <span className={`text-sm font-bold ${tx.amount >= 0 ? "text-emerald-400" : "text-white/70"}`}>
+                                    <span className={`text-sm font-bold ${tx.amount >= 0 ? "text-emerald-400" : "text-foreground/70"}`}>
                                         {tx.amount >= 0 ? "+" : ""}{formatCurrency(Math.abs(tx.amount))}
                                     </span>
                                 </div>
@@ -341,22 +341,22 @@ export default function DashboardHome() {
                 </div>
             </div>
 
-            {/* ═══════════ ASSET ALLOCATION + AI INSIGHTS + ACTIVITY ═══════════ */}
+            {/* â•â•â•â•â•â•â•â•â•â•â• ASSET ALLOCATION + AI INSIGHTS + ACTIVITY â•â•â•â•â•â•â•â•â•â•â• */}
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
 
                 {/* Asset Allocation */}
-                <div className="glass-premium rounded-[28px] p-8 border border-white/5 bg-white/[0.02]">
-                    <h3 className="text-lg font-bold text-white mb-2">Asset Allocation</h3>
-                    <p className="text-4xl font-bold text-white mb-8">{formatCurrency(850300)}</p>
+                <div className="glass-card rounded-[28px] p-8">
+                    <h3 className="text-lg font-bold text-foreground mb-2">Asset Allocation</h3>
+                    <p className="text-4xl font-bold text-foreground mb-8">{formatCurrency(850300)}</p>
                     
                     <div className="space-y-5">
                         {assetAllocation.map((asset, i) => (
                             <div key={i} className="space-y-2">
                                 <div className="flex items-center justify-between text-sm">
-                                    <span className="text-white/60 font-medium">{asset.name}</span>
-                                    <span className="text-white font-bold">{asset.pct}%</span>
+                                    <span className="text-muted-foreground font-medium">{asset.name}</span>
+                                    <span className="text-foreground font-bold">{asset.pct}%</span>
                                 </div>
-                                <div className="h-2 w-full bg-white/5 rounded-full overflow-hidden">
+                                <div className="h-2 w-full bg-black/[0.03] dark:bg-white/5 rounded-full overflow-hidden">
                                     <div className={`h-full rounded-full ${asset.color} transition-all duration-1000`} style={{ width: `${asset.pct}%` }} />
                                 </div>
                             </div>
@@ -373,23 +373,23 @@ export default function DashboardHome() {
                                 <Sparkles className="w-4 h-4 text-purple-400" />
                                 <span className="text-sm font-bold text-purple-300">AI Tax Harvest Found</span>
                             </div>
-                            <p className="text-sm text-white/60 leading-relaxed mb-5">
-                                MyRA identified <span className="text-white font-bold">$3,240</span> in harvestable losses on your AAPL position. Execute this trade to offset upcoming capital gains.
+                            <p className="text-sm text-muted-foreground leading-relaxed mb-5">
+                                MyRA identified <span className="text-foreground font-bold">$3,240</span> in harvestable losses on your AAPL position. Execute this trade to offset upcoming capital gains.
                             </p>
-                            <button className="px-5 py-2.5 bg-purple-500 hover:bg-purple-400 text-white font-bold rounded-xl transition-all cursor-pointer active:scale-[0.97] text-sm">
+                            <button className="px-5 py-2.5 bg-purple-500 hover:bg-purple-400 text-foreground font-bold rounded-xl transition-all cursor-pointer active:scale-[0.97] text-sm">
                                 Execute Strategy
                             </button>
                         </div>
                     </div>
 
-                    <div className="glass-premium rounded-[28px] p-6 border border-white/5 bg-white/[0.02] flex items-center justify-between">
+                    <div className="glass-premium rounded-[28px] p-6 border border-border bg-white/[0.02] flex items-center justify-between">
                         <div className="flex items-center gap-3">
                             <div className="w-10 h-10 rounded-xl bg-blue-500/10 flex items-center justify-center">
                                 <TrendingUp className="w-4 h-4 text-blue-400" />
                             </div>
                             <div>
-                                <p className="text-sm font-bold text-white">SPY Dividend Reinvested</p>
-                                <p className="text-[10px] text-white/30 font-medium uppercase tracking-widest">Today at 9:30 AM</p>
+                                <p className="text-sm font-bold text-foreground">SPY Dividend Reinvested</p>
+                                <p className="text-[10px] text-muted-foreground/60 font-medium uppercase tracking-widest">Today at 9:30 AM</p>
                             </div>
                         </div>
                         <span className="text-sm font-bold text-emerald-400">+$450.00</span>
@@ -398,11 +398,11 @@ export default function DashboardHome() {
 
                 {/* Activity + Security */}
                 <div className="space-y-6">
-                    <div className="glass-premium rounded-[28px] p-6 border border-white/5 bg-white/[0.02]">
+                    <div className="glass-premium rounded-[28px] p-6 border border-border bg-white/[0.02]">
                         <div className="flex items-center justify-between mb-5">
                             <div className="flex items-center gap-2">
-                                <Clock className="w-4 h-4 text-white/30" />
-                                <h3 className="text-sm font-bold text-white">Recent Activity</h3>
+                                <Clock className="w-4 h-4 text-muted-foreground/60" />
+                                <h3 className="text-sm font-bold text-foreground">Recent Activity</h3>
                             </div>
                         </div>
                         <div className="space-y-4">
@@ -413,7 +413,7 @@ export default function DashboardHome() {
                                     </div>
                                     <div className="min-w-0">
                                         <p className="text-xs font-bold text-white/80 leading-snug">{log.action}</p>
-                                        <p className="text-[10px] font-bold uppercase tracking-widest text-white/30 mt-1">{log.time}</p>
+                                        <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground/60 mt-1">{log.time}</p>
                                     </div>
                                 </div>
                             ))}
@@ -426,8 +426,8 @@ export default function DashboardHome() {
                                 <Shield className="w-4 h-4 text-emerald-400" />
                             </div>
                             <div>
-                                <h3 className="text-sm font-bold text-white">Protected</h3>
-                                <p className="text-[10px] text-white/30">Bank-grade encryption active</p>
+                                <h3 className="text-sm font-bold text-foreground">Protected</h3>
+                                <p className="text-[10px] text-muted-foreground/60">Bank-grade encryption active</p>
                             </div>
                         </div>
                         <div className="flex gap-2">

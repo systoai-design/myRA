@@ -29,13 +29,13 @@ const NewFAQ = () => {
     const [openIndex, setOpenIndex] = useState<number | null>(0);
 
     return (
-        <section className="py-32 bg-[#030508] relative">
+        <section className="py-32 bg-background relative">
             <div className="max-w-3xl mx-auto px-6 lg:px-8 relative z-10">
                 <div className="text-center mb-20">
-                    <h2 className="text-5xl md:text-6xl font-serif text-white mb-6">
+                    <h2 className="text-5xl md:text-6xl font-serif text-foreground mb-6">
                         Ask <span className="italic font-light">anything</span>
                     </h2>
-                    <p className="text-lg text-white/50 font-sans font-light">
+                    <p className="text-lg text-muted-foreground font-sans font-light">
                         Clear answers to common questions.
                     </p>
                 </div>
@@ -47,20 +47,20 @@ const NewFAQ = () => {
                         return (
                             <div 
                                 key={index} 
-                                className="glass-premium rounded-2xl overflow-hidden transition-colors duration-300"
+                                className="glass-card rounded-2xl overflow-hidden"
                             >
                                 <button
                                     onClick={() => setOpenIndex(isOpen ? null : index)}
                                     className="w-full text-left px-8 py-6 flex items-center justify-between focus:outline-none group"
                                 >
-                                    <h3 className="text-lg font-serif text-white group-hover:text-white/80 transition-colors pr-8">
+                                    <h3 className="text-lg font-serif text-foreground group-hover:text-foreground/70 transition-colors pr-8">
                                         {faq.question}
                                     </h3>
-                                    <div className={`flex-shrink-0 w-8 h-8 rounded-full border flex items-center justify-center transition-all duration-300 ${isOpen ? 'border-white/30 bg-white/10' : 'border-white/10 bg-transparent group-hover:border-white/30'}`}>
+                                    <div className={`flex-shrink-0 w-8 h-8 rounded-full border flex items-center justify-center transition-all duration-300 ${isOpen ? 'border-foreground/30 bg-foreground/10' : 'border-border bg-transparent group-hover:border-foreground/30'}`}>
                                         {isOpen ? (
-                                            <X className="w-4 h-4 text-white" />
+                                            <X className="w-4 h-4 text-foreground" />
                                         ) : (
-                                            <Plus className="w-4 h-4 text-white/70" />
+                                            <Plus className="w-4 h-4 text-muted-foreground" />
                                         )}
                                     </div>
                                 </button>
@@ -73,7 +73,7 @@ const NewFAQ = () => {
                                             exit={{ height: 0, opacity: 0 }}
                                             transition={{ duration: 0.3, ease: "easeInOut" }}
                                         >
-                                            <div className="px-8 pb-8 text-white/60 font-sans font-light leading-relaxed">
+                                            <div className="px-8 pb-8 text-muted-foreground font-sans font-light leading-relaxed">
                                                 {faq.answer}
                                             </div>
                                         </motion.div>

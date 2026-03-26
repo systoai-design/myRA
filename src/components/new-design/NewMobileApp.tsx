@@ -87,7 +87,7 @@ const NewMobileApp = () => {
     }, []);
 
     return (
-        <section className="py-24 lg:py-40 w-full bg-[#020305] relative overflow-hidden">
+        <section className="py-24 lg:py-40 w-full bg-background relative overflow-hidden">
             
             {/* Background Glow */}
             <div className={`absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] blur-[140px] -z-10 rounded-full pointer-events-none transition-colors duration-1000 opacity-20 ${activeTab === 0 ? 'bg-blue-600' : activeTab === 1 ? 'bg-emerald-600' : 'bg-purple-600'}`} />
@@ -95,16 +95,16 @@ const NewMobileApp = () => {
             <div className="flex flex-col lg:flex-row items-center justify-center max-w-7xl mx-auto px-6 gap-16 lg:gap-24 relative z-20">
                 {/* LEFT Col: Header and Text */}
                 <div className="w-full lg:w-1/2 text-center lg:text-left z-20">
-                    <div className="inline-flex items-center gap-2 px-4 py-2 mb-8 rounded-full bg-white/5 border border-white/10 text-xs font-semibold text-white/70">
+                    <div className="inline-flex items-center gap-2 px-4 py-2 mb-8 rounded-full bg-black/[0.03] dark:bg-white/5 border border-black/5 dark:border-white/10 text-xs font-semibold text-muted-foreground">
                         <Apple className="w-4 h-4" />
                         iOS App Coming Soon
                     </div>
 
-                    <h2 className="text-4xl md:text-5xl lg:text-6xl font-serif text-white mb-6 tracking-tight leading-tight">
+                    <h2 className="text-4xl md:text-5xl lg:text-6xl font-serif text-foreground mb-6 tracking-tight leading-tight">
                         Your entire financial life, in your pocket.
                     </h2>
                     
-                    <p className="text-lg text-white/60 font-light mb-10 max-w-lg mx-auto lg:mx-0">
+                    <p className="text-lg text-muted-foreground font-light mb-10 max-w-lg mx-auto lg:mx-0">
                         We are currently building the ultimate mobile experience. Soon, you will be able to track your net worth, execute AI tax loss harvesting, and chat with MyRA directly from your iPhone.
                     </p>
 
@@ -116,8 +116,8 @@ const NewMobileApp = () => {
                                 onClick={() => setActiveTab(idx)}
                                 className={`h-2 rounded-full transition-all duration-300 ${
                                     activeTab === idx 
-                                    ? "w-12 bg-white" 
-                                    : "w-4 bg-white/20 hover:bg-white/40"
+                                    ? "w-12 bg-foreground" 
+                                    : "w-4 bg-foreground/20 hover:bg-foreground/40"
                                 }`}
                                 aria-label={`View ${tab.label} mock`}
                             />

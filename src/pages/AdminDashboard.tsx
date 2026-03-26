@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef } from "react";
+﻿import React, { useEffect, useState, useRef } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { NewHeader } from "@/components/new-design/NewHeader";
@@ -290,12 +290,12 @@ export default function AdminDashboard() {
             }
         } catch (error: any) {
             console.error('Summarize error:', error);
-            // Fallback — let admin proceed without AI summary
+            // Fallback â€” let admin proceed without AI summary
             setTranscriptPreview({
                 summary: `[AI summarization unavailable] ${transcript.content.substring(0, 200)}...`,
                 keyPoints: ['Transcript will be stored as raw chunks without AI processing']
             });
-            toast.error('AI summarization failed — you can still ingest the raw transcript');
+            toast.error('AI summarization failed â€” you can still ingest the raw transcript');
         } finally {
             setIsSummarizing(false);
         }
@@ -403,14 +403,14 @@ export default function AdminDashboard() {
 
                 if (storageError) {
                     console.warn('Storage upload failed (proceeding with text-only):', storageError.message);
-                    toast.info('File storage unavailable — ingesting extracted text only', { duration: 5000 });
+                    toast.info('File storage unavailable â€” ingesting extracted text only', { duration: 5000 });
                 } else {
                     const { data: publicUrlData } = supabase.storage.from('knowledge_base').getPublicUrl(fileName);
                     publicUrl = publicUrlData.publicUrl;
                 }
             } catch (storageErr) {
                 console.warn('Storage upload failed:', storageErr);
-                toast.info('File storage unavailable — ingesting extracted text only', { duration: 5000 });
+                toast.info('File storage unavailable â€” ingesting extracted text only', { duration: 5000 });
             }
 
             // publicUrl already set above if storage succeeded
@@ -656,7 +656,7 @@ export default function AdminDashboard() {
     }
 
     return (
-        <div className="min-h-screen bg-[#030508] text-white dark selection:bg-primary/30 font-sans flex flex-col relative overflow-x-hidden">
+        <div className="min-h-screen bg-background text-foreground dark selection:bg-primary/30 font-sans flex flex-col relative overflow-x-hidden">
             {/* Background Aurora */}
             <div className="fixed inset-0 z-0 pointer-events-none">
                 <div className="absolute inset-0 aurora-bg opacity-30" />
@@ -677,14 +677,14 @@ export default function AdminDashboard() {
                                 Admin<span className="text-primary not-italic">Dashboard</span>
                             </h1>
                         </div>
-                        <p className="text-white/70 font-light max-w-md animate-in fade-in slide-in-from-left-6 duration-1000">
+                        <p className="text-foreground/70 font-light max-w-md animate-in fade-in slide-in-from-left-6 duration-1000">
                             Manage your retirement AI knowledge base and oversee team members from a centralized command center.
                         </p>
                     </div>
 
                     <div className="flex items-center gap-4 animate-in fade-in slide-in-from-right-4 duration-700">
-                         <div className="px-4 py-2 rounded-2xl bg-white/5 border border-white/10 flex flex-col items-end">
-                            <span className="text-[10px] uppercase tracking-widest text-white/60 font-bold">System Status</span>
+                         <div className="px-4 py-2 rounded-2xl bg-black/[0.03] dark:bg-white/5 border border-border flex flex-col items-end">
+                            <span className="text-[10px] uppercase tracking-widest text-muted-foreground font-bold">System Status</span>
                             <div className="flex items-center gap-2">
                                 <div className={`w-1.5 h-1.5 rounded-full ${
                                     syncStatus === 'loading' ? 'bg-primary animate-pulse' : 
@@ -695,35 +695,35 @@ export default function AdminDashboard() {
                                 </span>
                             </div>
                          </div>
-                         <div className="px-4 py-2 rounded-2xl bg-white/5 border border-white/10 flex flex-col items-end">
-                            <span className="text-[10px] uppercase tracking-widest text-white/60 font-bold">Version</span>
+                         <div className="px-4 py-2 rounded-2xl bg-black/[0.03] dark:bg-white/5 border border-border flex flex-col items-end">
+                            <span className="text-[10px] uppercase tracking-widest text-muted-foreground font-bold">Version</span>
                             <span className="text-sm font-mono text-primary/80">{functionVersion || "1.2.0"}</span>
                          </div>
                     </div>
                 </div>
 
                 <Tabs defaultValue="training" className="w-full animate-in fade-in zoom-in-95 duration-1000">
-                    <TabsList className="inline-flex h-12 items-center justify-center rounded-2xl bg-white/5 p-1 border border-white/10 mb-12 shadow-2xl">
-                        <TabsTrigger value="insights" className="px-8 rounded-xl data-[state=active]:bg-primary data-[state=active]:text-white data-[state=active]:shadow-lg data-[state=active]:shadow-primary/30 transition-all duration-300">
+                    <TabsList className="inline-flex h-12 items-center justify-center rounded-2xl bg-black/[0.03] dark:bg-white/5 p-1 border border-border mb-12 shadow-2xl">
+                        <TabsTrigger value="insights" className="px-8 rounded-xl data-[state=active]:bg-primary data-[state=active]:text-foreground data-[state=active]:shadow-lg data-[state=active]:shadow-primary/30 transition-all duration-300">
                             <Database className="w-4 h-4 mr-2" />
                             AI Patterns
                         </TabsTrigger>
-                        <TabsTrigger value="training" className="px-8 rounded-xl data-[state=active]:bg-primary data-[state=active]:text-white data-[state=active]:shadow-lg data-[state=active]:shadow-primary/30 transition-all duration-300">
+                        <TabsTrigger value="training" className="px-8 rounded-xl data-[state=active]:bg-primary data-[state=active]:text-foreground data-[state=active]:shadow-lg data-[state=active]:shadow-primary/30 transition-all duration-300">
                             <Terminal className="w-4 h-4 mr-2" />
                             AI Training
                         </TabsTrigger>
-                        <TabsTrigger value="team" className="px-8 rounded-xl data-[state=active]:bg-primary data-[state=active]:text-white data-[state=active]:shadow-lg data-[state=active]:shadow-primary/30 transition-all duration-300">
+                        <TabsTrigger value="team" className="px-8 rounded-xl data-[state=active]:bg-primary data-[state=active]:text-foreground data-[state=active]:shadow-lg data-[state=active]:shadow-primary/30 transition-all duration-300">
                             <Users className="w-4 h-4 mr-2" />
                             Team Management
                         </TabsTrigger>
-                        <TabsTrigger value="conversations" className="px-8 rounded-xl data-[state=active]:bg-primary data-[state=active]:text-white data-[state=active]:shadow-lg data-[state=active]:shadow-primary/30 transition-all duration-300">
+                        <TabsTrigger value="conversations" className="px-8 rounded-xl data-[state=active]:bg-primary data-[state=active]:text-foreground data-[state=active]:shadow-lg data-[state=active]:shadow-primary/30 transition-all duration-300">
                             <History className="w-4 h-4 mr-2" />
                             Client Conversations
                         </TabsTrigger>
                     </TabsList>
 
                     <TabsContent value="insights" className="outline-none">
-                        <div className="bg-white/[0.03] border border-white/10 rounded-[32px] p-8 overflow-hidden relative">
+                        <div className="bg-white/[0.03] border border-border rounded-[32px] p-8 overflow-hidden relative">
                              <div className="absolute top-0 right-0 p-8 pointer-events-none opacity-10">
                                 <Database className="w-32 h-32 text-white" />
                              </div>
@@ -731,9 +731,9 @@ export default function AdminDashboard() {
                             <div className="flex items-center justify-between mb-8 relative z-10">
                                 <div>
                                     <h2 className="text-2xl font-bold font-serif mb-1">Knowledge Aggregation</h2>
-                                    <p className="text-white/70 text-sm font-medium italic">Validating patterns learned from user conversations</p>
+                                    <p className="text-foreground/70 text-sm font-medium italic">Validating patterns learned from user conversations</p>
                                 </div>
-                                <Button variant="ghost" className="text-xs text-white/60 hover:text-white hover:bg-white/5" onClick={fetchData}>
+                                <Button variant="ghost" className="text-xs text-muted-foreground hover:text-foreground hover:bg-black/[0.03] dark:bg-white/5" onClick={fetchData}>
                                     Refresh Data
                                 </Button>
                             </div>
@@ -744,15 +744,15 @@ export default function AdminDashboard() {
                                     <p className="text-white/30 text-sm italic">Synchronizing with Knowledge Base...</p>
                                 </div>
                             ) : insights.length === 0 ? (
-                                <div className="py-20 text-center border-2 border-dashed border-white/5 rounded-2xl">
+                                <div className="py-20 text-center border-2 border-dashed border-border rounded-2xl">
                                     <Database className="w-12 h-12 text-white/10 mx-auto mb-4" />
                                     <p className="text-white/30 italic">No patterns detected for review yet.</p>
                                 </div>
                             ) : (
-                                <div className="rounded-2xl border border-white/10 overflow-hidden bg-black/40 relative z-10">
+                                <div className="rounded-2xl border border-border overflow-hidden bg-black/40 relative z-10">
                                     <Table>
-                                        <TableHeader className="bg-white/10 border-b border-white/20">
-                                            <TableRow className="border-white/10 hover:bg-transparent">
+                                        <TableHeader className="bg-black/[0.04] dark:bg-white/10 border-b border-white/20">
+                                            <TableRow className="border-border hover:bg-transparent">
                                                 <TableHead className="text-white/90 text-xs uppercase tracking-tighter py-4">Category</TableHead>
                                                 <TableHead className="text-white/90 text-xs uppercase tracking-tighter py-4">Insight Description</TableHead>
                                                 <TableHead className="text-white/90 text-xs uppercase tracking-tighter py-4">Freq. Score</TableHead>
@@ -762,17 +762,17 @@ export default function AdminDashboard() {
                                         </TableHeader>
                                         <TableBody>
                                             {insights.map((insight) => (
-                                                <TableRow key={insight.id} className="border-white/5 hover:bg-white/[0.03] transition-colors group">
+                                                <TableRow key={insight.id} className="border-border hover:bg-white/[0.03] transition-colors group">
                                                     <TableCell className="font-semibold text-primary/70">{insight.category}</TableCell>
                                                     <TableCell className="max-w-md py-6">
                                                         <p className="text-sm text-white/80 leading-relaxed">{insight.insight}</p>
                                                     </TableCell>
                                                     <TableCell>
                                                         <div className="flex items-center gap-2">
-                                                            <div className="w-16 h-1 bg-white/10 rounded-full overflow-hidden">
+                                                            <div className="w-16 h-1 bg-black/[0.04] dark:bg-white/10 rounded-full overflow-hidden">
                                                                 <div className="h-full bg-primary" style={{ width: `${insight.frequency_score}%` }} />
                                                             </div>
-                                                            <span className="text-xs text-white/40">{insight.frequency_score}</span>
+                                                            <span className="text-xs text-muted-foreground">{insight.frequency_score}</span>
                                                         </div>
                                                     </TableCell>
                                                     <TableCell>
@@ -788,14 +788,14 @@ export default function AdminDashboard() {
                                                         <div className="flex justify-end gap-3 translate-x-4 opacity-50 group-hover:translate-x-0 group-hover:opacity-100 transition-all duration-300">
                                                             <Button 
                                                                 size="sm" 
-                                                                className="h-8 rounded-full bg-green-500/10 hover:bg-green-500 text-green-400 hover:text-white border border-green-500/20" 
+                                                                className="h-8 rounded-full bg-green-500/10 hover:bg-green-500 text-green-400 hover:text-foreground border border-green-500/20" 
                                                                 onClick={() => updateInsightStatus(insight.id, 'approved')}
                                                             >
                                                                 Approve
                                                             </Button>
                                                             <Button 
                                                                 size="sm" 
-                                                                className="h-8 rounded-full bg-red-500/10 hover:bg-red-500 text-red-400 hover:text-white border border-red-500/20" 
+                                                                className="h-8 rounded-full bg-red-500/10 hover:bg-red-500 text-red-400 hover:text-foreground border border-red-500/20" 
                                                                 onClick={() => updateInsightStatus(insight.id, 'rejected')}
                                                             >
                                                                 Discard
@@ -812,7 +812,7 @@ export default function AdminDashboard() {
                     </TabsContent>
 
                     <TabsContent value="team" className="outline-none">
-                        <div className="bg-white/[0.03] border border-white/10 rounded-[32px] p-8 overflow-hidden relative">
+                        <div className="bg-white/[0.03] border border-border rounded-[32px] p-8 overflow-hidden relative">
                              <div className="absolute top-0 right-0 p-8 pointer-events-none opacity-10">
                                 <Users className="w-32 h-32 text-white" />
                              </div>
@@ -820,13 +820,13 @@ export default function AdminDashboard() {
                               <div className="flex items-center justify-between mb-12 relative z-10">
                                 <div>
                                     <h2 className="text-2xl font-bold font-serif mb-1">Team Overview</h2>
-                                    <p className="text-white/50 text-sm">Provision access and manage administrative roles</p>
+                                    <p className="text-muted-foreground text-sm">Provision access and manage administrative roles</p>
                                 </div>
                                 <div className="flex items-center gap-4">
                                     <Button 
                                         variant="outline" 
                                         size="sm" 
-                                        className="h-9 rounded-xl border-white/10 hover:bg-white/5 text-white/60 gap-2"
+                                        className="h-9 rounded-xl border-border hover:bg-black/[0.03] dark:bg-white/5 text-muted-foreground gap-2"
                                         onClick={troubleshootSMTP}
                                     >
                                         <ShieldAlert className="w-4 h-4 text-amber-400" />
@@ -844,10 +844,10 @@ export default function AdminDashboard() {
                                     <p className="text-white/30 text-sm italic">Synchronizing with Roles Database...</p>
                                 </div>
                             ) : (
-                                <div className="rounded-2xl border border-white/10 overflow-hidden bg-black/40 relative z-10">
+                                <div className="rounded-2xl border border-border overflow-hidden bg-black/40 relative z-10">
                                      <Table>
-                                        <TableHeader className="bg-white/10 border-b border-white/20">
-                                            <TableRow className="border-white/10 hover:bg-transparent">
+                                        <TableHeader className="bg-black/[0.04] dark:bg-white/10 border-b border-white/20">
+                                            <TableRow className="border-border hover:bg-transparent">
                                                 <TableHead className="text-white/90 text-xs uppercase tracking-tighter py-4 pl-6 text-left">Identity (Email)</TableHead>
                                                 <TableHead className="text-white/90 text-xs uppercase tracking-tighter py-4 text-left">Assigned Role</TableHead>
                                                 <TableHead className="text-white/90 text-xs uppercase tracking-tighter py-4 text-left">Account Status</TableHead>
@@ -857,7 +857,7 @@ export default function AdminDashboard() {
                                         </TableHeader>
                                         <TableBody>
                                             {team.map((member) => (
-                                                <TableRow key={member.id} className="border-white/5 hover:bg-white/[0.03] transition-colors group">
+                                                <TableRow key={member.id} className="border-border hover:bg-white/[0.03] transition-colors group">
                                                     <TableCell className="py-6 pl-6 text-left">
                                                         <div className="flex items-center gap-3">
                                                             <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-primary to-accent flex items-center justify-center text-[10px] font-bold">
@@ -865,13 +865,13 @@ export default function AdminDashboard() {
                                                             </div>
                                                             <span className="font-semibold text-white/90">{member.email}</span>
                                                             {PROTECTED_ADMIN_EMAILS.includes(member.email?.toLowerCase()) && (
-                                                                <span className="text-[10px] bg-white/10 px-1.5 py-0.5 rounded text-white/40 border border-white/10">Owner</span>
+                                                                <span className="text-[10px] bg-black/[0.04] dark:bg-white/10 px-1.5 py-0.5 rounded text-muted-foreground border border-border">Owner</span>
                                                             )}
                                                         </div>
                                                     </TableCell>
                                                     <TableCell className="text-left">
                                                         <div className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider border shadow-sm ${
-                                                            member.role === 'admin' ? 'bg-primary/10 text-primary border-primary/20' : 'bg-white/5 text-white/60 border-white/10'
+                                                            member.role === 'admin' ? 'bg-primary/10 text-primary border-primary/20' : 'bg-black/[0.03] dark:bg-white/5 text-muted-foreground border-border'
                                                         }`}>
                                                             {member.role === 'admin' ? (
                                                                 <><ShieldAlert className="w-3 h-3" /> Admin</>
@@ -887,7 +887,7 @@ export default function AdminDashboard() {
                                                             {member.status === 'active' ? 'Active' : 'Invited (Pending)'}
                                                         </div>
                                                     </TableCell>
-                                                    <TableCell className="text-white/70 text-xs font-mono">
+                                                    <TableCell className="text-foreground/70 text-xs font-mono">
                                                         {new Date(member.created_at).toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' })}
                                                     </TableCell>
                                                      <TableCell className="text-right pr-6 flex justify-end gap-2">
@@ -895,7 +895,7 @@ export default function AdminDashboard() {
                                                             variant="ghost" 
                                                             size="icon"
                                                             title="Rescue Login (Manual Link)"
-                                                            className="h-9 w-9 rounded-xl border border-white/5 text-amber-400 hover:bg-amber-400/10 hover:border-amber-400/30 transition-all"
+                                                            className="h-9 w-9 rounded-xl border border-border text-amber-400 hover:bg-amber-400/10 hover:border-amber-400/30 transition-all"
                                                             onClick={() => generateRescueLink(member.email)}
                                                         >
                                                             <LifeBuoy className="w-4 h-4" />
@@ -904,7 +904,7 @@ export default function AdminDashboard() {
                                                             variant="ghost" 
                                                             size="sm"
                                                             disabled={PROTECTED_ADMIN_EMAILS.includes(member.email?.toLowerCase())}
-                                                            className={`h-9 px-4 rounded-xl border border-white/5 hover:border-primary/50 transition-all duration-300 ${
+                                                            className={`h-9 px-4 rounded-xl border border-border hover:border-primary/50 transition-all duration-300 ${
                                                                 member.role === 'admin' ? 'text-red-400 hover:bg-red-400/10' : 'text-primary hover:bg-primary/10'
                                                             }`}
                                                             onClick={() => toggleUserRole(member.id, member.role)}
@@ -920,11 +920,11 @@ export default function AdminDashboard() {
                             )}
 
                             {/* Promote User Action */}
-                            <div className="mt-12 group p-8 rounded-[32px] border border-white/5 bg-white/[0.02] hover:bg-white/[0.04] transition-all relative">
+                            <div className="mt-12 group p-8 rounded-[32px] border border-border bg-white/[0.02] hover:bg-white/[0.04] transition-all relative">
                                 <div className="flex items-start justify-between mb-6">
                                     <div>
                                         <h3 className="text-xl font-bold font-serif mb-1">Add Administrator</h3>
-                                        <p className="text-white/60 text-sm">Enter the email of an existing user to grant them admin permissions.</p>
+                                        <p className="text-muted-foreground text-sm">Enter the email of an existing user to grant them admin permissions.</p>
                                     </div>
                                     <div className="p-3 rounded-2xl bg-primary/5 border border-primary/10">
                                         <Plus className="w-5 h-5 text-primary" />
@@ -932,15 +932,15 @@ export default function AdminDashboard() {
                                 </div>
                                 <div className="flex gap-4 max-w-lg">
                                     <div className="relative flex-1">
-                                        <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-white/40" />
+                                        <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                                         <Input 
                                             placeholder="user@example.com" 
-                                            className="h-12 pl-12 rounded-xl bg-black/40 border-white/10 focus:border-primary/50"
+                                            className="h-12 pl-12 rounded-xl bg-black/40 border-border focus:border-primary/50"
                                             value={inviteEmail}
                                             onChange={(e) => setInviteEmail(e.target.value)}
                                         />
                                     </div>
-                                    <Button onClick={promoteUserByEmail} className="h-12 px-8 rounded-xl bg-primary hover:bg-primary/90 text-white font-bold shadow-lg shadow-primary/20">
+                                    <Button onClick={promoteUserByEmail} className="h-12 px-8 rounded-xl bg-primary hover:bg-primary/90 text-foreground font-bold shadow-lg shadow-primary/20">
                                         Promote User
                                     </Button>
                                 </div>
@@ -951,16 +951,16 @@ export default function AdminDashboard() {
                     <TabsContent value="training" className="outline-none">
                         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
                              {/* Core Directive View */}
-                            <div className="lg:col-span-1 bg-white/[0.03] border border-white/10 rounded-[32px] p-8">
+                            <div className="lg:col-span-1 bg-white/[0.03] border border-border rounded-[32px] p-8">
                                 <div className="flex items-center gap-3 mb-6">
                                     <Terminal className="w-6 h-6 text-primary" />
                                     <h3 className="text-xl font-bold font-serif">Core Directive</h3>
                                 </div>
-                                <div className="p-6 rounded-2xl bg-black/60 border border-white/5 font-mono text-[11px] text-white/70 leading-relaxed overflow-y-auto max-h-[400px] custom-scrollbar">
+                                <div className="p-6 rounded-2xl bg-black/60 border border-border font-mono text-[11px] text-foreground/70 leading-relaxed overflow-y-auto max-h-[400px] custom-scrollbar">
                                     <p className="mb-4">SYSTEM_ROLE: You are MyRA, a fiduciary retirement advisor.</p>
                                     <p className="mb-4">BASE_KNOWLEDGE: Retirement planning, 401k, IRAs, Social Security, FIAs, Income Gaps.</p>
                                     <p className="mb-4">TONE: Professional, empathetic, clear, confident.</p>
-                                    <p className="text-primary/80 italic animate-pulse mt-8 border-t border-white/5 pt-4">
+                                    <p className="text-primary/80 italic animate-pulse mt-8 border-t border-border pt-4">
                                         Note: This prompt is read-only. To modify AI behavior, add specific knowledge rules to the archive.
                                     </p>
                                 </div>
@@ -968,36 +968,36 @@ export default function AdminDashboard() {
 
                             {/* Manual Training Management */}
                             <div className="lg:col-span-2 space-y-8">
-                                <div className="bg-white/[0.03] border border-white/10 rounded-[32px] p-8">
+                                <div className="bg-white/[0.03] border border-border rounded-[32px] p-8">
                                     <div className="flex items-center justify-between mb-8">
                                         <div>
                                             <h2 className="text-2xl font-bold font-serif mb-1">Global Knowledge Rules</h2>
-                                            <p className="text-white/70 text-sm">Add manual corrections that apply to all user conversations.</p>
+                                            <p className="text-foreground/70 text-sm">Add manual corrections that apply to all user conversations.</p>
                                         </div>
                                     </div>
 
                                     {/* Add Rule Form */}
-                                    <div className="mb-10 p-6 rounded-2xl border border-white/10 bg-white/5 space-y-4">
+                                    <div className="mb-10 p-6 rounded-2xl border border-border bg-black/[0.03] dark:bg-white/5 space-y-4">
                                         <div className="grid grid-cols-2 gap-4">
                                             <div className="space-y-1.5">
-                                                <label className="text-[10px] uppercase tracking-widest text-white/50 font-bold ml-1">Category</label>
+                                                <label className="text-[10px] uppercase tracking-widest text-muted-foreground font-bold ml-1">Category</label>
                                                 <Input 
                                                     placeholder="e.g. Products, Compliance" 
-                                                    className="rounded-xl bg-black/40 border-white/5"
+                                                    className="rounded-xl bg-black/40 border-border"
                                                     value={newTraining.category}
                                                     onChange={(e) => setNewTraining({...newTraining, category: e.target.value})}
                                                 />
                                             </div>
                                             <div className="space-y-1.5 flex items-end">
-                                               <Button onClick={addManualTraining} className="w-full h-10 rounded-xl bg-primary text-white font-bold">
+                                               <Button onClick={addManualTraining} className="w-full h-10 rounded-xl bg-primary text-foreground font-bold">
                                                     Deploy Rule
                                                </Button>
                                             </div>
                                         </div>
                                         <div className="space-y-1.5">
-                                            <label className="text-[10px] uppercase tracking-widest text-white/50 font-bold ml-1">Instruction / Knowledge</label>
+                                            <label className="text-[10px] uppercase tracking-widest text-muted-foreground font-bold ml-1">Instruction / Knowledge</label>
                                             <textarea 
-                                                className="w-full h-24 p-4 rounded-xl bg-black/40 border border-white/5 text-sm text-white/90 focus:border-primary/50 focus:outline-none custom-scrollbar"
+                                                className="w-full h-24 p-4 rounded-xl bg-black/40 border border-border text-sm text-white/90 focus:border-primary/50 focus:outline-none custom-scrollbar"
                                                 placeholder="Explain FIAs using the 'Bucket Strategy' concept..."
                                                 value={newTraining.insight}
                                                 onChange={(e) => setNewTraining({...newTraining, insight: e.target.value})}
@@ -1008,16 +1008,16 @@ export default function AdminDashboard() {
                                     {/* Training List */}
                                     <div className="space-y-4 max-h-[500px] overflow-y-auto pr-2 custom-scrollbar">
                                         {manualTraining.length === 0 ? (
-                                            <p className="text-center py-10 text-white/20 italic border border-dashed border-white/5 rounded-2xl">No manual training rules deployed.</p>
+                                            <p className="text-center py-10 text-white/20 italic border border-dashed border-border rounded-2xl">No manual training rules deployed.</p>
                                         ) : manualTraining.map((rule) => (
-                                            <div key={rule.id} className={`p-5 rounded-2xl border transition-all ${rule.is_active ? 'bg-white/5 border-white/10' : 'bg-white/[0.02] border-white/5 opacity-60'}`}>
+                                            <div key={rule.id} className={`p-5 rounded-2xl border transition-all ${rule.is_active ? 'bg-black/[0.03] dark:bg-white/5 border-border' : 'bg-white/[0.02] border-border opacity-60'}`}>
                                                 <div className="flex items-start justify-between gap-4">
                                                     <div className="space-y-2 flex-1">
                                                         <div className="flex items-center gap-2 flex-wrap">
                                                             <span className="text-[10px] font-bold uppercase tracking-wider text-primary px-2 py-0.5 bg-primary/10 rounded border border-primary/20">{rule.category}</span>
-                                                            {!rule.is_active && <span className="text-[10px] font-bold uppercase tracking-wider text-white/30 px-2 py-0.5 bg-white/5 rounded">Archived</span>}
+                                                            {!rule.is_active && <span className="text-[10px] font-bold uppercase tracking-wider text-white/30 px-2 py-0.5 bg-black/[0.03] dark:bg-white/5 rounded">Archived</span>}
                                                             {rule.insight?.match(/\[Added by: ([^\]]+)\]/) && (
-                                                                <span className="text-[10px] text-white/40 font-mono">
+                                                                <span className="text-[10px] text-muted-foreground font-mono">
                                                                     by {rule.insight.match(/\[Added by: ([^\]]+)\]/)?.[1]}
                                                                 </span>
                                                             )}
@@ -1032,7 +1032,7 @@ export default function AdminDashboard() {
                                                             variant="ghost" 
                                                             size="icon" 
                                                             title={rule.is_active ? "Archive/Disable" : "Enable"}
-                                                            className={`h-8 w-8 rounded-lg border border-white/5 ${rule.is_active ? 'text-white/40 hover:text-amber-400 hover:bg-amber-400/10' : 'text-primary hover:bg-primary/10'}`}
+                                                            className={`h-8 w-8 rounded-lg border border-border ${rule.is_active ? 'text-muted-foreground hover:text-amber-400 hover:bg-amber-400/10' : 'text-primary hover:bg-primary/10'}`}
                                                             onClick={() => toggleTrainingActive(rule.id, rule.is_active)}
                                                         >
                                                             {rule.is_active ? <Archive className="w-4 h-4" /> : <RefreshCcw className="w-4 h-4" />}
@@ -1041,7 +1041,7 @@ export default function AdminDashboard() {
                                                             variant="ghost" 
                                                             size="icon" 
                                                             title="Permanently Delete"
-                                                            className="h-8 w-8 rounded-lg border border-white/5 text-white/20 hover:text-red-400 hover:bg-red-400/10"
+                                                            className="h-8 w-8 rounded-lg border border-border text-white/20 hover:text-red-400 hover:bg-red-400/10"
                                                             onClick={() => deleteTrainingRule(rule.id)}
                                                         >
                                                             <Trash2 className="w-4 h-4" />
@@ -1055,7 +1055,7 @@ export default function AdminDashboard() {
                             </div>
 
                             {/* Client Transcript Ingestion */}
-                            <div className="lg:col-span-3 bg-white/[0.03] border border-white/10 rounded-[32px] p-8 overflow-hidden relative">
+                            <div className="lg:col-span-3 bg-white/[0.03] border border-border rounded-[32px] p-8 overflow-hidden relative">
                                 <div className="absolute top-0 right-0 p-8 pointer-events-none opacity-10">
                                     <MessageSquareText className="w-32 h-32 text-white" />
                                 </div>
@@ -1063,19 +1063,19 @@ export default function AdminDashboard() {
                                 <div className="flex items-center justify-between mb-8 relative z-10">
                                     <div>
                                         <h2 className="text-2xl font-bold font-serif mb-1">Client Transcripts & Case Scenarios</h2>
-                                        <p className="text-white/70 text-sm">Paste real client conversations, CFP/RICP curriculum, compliance docs, or fee schedules to train MyRA on real-world reasoning.</p>
+                                        <p className="text-foreground/70 text-sm">Paste real client conversations, CFP/RICP curriculum, compliance docs, or fee schedules to train MyRA on real-world reasoning.</p>
                                     </div>
                                     <div className="p-3 rounded-2xl bg-primary/5 border border-primary/10">
                                         <FileText className="w-5 h-5 text-primary" />
                                     </div>
                                 </div>
 
-                                <div className="p-6 rounded-2xl border border-white/10 bg-white/5 space-y-5 relative z-10">
+                                <div className="p-6 rounded-2xl border border-border bg-black/[0.03] dark:bg-white/5 space-y-5 relative z-10">
                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                         <div className="space-y-1.5">
-                                            <label className="text-[10px] uppercase tracking-widest text-white/50 font-bold ml-1">Category</label>
+                                            <label className="text-[10px] uppercase tracking-widest text-muted-foreground font-bold ml-1">Category</label>
                                             <select
-                                                className="w-full h-10 px-4 rounded-xl bg-black/40 border border-white/5 text-white text-sm focus:outline-none focus:border-primary/50 appearance-none cursor-pointer"
+                                                className="w-full h-10 px-4 rounded-xl bg-black/40 border border-border text-foreground text-sm focus:outline-none focus:border-primary/50 appearance-none cursor-pointer"
                                                 value={transcript.category}
                                                 onChange={(e) => setTranscript({...transcript, category: e.target.value})}
                                             >
@@ -1085,10 +1085,10 @@ export default function AdminDashboard() {
                                             </select>
                                         </div>
                                         <div className="space-y-1.5">
-                                            <label className="text-[10px] uppercase tracking-widest text-white/50 font-bold ml-1">Label (optional)</label>
+                                            <label className="text-[10px] uppercase tracking-widest text-muted-foreground font-bold ml-1">Label (optional)</label>
                                             <Input
                                                 placeholder="e.g. 'Roth Conversion meeting - Jan 2025'"
-                                                className="rounded-xl bg-black/40 border-white/5"
+                                                className="rounded-xl bg-black/40 border-border"
                                                 value={transcript.label}
                                                 onChange={(e) => setTranscript({...transcript, label: e.target.value})}
                                             />
@@ -1096,21 +1096,21 @@ export default function AdminDashboard() {
                                     </div>
 
                                     <div className="space-y-1.5">
-                                        <label className="text-[10px] uppercase tracking-widest text-white/50 font-bold ml-1">Paste Transcript / Document Content</label>
+                                        <label className="text-[10px] uppercase tracking-widest text-muted-foreground font-bold ml-1">Paste Transcript / Document Content</label>
                                         <textarea
-                                            className="w-full p-4 rounded-xl bg-black/40 border border-white/5 text-sm text-white/90 focus:border-primary/50 focus:outline-none custom-scrollbar min-h-[250px] resize-y font-mono leading-relaxed"
+                                            className="w-full p-4 rounded-xl bg-black/40 border border-border text-sm text-white/90 focus:border-primary/50 focus:outline-none custom-scrollbar min-h-[250px] resize-y font-mono leading-relaxed"
                                             placeholder={"Paste the full client conversation, meeting transcript, curriculum excerpt, or compliance document here...\n\nMyRA will chunk and store this in her knowledge base so she can reference it during future conversations."}
                                             value={transcript.content}
                                             onChange={(e) => setTranscript({...transcript, content: e.target.value})}
                                         />
                                         <div className="flex items-center justify-between">
                                             <p className="text-[10px] text-white/30 italic">
-                                                {transcript.content.length > 0 ? `${transcript.content.length.toLocaleString()} characters · ~${Math.ceil(transcript.content.length / 2000)} chunk${Math.ceil(transcript.content.length / 2000) !== 1 ? 's' : ''}` : 'No content yet'}
+                                                {transcript.content.length > 0 ? `${transcript.content.length.toLocaleString()} characters Â· ~${Math.ceil(transcript.content.length / 2000)} chunk${Math.ceil(transcript.content.length / 2000) !== 1 ? 's' : ''}` : 'No content yet'}
                                             </p>
                                             <Button
                                                 onClick={summarizeTranscript}
                                                 disabled={isSummarizing || isSubmittingTranscript || !transcript.content.trim()}
-                                                className="h-10 px-8 rounded-xl bg-violet-600 hover:bg-violet-500 text-white font-bold shadow-lg shadow-violet-600/20 flex items-center gap-2"
+                                                className="h-10 px-8 rounded-xl bg-violet-600 hover:bg-violet-500 text-foreground font-bold shadow-lg shadow-violet-600/20 flex items-center gap-2"
                                             >
                                                 {isSummarizing ? (
                                                     <>
@@ -1133,7 +1133,7 @@ export default function AdminDashboard() {
                                                     <Eye className="w-5 h-5 text-violet-400" />
                                                     <h4 className="text-lg font-bold text-violet-300">AI Summary Preview</h4>
                                                 </div>
-                                                <p className="text-sm text-white/80 leading-relaxed bg-black/30 p-4 rounded-xl border border-white/5">
+                                                <p className="text-sm text-white/80 leading-relaxed bg-black/30 p-4 rounded-xl border border-border">
                                                     {transcriptPreview.summary}
                                                 </p>
                                                 {transcriptPreview.keyPoints.length > 0 && (
@@ -1141,19 +1141,19 @@ export default function AdminDashboard() {
                                                         <p className="text-[10px] uppercase tracking-widest text-violet-400 font-bold">Key Learning Points</p>
                                                         <ul className="space-y-1.5">
                                                             {transcriptPreview.keyPoints.map((point, i) => (
-                                                                <li key={i} className="flex items-start gap-2 text-sm text-white/70">
-                                                                    <span className="text-violet-400 mt-0.5">•</span>
+                                                                <li key={i} className="flex items-start gap-2 text-sm text-foreground/70">
+                                                                    <span className="text-violet-400 mt-0.5">â€¢</span>
                                                                     {point}
                                                                 </li>
                                                             ))}
                                                         </ul>
                                                     </div>
                                                 )}
-                                                <div className="flex items-center gap-3 pt-4 border-t border-white/10">
+                                                <div className="flex items-center gap-3 pt-4 border-t border-border">
                                                     <Button
                                                         onClick={confirmAndIngestTranscript}
                                                         disabled={isSubmittingTranscript}
-                                                        className="h-10 px-8 rounded-xl bg-primary hover:bg-primary/90 text-white font-bold shadow-lg shadow-primary/20 flex items-center gap-2"
+                                                        className="h-10 px-8 rounded-xl bg-primary hover:bg-primary/90 text-foreground font-bold shadow-lg shadow-primary/20 flex items-center gap-2"
                                                     >
                                                         {isSubmittingTranscript ? (
                                                             <>
@@ -1170,7 +1170,7 @@ export default function AdminDashboard() {
                                                     <Button
                                                         variant="ghost"
                                                         onClick={() => setTranscriptPreview(null)}
-                                                        className="h-10 px-6 rounded-xl text-white/50 hover:text-white hover:bg-white/5"
+                                                        className="h-10 px-6 rounded-xl text-muted-foreground hover:text-foreground hover:bg-black/[0.03] dark:bg-white/5"
                                                     >
                                                         Cancel
                                                     </Button>
@@ -1182,7 +1182,7 @@ export default function AdminDashboard() {
                             </div>
 
                             {/* PDF Knowledge Upload */}
-                            <div className="lg:col-span-3 bg-white/[0.03] border border-white/10 rounded-[32px] p-8 overflow-hidden relative">
+                            <div className="lg:col-span-3 bg-white/[0.03] border border-border rounded-[32px] p-8 overflow-hidden relative">
                                 <div className="absolute top-0 right-0 p-8 pointer-events-none opacity-10">
                                     <FileUp className="w-32 h-32 text-white" />
                                 </div>
@@ -1190,14 +1190,14 @@ export default function AdminDashboard() {
                                 <div className="flex items-center justify-between mb-8 relative z-10">
                                     <div>
                                         <h2 className="text-2xl font-bold font-serif mb-1">Knowledge Documents (PDF)</h2>
-                                        <p className="text-white/70 text-sm">Upload standard policies, pitch decks, or informational PDFs. MyRA will read them and keep the original file securely stored.</p>
+                                        <p className="text-foreground/70 text-sm">Upload standard policies, pitch decks, or informational PDFs. MyRA will read them and keep the original file securely stored.</p>
                                     </div>
                                     <div className="p-3 rounded-2xl bg-primary/5 border border-primary/10">
                                         <File className="w-5 h-5 text-primary" />
                                     </div>
                                 </div>
 
-                                <div className="p-8 rounded-2xl border border-dashed border-white/20 bg-white/5 flex gap-6 flex-col items-center justify-center relative z-10 transition-all hover:bg-white/[0.08] hover:border-primary/50 group cursor-pointer"
+                                <div className="p-8 rounded-2xl border border-dashed border-white/20 bg-black/[0.03] dark:bg-white/5 flex gap-6 flex-col items-center justify-center relative z-10 transition-all hover:bg-white/[0.08] hover:border-primary/50 group cursor-pointer"
                                      onClick={() => fileInputRef.current?.click()}
                                 >
                                     <input 
@@ -1209,17 +1209,17 @@ export default function AdminDashboard() {
                                         disabled={isUploadingPdf}
                                     />
                                     
-                                    <div className="w-16 h-16 rounded-full bg-white/5 border border-white/10 flex items-center justify-center group-hover:bg-primary/20 group-hover:border-primary/40 transition-colors">
+                                    <div className="w-16 h-16 rounded-full bg-black/[0.03] dark:bg-white/5 border border-border flex items-center justify-center group-hover:bg-primary/20 group-hover:border-primary/40 transition-colors">
                                         {isUploadingPdf ? (
                                             <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin" />
                                         ) : (
-                                            <FileUp className="w-8 h-8 text-white/50 group-hover:text-primary transition-colors" />
+                                            <FileUp className="w-8 h-8 text-muted-foreground group-hover:text-primary transition-colors" />
                                         )}
                                     </div>
                                     
                                     <div className="text-center">
-                                        <h3 className="text-white font-bold text-lg mb-1">{isUploadingPdf ? "Reading & Storing Document..." : "Click to Upload PDF"}</h3>
-                                        <p className="text-white/40 text-sm">{isUploadingPdf ? "Please wait, extracting text and uploading to Supabase." : "Supports .pdf files up to 50MB"}</p>
+                                        <h3 className="text-foreground font-bold text-lg mb-1">{isUploadingPdf ? "Reading & Storing Document..." : "Click to Upload PDF"}</h3>
+                                        <p className="text-muted-foreground text-sm">{isUploadingPdf ? "Please wait, extracting text and uploading to Supabase." : "Supports .pdf files up to 50MB"}</p>
                                     </div>
                                     
                                     {!isUploadingPdf && (
@@ -1234,7 +1234,7 @@ export default function AdminDashboard() {
                     <TabsContent value="conversations" className="outline-none">
                         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
                             {/* User List + Conversations */}
-                            <div className="lg:col-span-1 bg-white/[0.03] border border-white/10 rounded-[32px] p-8 flex flex-col h-[700px]">
+                            <div className="lg:col-span-1 bg-white/[0.03] border border-border rounded-[32px] p-8 flex flex-col h-[700px]">
                                 <div className="flex items-center justify-between mb-6">
                                     <div className="flex items-center gap-3">
                                         <History className="w-6 h-6 text-primary" />
@@ -1242,11 +1242,11 @@ export default function AdminDashboard() {
                                     </div>
                                     <div className="flex gap-2">
                                         {selectedUserEmail && (
-                                            <Button variant="ghost" size="sm" onClick={() => { setSelectedUserEmail(null); setSelectedChat(null); }} className="text-xs text-white/50 hover:text-white">
-                                                ← All Users
+                                            <Button variant="ghost" size="sm" onClick={() => { setSelectedUserEmail(null); setSelectedChat(null); }} className="text-xs text-muted-foreground hover:text-white">
+                                                â† All Users
                                             </Button>
                                         )}
-                                        <Button variant="ghost" size="icon" onClick={fetchData} className="h-8 w-8 rounded-lg hover:bg-white/5">
+                                        <Button variant="ghost" size="icon" onClick={fetchData} className="h-8 w-8 rounded-lg hover:bg-black/[0.03] dark:bg-white/5">
                                             <RefreshCcw className="w-4 h-4" />
                                         </Button>
                                     </div>
@@ -1256,7 +1256,7 @@ export default function AdminDashboard() {
                                     <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white/30" />
                                     <Input 
                                         placeholder={selectedUserEmail ? 'Search chats...' : 'Search users...'}
-                                        className="h-10 pl-10 rounded-xl bg-black/40 border-white/10"
+                                        className="h-10 pl-10 rounded-xl bg-black/40 border-border"
                                         value={searchQuery}
                                         onChange={(e) => setSearchQuery(e.target.value)}
                                     />
@@ -1287,15 +1287,15 @@ export default function AdminDashboard() {
                                                     <div
                                                         key={email}
                                                         onClick={() => { setSelectedUserEmail(email); setSearchQuery(''); setSelectedChat(null); }}
-                                                        className="p-5 rounded-2xl border bg-white/5 border-white/10 hover:bg-white/[0.08] hover:border-white/20 transition-all cursor-pointer group"
+                                                        className="p-5 rounded-2xl border bg-black/[0.03] dark:bg-white/5 border-border hover:bg-white/[0.08] hover:border-white/20 transition-all cursor-pointer group"
                                                     >
                                                         <div className="flex items-center gap-3">
                                                             <div className="w-10 h-10 rounded-full bg-gradient-to-tr from-primary to-accent flex items-center justify-center text-xs font-bold shrink-0">
                                                                 {email.substring(0, 2).toUpperCase()}
                                                             </div>
                                                             <div className="flex-1 min-w-0">
-                                                                <h4 className="text-sm font-bold text-white truncate">{email}</h4>
-                                                                <div className="flex items-center gap-3 text-[9px] text-white/40 uppercase tracking-widest font-bold mt-1">
+                                                                <h4 className="text-sm font-bold text-foreground truncate">{email}</h4>
+                                                                <div className="flex items-center gap-3 text-[9px] text-muted-foreground uppercase tracking-widest font-bold mt-1">
                                                                     <span>{chats.length} chat{chats.length !== 1 ? 's' : ''}</span>
                                                                     <span>{totalMessages} msgs</span>
                                                                 </div>
@@ -1349,16 +1349,16 @@ export default function AdminDashboard() {
                                                             className={`p-4 rounded-2xl border transition-all cursor-pointer group ${
                                                                 selectedChat?.id === chat.id 
                                                                     ? 'bg-primary/20 border-primary/40 shadow-lg shadow-primary/10' 
-                                                                    : 'bg-white/5 border-white/10 hover:bg-white/[0.08] hover:border-white/20'
+                                                                    : 'bg-black/[0.03] dark:bg-white/5 border-border hover:bg-white/[0.08] hover:border-white/20'
                                                             }`}
                                                         >
                                                             <div className="flex items-start justify-between">
                                                                 <div className="space-y-1 flex-1 min-w-0">
-                                                                    <h4 className="text-sm font-bold text-white truncate">{chat.title || "Untitled Conversation"}</h4>
+                                                                    <h4 className="text-sm font-bold text-foreground truncate">{chat.title || "Untitled Conversation"}</h4>
                                                                 </div>
                                                                 <ChevronRight className={`w-4 h-4 text-white/20 group-hover:text-primary transition-colors ${selectedChat?.id === chat.id ? 'rotate-90 text-primary' : ''}`} />
                                                             </div>
-                                                            <div className="mt-3 flex items-center justify-between text-[9px] text-white/40 uppercase tracking-widest font-bold">
+                                                            <div className="mt-3 flex items-center justify-between text-[9px] text-muted-foreground uppercase tracking-widest font-bold">
                                                                 <span>{chat.messages?.length || 0} Messages</span>
                                                                 <span>{new Date(chat.updated_at).toLocaleDateString()}</span>
                                                             </div>
@@ -1372,34 +1372,34 @@ export default function AdminDashboard() {
                             </div>
 
                             {/* Chat Preview */}
-                            <div className="lg:col-span-2 bg-white/[0.03] border border-white/10 rounded-[32px] p-8 flex flex-col h-[700px] relative overflow-hidden">
+                            <div className="lg:col-span-2 bg-white/[0.03] border border-border rounded-[32px] p-8 flex flex-col h-[700px] relative overflow-hidden">
                                 {!selectedChat ? (
                                     <div className="flex-1 flex flex-col items-center justify-center text-center space-y-4">
-                                        <div className="p-6 rounded-full bg-white/5 border border-white/10">
+                                        <div className="p-6 rounded-full bg-black/[0.03] dark:bg-white/5 border border-border">
                                             <MessageSquareText className="w-12 h-12 text-white/20" />
                                         </div>
                                         <div>
-                                            <h4 className="text-lg font-bold text-white/60">Select a Conversation</h4>
+                                            <h4 className="text-lg font-bold text-muted-foreground">Select a Conversation</h4>
                                             <p className="text-sm text-white/30 max-w-xs mx-auto">Click on a chat record from the left panel to review the transcript and export documents.</p>
                                         </div>
                                     </div>
                                 ) : (
                                     <>
                                         {/* Header */}
-                                        <div className="flex items-center justify-between mb-8 pb-6 border-b border-white/10">
+                                        <div className="flex items-center justify-between mb-8 pb-6 border-b border-border">
                                             <div>
                                                 <div className="flex items-center gap-2 mb-1">
                                                     <h3 className="text-2xl font-bold font-serif">{selectedChat.title || "Untitled Conversation"}</h3>
                                                     <span className="text-[10px] bg-primary/20 text-primary px-2 py-0.5 rounded font-bold uppercase">v{selectedChat.messages?.length || 0}</span>
                                                 </div>
-                                                <p className="text-white/50 text-sm font-medium">Session with <span className="text-white/80">{selectedChat.user_email}</span></p>
+                                                <p className="text-muted-foreground text-sm font-medium">Session with <span className="text-white/80">{selectedChat.user_email}</span></p>
                                             </div>
                                             
                                             <div className="flex items-center gap-2">
                                                 <Button 
                                                     variant="outline" 
                                                     size="sm" 
-                                                    className="rounded-xl border-white/10 hover:bg-white/5 text-xs gap-2"
+                                                    className="rounded-xl border-border hover:bg-black/[0.03] dark:bg-white/5 text-xs gap-2"
                                                     onClick={() => exportToMarkdown(selectedChat)}
                                                 >
                                                     <FileText className="w-3.5 h-3.5" />
@@ -1408,14 +1408,14 @@ export default function AdminDashboard() {
                                                 <Button 
                                                     variant="outline" 
                                                     size="sm" 
-                                                    className="rounded-xl border-white/10 hover:bg-white/5 text-xs gap-2"
+                                                    className="rounded-xl border-border hover:bg-black/[0.03] dark:bg-white/5 text-xs gap-2"
                                                     onClick={() => exportToPDF(selectedChat)}
                                                 >
                                                     <Download className="w-3.5 h-3.5" />
                                                     PDF
                                                 </Button>
                                                 <Button 
-                                                    className="rounded-xl bg-primary hover:bg-primary/90 text-white font-bold text-xs gap-2"
+                                                    className="rounded-xl bg-primary hover:bg-primary/90 text-foreground font-bold text-xs gap-2"
                                                     onClick={() => copyForGoogleDocs(selectedChat)}
                                                 >
                                                     <ClipboardCopy className="w-3.5 h-3.5" />
@@ -1435,8 +1435,8 @@ export default function AdminDashboard() {
                                                     </div>
                                                     <div className={`max-w-[85%] p-4 rounded-2xl text-sm leading-relaxed ${
                                                         msg.role === 'user' 
-                                                            ? 'bg-primary/10 border border-primary/20 text-white rounded-tr-none' 
-                                                            : 'bg-white/5 border border-white/10 text-white/90 rounded-tl-none'
+                                                            ? 'bg-primary/10 border border-primary/20 text-foreground rounded-tr-none' 
+                                                            : 'bg-black/[0.03] dark:bg-white/5 border border-border text-white/90 rounded-tl-none'
                                                     }`}>
                                                         {msg.content}
                                                     </div>
@@ -1444,7 +1444,7 @@ export default function AdminDashboard() {
                                             ))}
                                         </div>
 
-                                        <div className="mt-6 pt-4 border-t border-white/10 flex items-center justify-between text-[10px] text-white/30 font-mono">
+                                        <div className="mt-6 pt-4 border-t border-border flex items-center justify-between text-[10px] text-white/30 font-mono">
                                             <span>CHAT_ID: {selectedChat.id}</span>
                                             <span>STARTED: {new Date(selectedChat.created_at).toLocaleString()}</span>
                                         </div>

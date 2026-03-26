@@ -245,12 +245,12 @@ const NewAppMockup = () => {
     }, []);
 
     return (
-        <section className="py-24 lg:py-40 bg-[#030508] relative overflow-hidden flex flex-col items-center">
+        <section className="py-24 lg:py-40 bg-background relative overflow-hidden flex flex-col items-center">
              
              {/* Text Animation & Controls (Centered above the app) */}
              <div className="text-center z-20 mb-12 px-4">
                  
-                <h2 className="text-4xl md:text-6xl lg:text-7xl font-serif text-white mb-10 tracking-tight leading-tight flex flex-col md:flex-row items-center justify-center gap-2 md:gap-4">
+                <h2 className="text-4xl md:text-6xl lg:text-7xl font-serif text-foreground mb-10 tracking-tight leading-tight flex flex-col md:flex-row items-center justify-center gap-2 md:gap-4">
                     <span>Manage your</span>
                     <span className="relative inline-block overflow-hidden h-[1.3em] w-[260px] md:w-[320px] text-left">
                          <AnimatePresence mode="popLayout">
@@ -269,21 +269,21 @@ const NewAppMockup = () => {
                  </h2>
 
                  {/* Interactive Pills */}
-                 <div className="flex items-center justify-center gap-2 md:gap-4 bg-white/5 p-1.5 rounded-full border border-white/10 backdrop-blur-md w-fit mx-auto">
+                 <div className="flex items-center justify-center gap-2 md:gap-4 bg-black/[0.03] dark:bg-white/5 p-1.5 rounded-full border border-black/5 dark:border-white/10 backdrop-blur-md w-fit mx-auto">
                      {tabs.map((tab, idx) => (
                          <button
                              key={tab.id}
                              onClick={() => setActiveTab(idx)}
                              className={`px-5 py-2.5 rounded-full text-sm font-semibold transition-all duration-300 relative ${
                                  activeTab === idx 
-                                 ? "text-black shadow-lg" 
-                                 : "text-white/60 hover:text-white hover:bg-white/5"
+                                 ? "text-background dark:text-black shadow-lg" 
+                                 : "text-muted-foreground hover:text-foreground hover:bg-black/[0.03] dark:hover:bg-white/5"
                              }`}
                          >
                              {activeTab === idx && (
                                  <motion.div 
                                      layoutId="pill-bg"
-                                     className="absolute inset-0 bg-white rounded-full z-0"
+                                     className="absolute inset-0 bg-foreground dark:bg-white rounded-full z-0"
                                      transition={{ type: "spring", stiffness: 300, damping: 25 }}
                                  />
                              )}

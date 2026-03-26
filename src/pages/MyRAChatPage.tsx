@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+﻿import { useState, useEffect } from "react";
 import { useMyRAChat } from "@/hooks/useMyRAChat";
 import ChatArea from "@/components/chat-ui/ChatArea";
 import { useAuth } from "@/contexts/AuthContext";
@@ -40,7 +40,7 @@ export default function MyRAChatPage() {
             {/* Profile Survey Modal */}
             {showSurvey && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
-                    <div className="bg-[#050810] border border-white/10 rounded-3xl shadow-2xl w-full max-w-2xl relative overflow-hidden animate-in fade-in zoom-in duration-300">
+                    <div className="bg-background border border-border rounded-3xl shadow-2xl w-full max-w-2xl relative overflow-hidden animate-in fade-in zoom-in duration-300">
                         <div className="absolute top-0 w-full h-1 bg-gradient-to-r from-blue-500 via-primary to-purple-500" />
                         <InitialProfileSurvey onComplete={() => setShowSurvey(false)} />
                     </div>
@@ -56,7 +56,7 @@ export default function MyRAChatPage() {
                     </div>
                     <button 
                         onClick={() => setShowSurvey(true)}
-                        className="px-4 py-2 bg-blue-500 hover:bg-blue-400 text-white text-xs font-bold rounded-lg transition-colors shadow-lg shadow-blue-500/20 cursor-pointer"
+                        className="px-4 py-2 bg-blue-500 hover:bg-blue-400 text-foreground text-xs font-bold rounded-lg transition-colors shadow-lg shadow-blue-500/20 cursor-pointer"
                     >
                         Start Survey
                     </button>

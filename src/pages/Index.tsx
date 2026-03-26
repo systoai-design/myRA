@@ -18,7 +18,7 @@ const Index = () => {
   if (loading) return null;
 
   return (
-    <div className="min-h-screen w-full bg-[#050810] text-white antialiased overflow-x-hidden relative">
+    <div className="min-h-screen w-full bg-background text-foreground antialiased overflow-x-hidden relative">
       <div className="relative z-10 w-full flex flex-col min-h-screen">
         <NewHeader />
         <main className="flex-grow">
