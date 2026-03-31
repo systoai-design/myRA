@@ -131,7 +131,7 @@ export default function ChatArea({
 
         // Force purely dark styling for markdown prose
         return (
-            <div className="prose prose-invert max-w-none text-[15px] font-medium font-inter text-white/90">
+            <div className="prose dark:prose-invert max-w-none text-[15px] font-medium font-inter text-foreground/90">
                 <ReactMarkdown>{content}</ReactMarkdown>
             </div>
         );
@@ -364,7 +364,7 @@ export default function ChatArea({
                                     {/* AI Avatar */}
                                     {!isUser && (
                                         <div className="shrink-0 mr-3 mt-1">
-                                            <div className="w-8 h-8 rounded-full bg-white/5 backdrop-blur-md border border-white/10 flex items-center justify-center shadow-lg">
+                                            <div className="w-8 h-8 rounded-full bg-black/[0.04] dark:bg-white/5 backdrop-blur-md border border-black/10 dark:border-white/10 flex items-center justify-center shadow-lg">
                                                 <span className="font-serif text-foreground text-sm font-bold">RA</span>
                                             </div>
                                         </div>
@@ -376,7 +376,7 @@ export default function ChatArea({
                                                 {msg.content}
                                             </div>
                                         ) : (
-                                            <div className="bg-white/80 dark:bg-white/[0.04] backdrop-blur-3xl border border-white/10 text-white/90 rounded-3xl rounded-tl-md shadow-2xl overflow-hidden glass-premium">
+                                            <div className="bg-gray-100/80 dark:bg-white/[0.04] backdrop-blur-3xl border border-black/5 dark:border-white/10 text-foreground rounded-3xl rounded-tl-md shadow-2xl overflow-hidden glass-premium">
                                                 <div className="px-5 py-4">
                                                     {renderMessageContent(msg)}
                                                 </div>

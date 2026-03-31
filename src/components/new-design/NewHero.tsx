@@ -1,7 +1,7 @@
 import { ArrowRight } from "lucide-react";
 import { Link } from "react-router-dom";
-import { motion, AnimatePresence } from "framer-motion";
-import { useState, useEffect } from "react";
+import { motion } from "framer-motion";
+import { useState, useEffect, useCallback } from "react";
 
 const rotatingQuestions = [
     "How much do I need to retire comfortably?",
@@ -14,15 +14,47 @@ const rotatingQuestions = [
     "How do I reduce my tax burden in retirement?",
 ];
 
-const NewHero = () => {
-    const [questionIndex, setQuestionIndex] = useState(0);
+const useTypewriter = (texts: string[], typingSpeed = 45, deletingSpeed = 25, pauseTime = 2200) => {
+    const [displayText, setDisplayText] = useState("");
+    const [textIndex, setTextIndex] = useState(0);
+    const [isDeleting, setIsDeleting] = useState(false);
+
+    const tick = useCallback(() => {
+        const currentFullText = texts[textIndex];
+
+        if (!isDeleting) {
+            // Typing
+            if (displayText.length < currentFullText.length) {
+                setDisplayText(currentFullText.substring(0, displayText.length + 1));
+            } else {
+                // Finished typing — pause then start deleting
+                setTimeout(() => setIsDeleting(true), pauseTime);
+                return;
+            }
+        } else {
+            // Deleting
+            if (displayText.length > 0) {
+                setDisplayText(currentFullText.substring(0, displayText.length - 1));
+            } else {
+                // Finished deleting — move to next question
+                setIsDeleting(false);
+                setTextIndex((prev) => (prev + 1) % texts.length);
+                return;
+            }
+        }
+    }, [displayText, textIndex, isDeleting, texts, pauseTime]);
 
     useEffect(() => {
-        const interval = setInterval(() => {
-            setQuestionIndex((prev) => (prev + 1) % rotatingQuestions.length);
-        }, 3500);
-        return () => clearInterval(interval);
-    }, []);
+        const speed = isDeleting ? deletingSpeed : typingSpeed;
+        const timer = setTimeout(tick, speed);
+        return () => clearTimeout(timer);
+    }, [tick, isDeleting, typingSpeed, deletingSpeed]);
+
+    return displayText;
+};
+
+const NewHero = () => {
+    const typedQuestion = useTypewriter(rotatingQuestions);
 
     return (
         <section className="relative min-h-[95vh] flex flex-col items-center justify-center overflow-hidden bg-background pt-20">
@@ -80,7 +112,7 @@ const NewHero = () => {
                     </Link>
                 </motion.div>
 
-                {/* Glass Chat Input with Rotating Questions */}
+                {/* Glass Chat Input with Typewriter Effect */}
                 <motion.div 
                     initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.5, duration: 0.8 }}
                     className="w-full max-w-2xl mx-auto relative group cursor-pointer transition-transform duration-500 hover:scale-[1.01]"
@@ -91,19 +123,10 @@ const NewHero = () => {
                         
                         <div className="relative glass-panel rounded-[2rem] p-2 flex items-center pr-4">
                             <div className="flex-1 py-4 px-6 text-left overflow-hidden h-[60px] flex items-center">
-                                <AnimatePresence mode="wait">
-                                    <motion.span
-                                        key={questionIndex}
-                                        initial={{ y: 20, opacity: 0 }}
-                                        animate={{ y: 0, opacity: 1 }}
-                                        exit={{ y: -20, opacity: 0 }}
-                                        transition={{ duration: 0.4, ease: "easeInOut" }}
-                                        className="text-muted-foreground text-lg font-sans block"
-                                    >
-                                        {rotatingQuestions[questionIndex]}
-                                    </motion.span>
-                                </AnimatePresence>
-                                <span className="inline-block w-[2px] h-5 bg-primary dark:bg-white ml-2 animate-pulse align-middle shrink-0" />
+                                <span className="text-muted-foreground text-lg font-sans">
+                                    {typedQuestion}
+                                </span>
+                                <span className="inline-block w-[2px] h-5 bg-primary dark:bg-white ml-0.5 animate-pulse align-middle shrink-0" />
                             </div>
                             <div className="w-12 h-12 rounded-full bg-black/[0.04] dark:bg-white/10 flex items-center justify-center transition-colors border border-black/5 dark:border-white/10 shrink-0">
                                 <ArrowRight className="w-5 h-5 text-foreground" />
@@ -140,3 +163,4 @@ const NewHero = () => {
 };
 
 export default NewHero;
+
