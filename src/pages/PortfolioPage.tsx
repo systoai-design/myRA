@@ -1,4 +1,4 @@
-﻿import { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { useMyRAChat } from "@/hooks/useMyRAChat";
 import { useAuth } from "@/contexts/AuthContext";
 import PortfolioOverview from "@/components/dashboard/PortfolioOverview";
@@ -92,8 +92,8 @@ export default function PortfolioPage() {
             {!profileComplete && (
                 <div className="bg-gradient-to-r from-blue-900/40 to-primary/20 border border-blue-500/30 rounded-2xl p-4 flex items-center justify-between animate-in slide-in-from-top duration-500">
                     <div>
-                        <h4 className="text-sm font-bold text-white">Action Required: Calibration</h4>
-                        <p className="text-xs text-blue-200 mt-1">Complete your profile so MyRA can generate accurate portfolio analysis.</p>
+                        <h4 className="text-sm font-bold text-foreground">Action Required: Calibration</h4>
+                        <p className="text-xs text-blue-200 dark:text-blue-200 mt-1">Complete your profile so myra can generate accurate portfolio analysis.</p>
                     </div>
                     <button 
                         onClick={() => setShowSurvey(true)}
@@ -121,14 +121,14 @@ export default function PortfolioPage() {
                         return (
                             <button
                                 key={app.name}
-                                onClick={() => toast.info(`${app.name} integration coming soon! For now, tell MyRA about your ${app.name} assets in chat.`)}
+                                onClick={() => toast.info(`${app.name} integration coming soon! For now, tell myra about your ${app.name} assets in chat.`)}
                                 className={`glass-premium rounded-[24px] p-6 border ${app.border} ${app.bg} flex flex-col items-center gap-4 hover:scale-[1.02] transition-all cursor-pointer group`}
                             >
                                 <div className={`w-14 h-14 rounded-2xl ${app.bg} flex items-center justify-center`}>
                                     <Icon className={`w-7 h-7 ${app.color}`} />
                                 </div>
                                 <div className="text-center">
-                                    <p className="text-sm font-semibold text-white">{app.name}</p>
+                                    <p className="text-sm font-semibold text-foreground">{app.name}</p>
                                     <p className="text-[10px] text-muted-foreground/60 mt-1 flex items-center gap-1 justify-center">
                                         <Link2 className="w-3 h-3" /> Connect
                                     </p>
@@ -147,7 +147,7 @@ export default function PortfolioPage() {
                             <Plus className="w-5 h-5 text-primary" />
                         </div>
                         <div>
-                            <h3 className="text-lg font-bold font-serif text-white">Add Assets Manually</h3>
+                            <h3 className="text-lg font-bold font-serif text-foreground">Add Assets Manually</h3>
                             <p className="text-xs text-muted-foreground">Quick add your accounts and balances.</p>
                         </div>
                     </div>
@@ -229,7 +229,7 @@ export default function PortfolioPage() {
                         <MessageSquare className="w-6 h-6 text-primary" />
                     </div>
                     <div>
-                        <h3 className="text-lg font-bold font-serif text-foreground mb-0.5">Prefer to tell MyRA?</h3>
+                        <h3 className="text-lg font-bold font-serif text-foreground mb-0.5">Prefer to tell myra?</h3>
                         <p className="text-sm text-muted-foreground">Describe your accounts in chat and she'll update your portfolio automatically.</p>
                     </div>
                 </div>
@@ -237,7 +237,7 @@ export default function PortfolioPage() {
                     onClick={() => navigate('/app/chat')}
                     className="px-6 py-3 bg-primary hover:bg-primary/80 text-foreground font-semibold rounded-2xl transition-all flex items-center gap-2 shadow-lg shadow-primary/20 cursor-pointer active:scale-[0.97] whitespace-nowrap"
                 >
-                    Open MyRA Chat
+                    Open myra Chat
                     <ArrowRight className="w-4 h-4" />
                 </button>
             </div>

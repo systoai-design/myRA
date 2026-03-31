@@ -78,28 +78,28 @@ export default function SettingsPage() {
         <div className="space-y-8 max-w-3xl mx-auto animate-in fade-in duration-700">
             {/* Header */}
             <div>
-                <h2 className="text-3xl font-serif font-bold text-white mb-2">Settings</h2>
-                <p className="text-white/40 text-sm font-medium">Manage your account, appearance, and security.</p>
+                <h2 className="text-3xl font-serif font-bold text-foreground mb-2">Settings</h2>
+                <p className="text-muted-foreground text-sm font-medium">Manage your account, appearance, and security.</p>
             </div>
 
             {/* Account Section */}
-            <div className="glass-premium rounded-[32px] p-8 border border-white/5 bg-white/[0.02] space-y-6">
+            <div className="glass-premium rounded-[32px] p-8 border border-black/5 dark:border-white/5 space-y-6">
                 <div className="flex items-center gap-3 mb-2">
                     <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center">
                         <User className="w-5 h-5 text-primary" />
                     </div>
-                    <h3 className="text-xl font-bold font-serif text-white">Account</h3>
+                    <h3 className="text-xl font-bold font-serif text-foreground">Account</h3>
                 </div>
 
                 {/* Display Name */}
                 <div className="space-y-2">
-                    <label className="text-[10px] font-bold text-white/40 uppercase tracking-widest">Display Name</label>
+                    <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Display Name</label>
                     <div className="flex items-center gap-2">
                         <input 
                             value={displayName}
                             onChange={e => setDisplayName(e.target.value)}
                             onKeyDown={e => { if (e.key === 'Enter') handleSaveName(); }}
-                            className="flex-1 bg-black/40 border border-white/10 rounded-xl px-4 py-3 text-white placeholder-white/20 focus:outline-none focus:border-primary/50 transition-colors text-sm"
+                            className="flex-1 bg-black/[0.03] dark:bg-black/40 border border-black/10 dark:border-white/10 rounded-xl px-4 py-3 text-foreground placeholder-muted-foreground/40 focus:outline-none focus:border-primary/50 transition-colors text-sm"
                             placeholder="Your name"
                         />
                         <button 
@@ -115,20 +115,20 @@ export default function SettingsPage() {
 
                 {/* Email (read-only) */}
                 <div className="space-y-2">
-                    <label className="text-[10px] font-bold text-white/40 uppercase tracking-widest">Email</label>
-                    <div className="bg-black/40 border border-white/5 rounded-xl px-4 py-3 text-white/50 text-sm">
+                    <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Email</label>
+                    <div className="bg-black/[0.03] dark:bg-black/40 border border-black/5 dark:border-white/5 rounded-xl px-4 py-3 text-muted-foreground text-sm">
                         {user?.email}
                     </div>
                 </div>
             </div>
 
             {/* Appearance Section */}
-            <div className="glass-premium rounded-[32px] p-8 border border-white/5 bg-white/[0.02] space-y-6">
+            <div className="glass-premium rounded-[32px] p-8 border border-black/5 dark:border-white/5 space-y-6">
                 <div className="flex items-center gap-3 mb-2">
                     <div className="w-10 h-10 rounded-xl bg-purple-500/10 flex items-center justify-center">
                         <Palette className="w-5 h-5 text-purple-400" />
                     </div>
-                    <h3 className="text-xl font-bold font-serif text-white">Appearance</h3>
+                    <h3 className="text-xl font-bold font-serif text-foreground">Appearance</h3>
                 </div>
 
                 <div className="flex gap-3">
@@ -138,8 +138,8 @@ export default function SettingsPage() {
                             onClick={() => setTheme(value)}
                             className={`flex-1 flex items-center justify-center gap-2 p-4 rounded-2xl border transition-all cursor-pointer ${
                                 theme === value 
-                                    ? "bg-primary/10 border-primary/30 text-white" 
-                                    : "bg-white/[0.02] border-white/5 text-white/40 hover:text-white hover:border-white/10"
+                                    ? "bg-primary/10 border-primary/30 text-foreground" 
+                                    : "bg-black/[0.02] dark:bg-white/[0.02] border-black/5 dark:border-white/5 text-muted-foreground hover:text-foreground hover:border-black/10 dark:hover:border-white/10"
                             }`}
                         >
                             <Icon className="w-4 h-4" />
@@ -150,35 +150,35 @@ export default function SettingsPage() {
             </div>
 
             {/* Security Section */}
-            <div className="glass-premium rounded-[32px] p-8 border border-white/5 bg-white/[0.02] space-y-6">
+            <div className="glass-premium rounded-[32px] p-8 border border-black/5 dark:border-white/5 space-y-6">
                 <div className="flex items-center gap-3 mb-2">
                     <div className="w-10 h-10 rounded-xl bg-amber-500/10 flex items-center justify-center">
                         <Lock className="w-5 h-5 text-amber-400" />
                     </div>
-                    <h3 className="text-xl font-bold font-serif text-white">Security</h3>
+                    <h3 className="text-xl font-bold font-serif text-foreground">Security</h3>
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="space-y-2">
-                        <label className="text-[10px] font-bold text-white/40 uppercase tracking-widest">New Password</label>
+                        <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">New Password</label>
                         <input 
                             type="password"
                             value={newPassword}
                             onChange={e => setNewPassword(e.target.value)}
                             placeholder="••••••••"
                             minLength={6}
-                            className="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-3 text-white placeholder-white/20 focus:outline-none focus:border-primary/50 transition-colors text-sm"
+                            className="w-full bg-black/[0.03] dark:bg-black/40 border border-black/10 dark:border-white/10 rounded-xl px-4 py-3 text-foreground placeholder-muted-foreground/40 focus:outline-none focus:border-primary/50 transition-colors text-sm"
                         />
                     </div>
                     <div className="space-y-2">
-                        <label className="text-[10px] font-bold text-white/40 uppercase tracking-widest">Confirm Password</label>
+                        <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Confirm Password</label>
                         <input 
                             type="password"
                             value={confirmPassword}
                             onChange={e => setConfirmPassword(e.target.value)}
                             placeholder="••••••••"
                             minLength={6}
-                            className="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-3 text-white placeholder-white/20 focus:outline-none focus:border-primary/50 transition-colors text-sm"
+                            className="w-full bg-black/[0.03] dark:bg-black/40 border border-black/10 dark:border-white/10 rounded-xl px-4 py-3 text-foreground placeholder-muted-foreground/40 focus:outline-none focus:border-primary/50 transition-colors text-sm"
                         />
                     </div>
                 </div>
@@ -196,14 +196,14 @@ export default function SettingsPage() {
             <div className="flex flex-col md:flex-row gap-4">
                 <button 
                     onClick={handleSignOut}
-                    className="flex-1 glass-premium rounded-[24px] p-6 border border-white/5 bg-white/[0.02] flex items-center gap-4 hover:border-white/10 transition-all cursor-pointer group"
+                    className="flex-1 glass-premium rounded-[24px] p-6 border border-black/5 dark:border-white/5 flex items-center gap-4 hover:border-black/10 dark:hover:border-white/10 transition-all cursor-pointer group"
                 >
-                    <div className="w-10 h-10 rounded-xl bg-white/5 flex items-center justify-center group-hover:bg-white/10 transition-all">
-                        <LogOut className="w-5 h-5 text-white/50 group-hover:text-white" />
+                    <div className="w-10 h-10 rounded-xl bg-black/[0.04] dark:bg-white/5 flex items-center justify-center group-hover:bg-black/[0.08] dark:group-hover:bg-white/10 transition-all">
+                        <LogOut className="w-5 h-5 text-muted-foreground group-hover:text-foreground" />
                     </div>
                     <div className="text-left">
-                        <p className="text-sm font-semibold text-white">Sign Out</p>
-                        <p className="text-xs text-white/40">End your current session</p>
+                        <p className="text-sm font-semibold text-foreground">Sign Out</p>
+                        <p className="text-xs text-muted-foreground">End your current session</p>
                     </div>
                 </button>
 
@@ -216,7 +216,7 @@ export default function SettingsPage() {
                     </div>
                     <div className="text-left">
                         <p className="text-sm font-semibold text-red-400/80">Delete Account</p>
-                        <p className="text-xs text-white/30">Permanently remove all data</p>
+                        <p className="text-xs text-muted-foreground">Permanently remove all data</p>
                     </div>
                 </button>
             </div>
