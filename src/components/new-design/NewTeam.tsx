@@ -2,7 +2,7 @@ import { motion } from "framer-motion";
 
 const teamData = [
     { name: "Darren P.", role: "Creator", img: "/team/Darren.avif" },
-    { name: "Sierra P.", role: "Co-Creator", img: "/team/Sierra.avif" },
+    { name: "Sierra P.", role: "Creator", img: "/team/Sierra.avif" },
     { name: "Marquis L.", role: "Strategy", img: "/team/Marquis.avif" },
     { name: "Amanda W.", role: "Designer", img: "/team/Amanda.avif" },
     { name: "Ally L.", role: "Designer", img: "/team/Ally.avif" },
@@ -10,8 +10,7 @@ const teamData = [
     { name: "Cory G.", role: "Dev", img: "/team/Cory.avif" },
     { name: "Joe P.", role: "Dev", img: "/team/Joe.avif" },
     { name: "Karlan T.", role: "Dev", img: "/team/Karlan.avif" },
-    { name: "Ashton", role: "Copywriter", img: "/team/Ashton.avif" },
-    { name: "Charley", role: "Dev", img: "/team/Charley.avif" },
+    { name: "Charley", role: "Mascot", img: "/team/Charley.avif" },
 ];
 
 const NewTeam = () => {
@@ -28,7 +27,7 @@ const NewTeam = () => {
                     className="text-center mb-24"
                 >
                     <h2 className="text-5xl md:text-6xl font-serif text-foreground mb-6">
-                        <span className="italic font-light">MyRA's</span> Back Office
+                        <span className="italic font-light">myra's</span> Back Office
                     </h2>
                     <p className="max-w-2xl mx-auto text-lg text-muted-foreground font-sans font-light">
                         The humans behind the intelligence — dedicated to making <br className="hidden sm:block" />

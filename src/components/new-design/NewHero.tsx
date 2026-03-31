@@ -1,8 +1,29 @@
 import { ArrowRight } from "lucide-react";
 import { Link } from "react-router-dom";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
+import { useState, useEffect } from "react";
+
+const rotatingQuestions = [
+    "How much do I need to retire comfortably?",
+    "Should I convert to a Roth IRA?",
+    "What's the best age to start Social Security?",
+    "How much will I pay in taxes this year?",
+    "Can I afford to retire early?",
+    "How should I invest my 401(k)?",
+    "Will I outlive my savings?",
+    "How do I reduce my tax burden in retirement?",
+];
 
 const NewHero = () => {
+    const [questionIndex, setQuestionIndex] = useState(0);
+
+    useEffect(() => {
+        const interval = setInterval(() => {
+            setQuestionIndex((prev) => (prev + 1) % rotatingQuestions.length);
+        }, 3500);
+        return () => clearInterval(interval);
+    }, []);
+
     return (
         <section className="relative min-h-[95vh] flex flex-col items-center justify-center overflow-hidden bg-background pt-20">
             {/* Background */}
@@ -33,20 +54,19 @@ const NewHero = () => {
                     </span>
                 </motion.div>
 
-                {/* Headline */}
+                {/* Headline — "myra." */}
                 <motion.h1 
                     initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2, duration: 0.8 }}
-                    className="text-6xl sm:text-7xl md:text-[6rem] leading-[1.1] font-serif text-foreground mb-6 dark:text-glow"
+                    className="text-6xl sm:text-7xl md:text-[6rem] leading-[1.1] font-serif text-foreground mb-8 dark:text-glow"
                 >
-                    <span className="italic font-light">Own</span> your retirement.
+                    myra.
                 </motion.h1>
 
                 <motion.p 
                     initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }}
-                    className="max-w-xl mx-auto text-lg sm:text-xl text-muted-foreground font-sans font-light mb-12 leading-relaxed"
+                    className="max-w-2xl mx-auto text-lg sm:text-xl text-muted-foreground font-sans font-light mb-12 leading-relaxed"
                 >
-                    MyRA is your personal AI Fiduciary Advisor. <br className="hidden sm:block" />
-                    Track your wealth, plan for taxes, and optimize your financial future—all in one place.
+                    The modern alternative to the traditional financial advisor experience, without the high management fees, conflicted advice, and inconsistent service. At less than a third of the cost, myra provides the guidance and support you need with 24/7 availability and perfect memory, helping you navigate retirement with confidence.
                 </motion.p>
 
                 {/* CTA */}
@@ -60,20 +80,32 @@ const NewHero = () => {
                     </Link>
                 </motion.div>
 
-                {/* Glass Chat Input Simulation */}
+                {/* Glass Chat Input with Rotating Questions */}
                 <motion.div 
                     initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.5, duration: 0.8 }}
                     className="w-full max-w-2xl mx-auto relative group cursor-pointer transition-transform duration-500 hover:scale-[1.01]"
                 >
                     <Link to="/offer" target="_blank" className="block relative outline-none focus:outline-none">
-                        <div className="absolute -inset-1 bg-primary/10 dark:bg-white/10 rounded-[2rem] blur-xl opacity-0 group-hover:opacity-100 transition duration-500" />
+                        {/* Static glow outline */}
+                        <div className="absolute -inset-[2px] rounded-[2rem] bg-gradient-to-r from-blue-500/20 via-purple-500/15 to-blue-500/20 pointer-events-none" />
                         
                         <div className="relative glass-panel rounded-[2rem] p-2 flex items-center pr-4">
-                            <div className="flex-1 py-4 px-6 text-left">
-                                <span className="text-muted-foreground text-lg font-sans">How should I invest for...</span>
-                                <span className="inline-block w-[2px] h-5 bg-primary dark:bg-white ml-2 animate-pulse align-middle" />
+                            <div className="flex-1 py-4 px-6 text-left overflow-hidden h-[60px] flex items-center">
+                                <AnimatePresence mode="wait">
+                                    <motion.span
+                                        key={questionIndex}
+                                        initial={{ y: 20, opacity: 0 }}
+                                        animate={{ y: 0, opacity: 1 }}
+                                        exit={{ y: -20, opacity: 0 }}
+                                        transition={{ duration: 0.4, ease: "easeInOut" }}
+                                        className="text-muted-foreground text-lg font-sans block"
+                                    >
+                                        {rotatingQuestions[questionIndex]}
+                                    </motion.span>
+                                </AnimatePresence>
+                                <span className="inline-block w-[2px] h-5 bg-primary dark:bg-white ml-2 animate-pulse align-middle shrink-0" />
                             </div>
-                            <div className="w-12 h-12 rounded-full bg-black/[0.04] dark:bg-white/10 group-hover:bg-black/[0.08] dark:group-hover:bg-white/20 flex items-center justify-center transition-colors border border-black/5 dark:border-white/10">
+                            <div className="w-12 h-12 rounded-full bg-black/[0.04] dark:bg-white/10 flex items-center justify-center transition-colors border border-black/5 dark:border-white/10 shrink-0">
                                 <ArrowRight className="w-5 h-5 text-foreground" />
                             </div>
                         </div>

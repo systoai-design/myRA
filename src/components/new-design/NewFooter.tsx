@@ -11,7 +11,7 @@ const NewFooter = () => {
                     <div className="col-span-2 lg:col-span-2 flex flex-col items-start">
                         <div className="flex items-center gap-3 mb-6">
                             <span className="text-2xl font-serif text-foreground tracking-tight">
-                                MyRA
+                                myra
                             </span>
                         </div>
                         <p className="text-sm text-muted-foreground max-w-sm mb-8 font-sans font-light leading-relaxed">
@@ -71,7 +71,7 @@ const NewFooter = () => {
                 </div>
                 
                 <div className="mt-12 text-[10px] text-muted-foreground/50 font-sans leading-relaxed text-justify">
-                    Investment advisory services provided by MyRA, an SEC-registered investment adviser. Brokerage services provided by partnered custodians. All investing involves risk, including possible loss of principal. The information provided heavily relies on mathematical logic and AI forecasting, but does not guarantee future performance.
+                    Investment advisory services provided by myra, an SEC-registered investment adviser. Brokerage services provided by partnered custodians. All investing involves risk, including possible loss of principal. The information provided heavily relies on mathematical logic and AI forecasting, but does not guarantee future performance.
                 </div>
             </div>
         </footer>

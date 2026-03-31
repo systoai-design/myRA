@@ -25,7 +25,7 @@ export const NewHeader = () => {
                             <span className="text-foreground font-serif font-bold text-xs tracking-wider">RA</span>
                         </div>
                         <span className="text-xl font-serif text-foreground tracking-tight">
-                            MyRA
+                            myra
                         </span>
                     </Link>
                 </div>

@@ -4,20 +4,20 @@ import { Plus, X } from "lucide-react";
 
 const faqs = [
     {
-        question: "How is MyRA different from a human advisor?",
-        answer: "MyRA provides the same fiduciary-grade logic as a top-tier CFP® but at 1% of the cost. She's available 24/7, never sleeps, and has perfect memory of your entire financial life."
+        question: "How is myra different from a human advisor?",
+        answer: "myra provides the same fiduciary-grade logic as a top-tier CFP® but at 1% of the cost. She's available 24/7, never sleeps, and has perfect memory of your entire financial life."
     },
     {
         question: "Is my financial data secure?",
         answer: "Yes. We use bank-level 256-bit AES encryption. We never sell your data to third parties, and our AI models are trained on completely anonymized data streams."
     },
     {
-        question: "Can MyRA handle complex tax situations?",
-        answer: "Absolutely. MyRA is trained on the latest tax codes and uses advanced forecasting to help you optimize withdrawals, minimize capital gains, and plan multi-generational wealth transfers."
+        question: "Can myra handle complex tax situations?",
+        answer: "Absolutely. myra is trained on the latest tax codes and uses advanced forecasting to help you optimize withdrawals, minimize capital gains, and plan multi-generational wealth transfers."
     },
     {
-        question: "What products does MyRA recommend?",
-        answer: "Since we act as a fiduciary, MyRA only recommends low-cost, globally diversified ETFs and index funds tailored to your specific risk tolerance and retirement timeline. No hidden commission products."
+        question: "What products does myra recommend?",
+        answer: "Since we act as a fiduciary, myra only recommends low-cost, globally diversified ETFs and index funds tailored to your specific risk tolerance and retirement timeline. No hidden commission products."
     },
     {
         question: "Can I still talk to a human?",

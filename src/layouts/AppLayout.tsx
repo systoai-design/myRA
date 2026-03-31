@@ -34,7 +34,7 @@ export default function AppLayout({ children }: AppLayoutProps) {
 
     const navItems = [
         { icon: LayoutDashboard, label: "Dashboard", path: "/app", id: "dashboard" },
-        { icon: MessageSquare, label: "MyRA Chat", path: "/app/chat", id: "chat" },
+        { icon: MessageSquare, label: "myra Chat", path: "/app/chat", id: "chat" },
         { icon: BarChart3, label: "Portfolio", path: "/app/portfolio", id: "portfolio" },
         { icon: User, label: "Profile", path: "/app/profile", id: "profile" },
     ];
@@ -65,7 +65,7 @@ export default function AppLayout({ children }: AppLayoutProps) {
                         </div>
                         {!sidebarCollapsed && (
                             <div className="flex flex-col animate-in fade-in slide-in-from-left-2">
-                                <span className="text-xl font-serif font-bold tracking-tight text-foreground">MyRA</span>
+                                <span className="text-xl font-serif font-bold tracking-tight text-foreground">myra</span>
                                 <span className="text-[10px] uppercase tracking-[0.2em] text-muted-foreground font-bold -mt-1">Fiduciary AI</span>
                             </div>
                         )}

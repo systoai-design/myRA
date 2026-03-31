@@ -21,8 +21,8 @@ const NewFeatures = () => {
                         <span className="italic font-light">Simplify</span> your future
                     </h2>
                     <p className="max-w-2xl mx-auto text-lg text-muted-foreground font-sans font-light">
-                        Connect all your accounts to see your retirement in one<br className="hidden sm:block" />
-                        place—easy to find, easy to understand.
+                        Connect all your accounts to see your retirement income plan in one<br className="hidden sm:block" />
+                        place—easy to find, easy to understand, and visually simple.
                     </p>
                 </motion.div>
 

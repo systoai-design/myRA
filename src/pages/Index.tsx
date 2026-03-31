@@ -2,6 +2,8 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useNavigate } from "react-router-dom";
 import NewHeader from "@/components/new-design/NewHeader";
 import NewHero from "@/components/new-design/NewHero";
+import HeroVideo from "@/components/new-design/HeroVideo";
+import SavingsCalculator from "@/components/new-design/SavingsCalculator";
 import NewAppMockup from "@/components/new-design/NewAppMockup";
 import NewMobileApp from "@/components/new-design/NewMobileApp";
 import NewFeatures from "@/components/new-design/NewFeatures";
@@ -23,6 +25,8 @@ const Index = () => {
         <NewHeader />
         <main className="flex-grow">
           <NewHero />
+          <HeroVideo />
+          <SavingsCalculator />
           <NewAppMockup />
           <NewMobileApp />
           <NewFeatures />

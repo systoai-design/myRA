@@ -354,3 +354,21 @@
   overflow-wrap: anywhere;
   word-break: break-word;
 }
+
+/* ═══ Orb Pulse — gentle ebb and flow for phone orb ═══ */
+@keyframes orbPulse {
+  0%, 100% {
+    opacity: 0.35;
+    transform: translate(-50%, -50%) scale(1);
+  }
+  50% {
+    opacity: 0.55;
+    transform: translate(-50%, -50%) scale(1.15);
+  }
+}
+
+/* ═══ Shimmer — subtle sweep for video placeholder ═══ */
+@keyframes shimmer {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(100%); }
+}

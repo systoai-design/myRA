@@ -105,7 +105,7 @@ const NewMobileApp = () => {
                     </h2>
                     
                     <p className="text-lg text-muted-foreground font-light mb-10 max-w-lg mx-auto lg:mx-0">
-                        We are currently building the ultimate mobile experience. Soon, you will be able to track your net worth, execute AI tax loss harvesting, and chat with MyRA directly from your iPhone.
+                        We are currently building the ultimate mobile experience. Soon, you will be able to track your net worth, execute AI tax loss harvesting, and chat with myra directly from your iPhone.
                     </p>
 
                     {/* Interactive State Indicators */}
@@ -127,6 +127,18 @@ const NewMobileApp = () => {
 
                 {/* RIGHT Col: 3D iPhone Mockup */}
                 <div className="w-full lg:w-1/2 flex justify-center perspective-[2000px] z-20 mt-12 lg:mt-0">
+                    {/* Colored Orb Behind Phone */}
+                    <div 
+                        className={`absolute w-[340px] h-[340px] lg:w-[420px] lg:h-[420px] rounded-full blur-[80px] transition-colors duration-1000 pointer-events-none ${
+                            activeTab === 0 ? 'bg-blue-500' : activeTab === 1 ? 'bg-emerald-500' : 'bg-purple-500'
+                        }`}
+                        style={{
+                            animation: "orbPulse 6s ease-in-out infinite",
+                            top: "50%",
+                            left: "50%",
+                            transform: "translate(-50%, -50%)",
+                        }}
+                    />
                     <div 
                         className="relative w-[280px] h-[580px] lg:w-[320px] lg:h-[660px]"
                         style={{ 

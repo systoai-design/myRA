@@ -149,7 +149,7 @@ const PortfolioPanel = () => (
                          <Activity className="w-4 h-4" /> AI Tax Harvest Found
                      </h3>
                      <p className="text-white/70 text-sm leading-relaxed mb-4">
-                         MyRA identified <strong className="text-white">$3,240</strong> in harvestable losses on your AAPL position. Would you like to execute this trade to offset upcoming capital gains?
+                         myra identified <strong className="text-white">$3,240</strong> in harvestable losses on your AAPL position. Would you like to execute this trade to offset upcoming capital gains?
                      </p>
                      <button className="bg-purple-500 text-white font-semibold py-2 px-4 rounded-lg w-fit text-sm hover:bg-purple-400 transition-colors">
                          Execute Strategy

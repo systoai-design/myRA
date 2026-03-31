@@ -1,4 +1,4 @@
-﻿import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { Copy, ThumbsUp, ThumbsDown, Plus, ArrowUp, PanelLeftOpen, Calendar, Check, CheckCheck, History, MessageSquare, Pencil, Trash2, X, ClipboardCopy } from "lucide-react";
 import { ChatMessage, ChatHistoryItem } from "@/hooks/useMyRAChat";
 import ReactMarkdown from 'react-markdown';
@@ -259,7 +259,7 @@ export default function ChatArea({
                     </Popover>
 
                     <div className="flex gap-2.5 font-semibold text-foreground items-center">
-                        <span className="drop-shadow-sm">MyRA</span>
+                        <span className="drop-shadow-sm">myra</span>
                         <span className="text-[10px] bg-blue-500/20 text-blue-100 px-2 py-0.5 rounded-full uppercase tracking-wider font-bold border border-blue-500/30">Llama3.3 70B</span>
                     </div>
                 </div>
@@ -273,7 +273,7 @@ export default function ChatArea({
                                     .filter(m => m.role !== 'system')
                                     .map(m => {
                                         const time = m.timestamp ? new Date(m.timestamp).toLocaleTimeString() : '';
-                                        const sender = m.role === 'user' ? 'USER' : 'MyRA';
+                                        const sender = m.role === 'user' ? 'USER' : 'myra';
                                         return `[${time}] ${sender}:\n${m.content}\n`;
                                     })
                                     .join('\n---\n\n');
@@ -319,7 +319,7 @@ export default function ChatArea({
                                 <span className="font-serif text-foreground text-4xl font-bold tracking-tighter">RA</span>
                             </div>
                             <h2 className="text-foreground text-4xl font-serif font-semibold mb-3 text-center">
-                                Hi, I'm <span className="bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent">MyRA</span>.
+                                Hi, I'm <span className="bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent">myra</span>.
                             </h2>
                             <p className="text-muted-foreground text-base font-light mb-10 text-center max-w-md leading-relaxed">
                                 Your AI retirement strategist. Ask me anything about retirement planning, Social Security, tax optimization, or portfolio strategy.
@@ -492,7 +492,7 @@ export default function ChatArea({
                             <button
                                 type="button"
                                 onClick={() => setTrainModalOpen(true)}
-                                title="Train MyRA"
+                                title="Train myra"
                                 className="p-3 text-blue-400 hover:text-blue-300 hover:bg-black/[0.04] dark:bg-white/10 rounded-full transition-all active:scale-[0.95] mb-0.5"
                             >
                                 <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m2 16 6 6"/><path d="m22 16-6 6"/><path d="m6 16 1.34-4.66a2 2 0 0 1 1.9-1.34h5.52a2 2 0 0 1 1.9 1.34L18 16"/><path d="M12 10V2"/><path d="M9 4l3-2 3 2"/></svg>
@@ -503,7 +503,7 @@ export default function ChatArea({
                             value={input}
                             onChange={(e) => setInput(e.target.value)}
                             onKeyDown={handleKeyDown}
-                            placeholder="Message MyRA..."
+                            placeholder="Message myra..."
                             className="w-full max-h-48 min-h-[50px] bg-transparent border-none focus:ring-0 text-foreground placeholder:text-white/30 font-light resize-none py-3.5 px-3 text-[16px] custom-scrollbar outline-none"
                             rows={1}
                         />
@@ -519,7 +519,7 @@ export default function ChatArea({
                         </div>
                     </form>
                     <div className="text-center mt-3 text-[11.5px] text-white/30 drop-shadow-sm font-medium tracking-wide">
-                        MyRA provides general education, not personalized financial advice.
+                        myra provides general education, not personalized financial advice.
                     </div>
                 </div>
             </div>

@@ -83,7 +83,7 @@ const recentTransactions = [
 const activityLog = [
     { id: 1, action: "Portfolio rebalanced", time: "2h ago", icon: Activity, color: "text-blue-400", bg: "bg-blue-500/10" },
     { id: 2, action: "Social Security audit complete", time: "5h ago", icon: CheckCircle2, color: "text-emerald-400", bg: "bg-emerald-500/10" },
-    { id: 3, action: "Risk profile updated by MyRA", time: "Yesterday", icon: Zap, color: "text-purple-400", bg: "bg-purple-500/10" },
+    { id: 3, action: "Risk profile updated by myra", time: "Yesterday", icon: Zap, color: "text-purple-400", bg: "bg-purple-500/10" },
 ];
 
 function formatCurrency(value: number) {
@@ -144,7 +144,7 @@ export default function DashboardHome() {
                             Welcome back, <span className="bg-gradient-to-r from-blue-500 to-purple-500 bg-clip-text text-transparent">{userName}</span>
                         </h2>
                         <p className="text-muted-foreground text-sm font-medium max-w-md">
-                            Your retirement plan is being actively monitored by MyRA.
+                            Your retirement plan is being actively monitored by myra.
                         </p>
                     </div>
                     
@@ -219,7 +219,7 @@ export default function DashboardHome() {
                                 <MessageSquare className="w-5 h-5 text-blue-400" />
                             </div>
                             <div>
-                                <p className="text-foreground font-bold text-sm">Talk to MyRA</p>
+                                <p className="text-foreground font-bold text-sm">Talk to myra</p>
                                 <p className="text-muted-foreground text-xs mt-0.5">Get personalized advice</p>
                             </div>
                         </div>
@@ -437,7 +437,7 @@ export default function DashboardHome() {
                                 <span className="text-sm font-bold text-purple-400 dark:text-purple-300">AI Tax Harvest Found</span>
                             </div>
                             <p className="text-sm text-muted-foreground leading-relaxed mb-5">
-                                MyRA identified <span className="text-foreground font-bold">$3,240</span> in harvestable losses on AAPL.
+                                myra identified <span className="text-foreground font-bold">$3,240</span> in harvestable losses on AAPL.
                             </p>
                             <button className="px-5 py-2.5 bg-purple-500 hover:bg-purple-400 text-white font-bold rounded-xl transition-all cursor-pointer active:scale-[0.97] text-sm shadow-lg shadow-purple-500/20">
                                 Execute Strategy
