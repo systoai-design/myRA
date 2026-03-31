@@ -1,4 +1,4 @@
-﻿import React, { useEffect, useState, useRef } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { NewHeader } from "@/components/new-design/NewHeader";
@@ -248,25 +248,40 @@ export default function AdminDashboard() {
         if (!transcript.content.trim()) return;
         setIsSummarizing(true);
         try {
-            // Use the LLM to summarize the transcript and extract key learning points
-            const { data: sessionData } = await supabase.auth.getSession();
-            const response = await supabase.functions.invoke('chat', {
-                body: {
+            // Call Groq directly (non-streaming) to get a parseable JSON summary
+            const groqKey = import.meta.env.VITE_GROQ_API_KEY;
+            if (!groqKey) throw new Error("GROQ_API_KEY not configured");
+
+            const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "Authorization": `Bearer ${groqKey}`
+                },
+                body: JSON.stringify({
+                    model: "llama-3.3-70b-versatile",
                     messages: [
                         {
                             role: 'system',
                             content: 'You are a knowledge extraction assistant. Analyze the following transcript and return a JSON object with exactly this structure: {"summary": "A 2-3 sentence summary of the transcript", "keyPoints": ["Point 1", "Point 2", ...]}. Extract 3-8 key learning points that a retirement planning AI should learn from this transcript. Return ONLY valid JSON, no markdown.'
                         },
-                        { role: 'user', content: transcript.content.substring(0, 8000) }
-                    ]
-                },
-                headers: { Authorization: `Bearer ${sessionData.session?.access_token}` }
+                        { role: 'user', content: transcript.content.substring(0, 12000) }
+                    ],
+                    temperature: 0.3,
+                    max_tokens: 1024,
+                    stream: false
+                })
             });
 
-            if (response.error) throw new Error(response.error.message);
+            if (!response.ok) {
+                const errText = await response.text();
+                throw new Error(`Groq API error: ${response.status} ${errText}`);
+            }
+
+            const data = await response.json();
+            const aiText = data.choices?.[0]?.message?.content || '';
 
             // Parse the AI response
-            const aiText = response.data?.reply || response.data?.message || '';
             try {
                 const jsonMatch = aiText.match(/\{[\s\S]*\}/);
                 if (jsonMatch) {
@@ -276,7 +291,6 @@ export default function AdminDashboard() {
                         keyPoints: Array.isArray(parsed.keyPoints) ? parsed.keyPoints : []
                     });
                 } else {
-                    // Fallback: use the AI text as summary
                     setTranscriptPreview({
                         summary: aiText.substring(0, 500),
                         keyPoints: ['Full transcript will be chunked and stored as-is']
@@ -290,12 +304,12 @@ export default function AdminDashboard() {
             }
         } catch (error: any) {
             console.error('Summarize error:', error);
-            // Fallback â€” let admin proceed without AI summary
+            // Fallback — let admin proceed without AI summary
             setTranscriptPreview({
                 summary: `[AI summarization unavailable] ${transcript.content.substring(0, 200)}...`,
                 keyPoints: ['Transcript will be stored as raw chunks without AI processing']
             });
-            toast.error('AI summarization failed â€” you can still ingest the raw transcript');
+            toast.error('AI summarization failed — you can still ingest the raw transcript');
         } finally {
             setIsSummarizing(false);
         }
@@ -366,7 +380,6 @@ export default function AdminDashboard() {
             toast.error(error.message || 'Failed to ingest transcript');
         } finally {
             setIsSubmittingTranscript(false);
-        }
     };
 
     const handlePdfUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -375,23 +388,7 @@ export default function AdminDashboard() {
 
         setIsUploadingPdf(true);
         try {
-            // 1. Read PDF text
-            const arrayBuffer = await file.arrayBuffer();
-            const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
-            
-            let fullText = "";
-            for (let i = 1; i <= pdf.numPages; i++) {
-                const page = await pdf.getPage(i);
-                const content = await page.getTextContent();
-                const pageText = content.items.map((item: any) => item.str).join(" ");
-                fullText += `--- Page ${i} ---\n${pageText}\n\n`;
-            }
-
-            if (!fullText.trim()) {
-                throw new Error("Could not extract any text from this PDF.");
-            }
-
-            // 2. Try to upload physical file to Supabase Storage (fallback to text-only if bucket missing)
+            // 1. Upload physical file to Supabase Storage FIRST (so even image-based PDFs get stored)
             const cleanFileName = file.name.replace(/[^a-zA-Z0-9.-]/g, '_');
             const fileName = `${Date.now()}_${cleanFileName}`;
             let publicUrl = '';
@@ -402,46 +399,93 @@ export default function AdminDashboard() {
                     .upload(fileName, file, { cacheControl: '3600', upsert: false });
 
                 if (storageError) {
-                    console.warn('Storage upload failed (proceeding with text-only):', storageError.message);
-                    toast.info('File storage unavailable â€” ingesting extracted text only', { duration: 5000 });
+                    console.warn('Storage upload failed:', storageError.message);
+                    toast.info('File storage unavailable — proceeding with text extraction only', { duration: 5000 });
                 } else {
                     const { data: publicUrlData } = supabase.storage.from('knowledge_base').getPublicUrl(fileName);
                     publicUrl = publicUrlData.publicUrl;
+                    toast.success('File uploaded to storage successfully');
                 }
             } catch (storageErr) {
                 console.warn('Storage upload failed:', storageErr);
-                toast.info('File storage unavailable â€” ingesting extracted text only', { duration: 5000 });
+                toast.info('File storage unavailable — proceeding with text extraction only', { duration: 5000 });
             }
 
-            // publicUrl already set above if storage succeeded
-
-            // 3. Insert into global_knowledge_base chunked
-            const chunks = [];
-            const raw = fullText.trim();
-            const CHUNK_SIZE = 2000;
-            if (raw.length <= CHUNK_SIZE) {
-                chunks.push(raw);
-            } else {
-                for (let i = 0; i < raw.length; i += CHUNK_SIZE) {
-                    chunks.push(raw.substring(i, i + CHUNK_SIZE));
+            // 2. Try to extract text from PDF (may fail for image-based/scanned PDFs)
+            let fullText = "";
+            let textExtractionFailed = false;
+            try {
+                const arrayBuffer = await file.arrayBuffer();
+                const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+                
+                for (let i = 1; i <= pdf.numPages; i++) {
+                    const page = await pdf.getPage(i);
+                    const content = await page.getTextContent();
+                    const pageText = content.items.map((item: any) => item.str).join(" ").trim();
+                    if (pageText) {
+                        fullText += `--- Page ${i} ---\n${pageText}\n\n`;
+                    }
                 }
+
+                // Check if meaningful text was extracted (not just whitespace/page markers)
+                const meaningfulText = fullText.replace(/---\s*Page\s*\d+\s*---/g, '').trim();
+                if (!meaningfulText || meaningfulText.length < 20) {
+                    textExtractionFailed = true;
+                    fullText = "";
+                }
+            } catch (pdfErr: any) {
+                console.warn('PDF text extraction failed:', pdfErr);
+                textExtractionFailed = true;
             }
 
-            for (let i = 0; i < chunks.length; i++) {
-                const labelSuffix = chunks.length > 1 ? ` [Part ${i + 1}/${chunks.length}]` : "";
-                const { error: dbError } = await supabase
-                    .from("global_knowledge_base")
-                    .insert({
-                        category: "Document",
-                        insight: `[Added by: ${user?.email || 'unknown'}] [Source: ${file.name}]${publicUrl ? ` (${publicUrl})` : ''}\n\n` + chunks[i] + labelSuffix,
-                        status: 'approved',
-                        source: 'manual_training',
-                        frequency_score: 100
-                    });
-                if (dbError) throw dbError;
+            // 3. Insert into knowledge base
+            if (textExtractionFailed) {
+                // Image-based PDF — store a reference entry
+                if (publicUrl) {
+                    const { error: dbError } = await supabase
+                        .from("global_knowledge_base")
+                        .insert({
+                            category: "Document",
+                            insight: `[Added by: ${user?.email || 'unknown'}] [Source: ${file.name}] (${publicUrl})\n\n[Image-based PDF — file stored but text could not be extracted. This is common with presentation slide exports. The original file is available at the URL above.]`,
+                            status: 'approved',
+                            source: 'manual_training',
+                            frequency_score: 100
+                        });
+                    if (dbError) throw dbError;
+                    toast.success('PDF uploaded! Note: This appears to be an image-based PDF (e.g., exported slides). The file was stored but text could not be extracted automatically.', { duration: 10000 });
+                } else {
+                    throw new Error("This PDF appears to be image-based (no extractable text) and file storage is unavailable. Try converting slides to a text-based format or pasting the content manually in the transcript section above.");
+                }
+            } else {
+                // Text-based PDF — chunk and store
+                const chunks: string[] = [];
+                const raw = fullText.trim();
+                const CHUNK_SIZE = 2000;
+                if (raw.length <= CHUNK_SIZE) {
+                    chunks.push(raw);
+                } else {
+                    for (let i = 0; i < raw.length; i += CHUNK_SIZE) {
+                        chunks.push(raw.substring(i, i + CHUNK_SIZE));
+                    }
+                }
+
+                for (let i = 0; i < chunks.length; i++) {
+                    const labelSuffix = chunks.length > 1 ? ` [Part ${i + 1}/${chunks.length}]` : "";
+                    const { error: dbError } = await supabase
+                        .from("global_knowledge_base")
+                        .insert({
+                            category: "Document",
+                            insight: `[Added by: ${user?.email || 'unknown'}] [Source: ${file.name}]${publicUrl ? ` (${publicUrl})` : ''}\n\n` + chunks[i] + labelSuffix,
+                            status: 'approved',
+                            source: 'manual_training',
+                            frequency_score: 100
+                        });
+                    if (dbError) throw dbError;
+                }
+
+                toast.success(`PDF uploaded and processed! (${chunks.length} text chunks extracted)`);
             }
 
-            toast.success(`PDF uploaded and processed! (${chunks.length} chunks)`);
             if (fileInputRef.current) fileInputRef.current.value = '';
             fetchData();
         } catch (error: any) {
@@ -449,7 +493,7 @@ export default function AdminDashboard() {
             toast.error(error.message || "Failed to process PDF", { duration: 10000 });
         } finally {
             setIsUploadingPdf(false);
-            if (fileInputRef.current) fileInputRef.current.value = ''; // Reset input so same file can be selected again if failed
+            if (fileInputRef.current) fileInputRef.current.value = '';
         }
     };
 
@@ -573,7 +617,7 @@ export default function AdminDashboard() {
         md += `**Chat ID:** ${chat.id}\n\n---\n\n`;
 
         chat.messages.forEach((msg: any) => {
-            const role = msg.role === 'user' ? 'Client' : 'MyRA';
+            const role = msg.role === 'user' ? 'Client' : 'myra';
             md += `### ${role}\n${msg.content}\n\n`;
         });
 
@@ -581,7 +625,7 @@ export default function AdminDashboard() {
         const url = URL.createObjectURL(blob);
         const a = document.createElement('a');
         a.href = url;
-        a.download = `MyRA_Transcript_${chat.id}.md`;
+        a.download = `myra_Transcript_${chat.id}.md`;
         a.click();
         toast.success("Markdown exported!");
     };
@@ -592,7 +636,7 @@ export default function AdminDashboard() {
         const date = new Date(chat.created_at).toLocaleString();
         
         doc.setFontSize(18);
-        doc.text("Retirement Architects - MyRA Transcript", 10, 20);
+        doc.text("Retirement Architects - myra Transcript", 10, 20);
         doc.setFontSize(12);
         doc.text(`Client: ${chat.user_email}`, 10, 30);
         doc.text(`Date: ${date}`, 10, 40);
@@ -627,12 +671,12 @@ export default function AdminDashboard() {
             y += 10;
         });
         
-        doc.save(`MyRA_Transcript_${chat.id}.pdf`);
+        doc.save(`myra_Transcript_${chat.id}.pdf`);
         toast.success("PDF exported!");
     };
 
     const copyForGoogleDocs = (chat: any) => {
-        let text = `${chat.title || 'MyRA Conversation'}\n`;
+        let text = `${chat.title || 'myra Conversation'}\n`;
         text += `Client: ${chat.user_email}\n`;
         text += `Date: ${new Date(chat.created_at).toLocaleString()}\n\n`;
         text += `--------------------------------------------------\n\n`;
@@ -957,7 +1001,7 @@ export default function AdminDashboard() {
                                     <h3 className="text-xl font-bold font-serif">Core Directive</h3>
                                 </div>
                                 <div className="p-6 rounded-2xl bg-black/60 border border-border font-mono text-[11px] text-foreground/70 leading-relaxed overflow-y-auto max-h-[400px] custom-scrollbar">
-                                    <p className="mb-4">SYSTEM_ROLE: You are MyRA, a fiduciary retirement advisor.</p>
+                                    <p className="mb-4">SYSTEM_ROLE: You are myra, a fiduciary retirement advisor.</p>
                                     <p className="mb-4">BASE_KNOWLEDGE: Retirement planning, 401k, IRAs, Social Security, FIAs, Income Gaps.</p>
                                     <p className="mb-4">TONE: Professional, empathetic, clear, confident.</p>
                                     <p className="text-primary/80 italic animate-pulse mt-8 border-t border-border pt-4">
@@ -1063,7 +1107,7 @@ export default function AdminDashboard() {
                                 <div className="flex items-center justify-between mb-8 relative z-10">
                                     <div>
                                         <h2 className="text-2xl font-bold font-serif mb-1">Client Transcripts & Case Scenarios</h2>
-                                        <p className="text-foreground/70 text-sm">Paste real client conversations, CFP/RICP curriculum, compliance docs, or fee schedules to train MyRA on real-world reasoning.</p>
+                                        <p className="text-foreground/70 text-sm">Paste real client conversations, CFP/RICP curriculum, compliance docs, or fee schedules to train myra on real-world reasoning.</p>
                                     </div>
                                     <div className="p-3 rounded-2xl bg-primary/5 border border-primary/10">
                                         <FileText className="w-5 h-5 text-primary" />
@@ -1099,7 +1143,7 @@ export default function AdminDashboard() {
                                         <label className="text-[10px] uppercase tracking-widest text-muted-foreground font-bold ml-1">Paste Transcript / Document Content</label>
                                         <textarea
                                             className="w-full p-4 rounded-xl bg-black/40 border border-border text-sm text-white/90 focus:border-primary/50 focus:outline-none custom-scrollbar min-h-[250px] resize-y font-mono leading-relaxed"
-                                            placeholder={"Paste the full client conversation, meeting transcript, curriculum excerpt, or compliance document here...\n\nMyRA will chunk and store this in her knowledge base so she can reference it during future conversations."}
+                                            placeholder={"Paste the full client conversation, meeting transcript, curriculum excerpt, or compliance document here...\n\nmyra will chunk and store this in her knowledge base so she can reference it during future conversations."}
                                             value={transcript.content}
                                             onChange={(e) => setTranscript({...transcript, content: e.target.value})}
                                         />
@@ -1190,7 +1234,7 @@ export default function AdminDashboard() {
                                 <div className="flex items-center justify-between mb-8 relative z-10">
                                     <div>
                                         <h2 className="text-2xl font-bold font-serif mb-1">Knowledge Documents (PDF)</h2>
-                                        <p className="text-foreground/70 text-sm">Upload standard policies, pitch decks, or informational PDFs. MyRA will read them and keep the original file securely stored.</p>
+                                        <p className="text-foreground/70 text-sm">Upload standard policies, pitch decks, or informational PDFs. myra will read them and keep the original file securely stored.</p>
                                     </div>
                                     <div className="p-3 rounded-2xl bg-primary/5 border border-primary/10">
                                         <File className="w-5 h-5 text-primary" />
@@ -1430,7 +1474,7 @@ export default function AdminDashboard() {
                                                 <div key={idx} className={`flex flex-col ${msg.role === 'user' ? 'items-end' : 'items-start'}`}>
                                                     <div className="flex items-center gap-2 mb-1.5 px-3">
                                                         <span className="text-[9px] font-bold uppercase tracking-widest text-white/30">
-                                                            {msg.role === 'user' ? 'Client' : 'MyRA Intelligence'}
+                                                            {msg.role === 'user' ? 'Client' : 'myra Intelligence'}
                                                         </span>
                                                     </div>
                                                     <div className={`max-w-[85%] p-4 rounded-2xl text-sm leading-relaxed ${

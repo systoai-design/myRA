@@ -62,7 +62,7 @@ export default function TrainAIModal({ isOpen, onClose }: TrainAIModalProps) {
                             <Terminal className="w-5 h-5 text-primary" />
                         </div>
                         <div>
-                            <h2 className="text-xl font-bold text-white tracking-tight">Train MyRA</h2>
+                            <h2 className="text-xl font-bold text-white tracking-tight">Train myra</h2>
                             <p className="text-xs text-white/50 font-medium">Inject a new Global Knowledge Rule</p>
                         </div>
                     </div>
