@@ -380,6 +380,7 @@ export default function AdminDashboard() {
             toast.error(error.message || 'Failed to ingest transcript');
         } finally {
             setIsSubmittingTranscript(false);
+        }
     };
 
     const handlePdfUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
