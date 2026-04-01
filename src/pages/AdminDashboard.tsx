@@ -407,13 +407,83 @@ export default function AdminDashboard() {
         }
     };
 
+    // ═══════════════════════════════════════════
+    // VISION OCR HELPER — uses Groq Llama 4 Scout for image reading
+    // ═══════════════════════════════════════════
+    const extractTextFromImageViaVision = async (base64Image: string, pageLabel: string): Promise<string> => {
+        const groqKey = import.meta.env.VITE_GROQ_API_KEY;
+        if (!groqKey) throw new Error("GROQ_API_KEY not configured — cannot use vision OCR");
+
+        const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "Authorization": `Bearer ${groqKey}`
+            },
+            body: JSON.stringify({
+                model: "meta-llama/llama-4-scout-17b-16e-instruct",
+                messages: [
+                    {
+                        role: "system",
+                        content: "You are an OCR assistant. Extract ALL text content from the given image. Include headings, body text, bullet points, table data, captions, and any visible text. Preserve the logical reading order and structure. If there are charts/graphs, describe their data. Return the extracted text only, no commentary."
+                    },
+                    {
+                        role: "user",
+                        content: [
+                            { type: "text", text: `Extract all text and information from this image (${pageLabel}):` },
+                            {
+                                type: "image_url",
+                                image_url: {
+                                    url: base64Image.startsWith('data:') ? base64Image : `data:image/png;base64,${base64Image}`
+                                }
+                            }
+                        ]
+                    }
+                ],
+                temperature: 0.1,
+                max_completion_tokens: 2048,
+                stream: false,
+            })
+        });
+
+        if (!response.ok) {
+            const errText = await response.text();
+            console.error(`Vision OCR failed for ${pageLabel}:`, errText);
+            throw new Error(`Vision OCR failed: ${response.status}`);
+        }
+
+        const data = await response.json();
+        return data.choices?.[0]?.message?.content || '';
+    };
+
+    // Render a PDF page to a base64 PNG image
+    const renderPdfPageToImage = async (pdf: any, pageNum: number): Promise<string> => {
+        const page = await pdf.getPage(pageNum);
+        const scale = 2; // higher = better quality for OCR
+        const viewport = page.getViewport({ scale });
+        const canvas = document.createElement('canvas');
+        canvas.width = viewport.width;
+        canvas.height = viewport.height;
+        const ctx = canvas.getContext('2d')!;
+        await page.render({ canvasContext: ctx, viewport }).promise;
+        return canvas.toDataURL('image/png');
+    };
+
     const handlePdfUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
         if (!file) return;
 
+        const isImage = file.type.startsWith('image/');
+        const isPdf = file.type === 'application/pdf' || file.name.endsWith('.pdf');
+
+        if (!isImage && !isPdf) {
+            toast.error("Unsupported file type. Please upload a PDF or image (PNG, JPG, WEBP).");
+            return;
+        }
+
         setIsUploadingPdf(true);
         try {
-            // 1. Upload physical file to Supabase Storage FIRST (so even image-based PDFs get stored)
+            // 1. Upload physical file to Supabase Storage
             const cleanFileName = file.name.replace(/[^a-zA-Z0-9.-]/g, '_');
             const fileName = `${Date.now()}_${cleanFileName}`;
             let publicUrl = '';
@@ -425,23 +495,64 @@ export default function AdminDashboard() {
 
                 if (storageError) {
                     console.warn('Storage upload failed:', storageError.message);
-                    toast.info('File storage unavailable — proceeding with text extraction only', { duration: 5000 });
+                    toast.info('File storage unavailable — proceeding with content extraction', { duration: 5000 });
                 } else {
                     const { data: publicUrlData } = supabase.storage.from('knowledge_base').getPublicUrl(fileName);
                     publicUrl = publicUrlData.publicUrl;
-                    toast.success('File uploaded to storage successfully');
                 }
             } catch (storageErr) {
                 console.warn('Storage upload failed:', storageErr);
-                toast.info('File storage unavailable — proceeding with text extraction only', { duration: 5000 });
             }
 
-            // 2. Try to extract text from PDF (may fail for image-based/scanned PDFs)
+            // ═══════════════════════════════════════════
+            // HANDLE DIRECT IMAGE UPLOAD (PNG, JPG, WEBP)
+            // ═══════════════════════════════════════════
+            if (isImage) {
+                toast.info("🔍 Reading image with AI vision...", { duration: 5000 });
+
+                // Convert image to base64
+                const reader = new FileReader();
+                const base64 = await new Promise<string>((resolve, reject) => {
+                    reader.onload = () => resolve(reader.result as string);
+                    reader.onerror = reject;
+                    reader.readAsDataURL(file);
+                });
+
+                const extractedText = await extractTextFromImageViaVision(base64, file.name);
+
+                if (!extractedText || extractedText.length < 10) {
+                    throw new Error("Could not extract meaningful text from this image. Try a clearer image or paste the text manually.");
+                }
+
+                // Store extracted text
+                const { error: dbError } = await supabase
+                    .from("global_knowledge_base")
+                    .insert({
+                        category: "Document",
+                        insight: `[Added by: ${user?.email || 'unknown'}] [Source: ${file.name} — AI Vision OCR]${publicUrl ? ` (${publicUrl})` : ''}\n\n${extractedText}`,
+                        status: 'approved',
+                        source: 'manual_training',
+                        frequency_score: 100
+                    });
+                if (dbError) throw dbError;
+
+                toast.success(`Image processed with AI vision! Extracted ${extractedText.length} characters of text.`);
+                if (fileInputRef.current) fileInputRef.current.value = '';
+                fetchData();
+                return;
+            }
+
+            // ═══════════════════════════════════════════
+            // HANDLE PDF UPLOAD
+            // ═══════════════════════════════════════════
+            
+            // 2. Try text extraction first (fast path for text-based PDFs)
             let fullText = "";
             let textExtractionFailed = false;
+            let pdf: any = null;
             try {
                 const arrayBuffer = await file.arrayBuffer();
-                const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+                pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
                 
                 for (let i = 1; i <= pdf.numPages; i++) {
                     const page = await pdf.getPage(i);
@@ -452,7 +563,6 @@ export default function AdminDashboard() {
                     }
                 }
 
-                // Check if meaningful text was extracted (not just whitespace/page markers)
                 const meaningfulText = fullText.replace(/---\s*Page\s*\d+\s*---/g, '').trim();
                 if (!meaningfulText || meaningfulText.length < 20) {
                     textExtractionFailed = true;
@@ -463,26 +573,62 @@ export default function AdminDashboard() {
                 textExtractionFailed = true;
             }
 
-            // 3. Insert into knowledge base
+            // 3. If text extraction failed, use VISION OCR on rendered pages
+            if (textExtractionFailed && pdf) {
+                toast.info(`📸 Image-based PDF detected (${pdf.numPages} pages). Running AI vision OCR...`, { duration: 10000 });
+                
+                let visionText = "";
+                const maxPages = Math.min(pdf.numPages, 10); // Cap at 10 pages to avoid rate limits
+                
+                for (let i = 1; i <= maxPages; i++) {
+                    try {
+                        toast.info(`🔍 Reading page ${i} of ${maxPages}...`, { id: 'ocr-progress' });
+                        const pageImage = await renderPdfPageToImage(pdf, i);
+                        const pageText = await extractTextFromImageViaVision(pageImage, `Page ${i}/${pdf.numPages}`);
+                        if (pageText) {
+                            visionText += `--- Page ${i} ---\n${pageText}\n\n`;
+                        }
+                    } catch (pageErr) {
+                        console.warn(`Vision OCR failed for page ${i}:`, pageErr);
+                        visionText += `--- Page ${i} ---\n[OCR failed for this page]\n\n`;
+                    }
+                }
+
+                if (pdf.numPages > maxPages) {
+                    visionText += `\n[Note: Only the first ${maxPages} of ${pdf.numPages} pages were processed via AI vision OCR.]\n`;
+                }
+
+                if (visionText.replace(/---\s*Page\s*\d+\s*---/g, '').trim().length > 20) {
+                    // Vision OCR succeeded — store the extracted text
+                    fullText = visionText;
+                    textExtractionFailed = false;
+                    toast.dismiss('ocr-progress');
+                } else {
+                    toast.dismiss('ocr-progress');
+                }
+            }
+
+            // 4. Insert into knowledge base
             if (textExtractionFailed) {
-                // Image-based PDF — store a reference entry
+                // All extraction methods failed — store reference only
                 if (publicUrl) {
                     const { error: dbError } = await supabase
                         .from("global_knowledge_base")
                         .insert({
                             category: "Document",
-                            insight: `[Added by: ${user?.email || 'unknown'}] [Source: ${file.name}] (${publicUrl})\n\n[Image-based PDF — file stored but text could not be extracted. This is common with presentation slide exports. The original file is available at the URL above.]`,
+                            insight: `[Added by: ${user?.email || 'unknown'}] [Source: ${file.name}] (${publicUrl})\n\n[Could not extract text from this document. The original file is stored at the URL above.]`,
                             status: 'approved',
                             source: 'manual_training',
                             frequency_score: 100
                         });
                     if (dbError) throw dbError;
-                    toast.success('PDF uploaded! Note: This appears to be an image-based PDF (e.g., exported slides). The file was stored but text could not be extracted automatically.', { duration: 10000 });
+                    toast.success('PDF stored but text extraction was not possible. The file is saved for reference.', { duration: 10000 });
                 } else {
-                    throw new Error("This PDF appears to be image-based (no extractable text) and file storage is unavailable. Try converting slides to a text-based format or pasting the content manually in the transcript section above.");
+                    throw new Error("Could not extract text from this PDF and file storage is unavailable. Try pasting the content manually.");
                 }
             } else {
-                // Text-based PDF — chunk and store
+                // Text extracted (either directly or via vision OCR) — chunk and store
+                const isVisionOCR = fullText.includes('AI Vision OCR') || textExtractionFailed === false && fullText !== "";
                 const chunks: string[] = [];
                 const raw = fullText.trim();
                 const CHUNK_SIZE = 2000;
@@ -508,14 +654,14 @@ export default function AdminDashboard() {
                     if (dbError) throw dbError;
                 }
 
-                toast.success(`PDF uploaded and processed! (${chunks.length} text chunks extracted)`);
+                toast.success(`Document processed! (${chunks.length} chunks extracted${fullText.includes('--- Page') ? ' via AI vision' : ''})`);
             }
 
             if (fileInputRef.current) fileInputRef.current.value = '';
             fetchData();
         } catch (error: any) {
             console.error(error);
-            toast.error(error.message || "Failed to process PDF", { duration: 10000 });
+            toast.error(error.message || "Failed to process file", { duration: 10000 });
         } finally {
             setIsUploadingPdf(false);
             if (fileInputRef.current) fileInputRef.current.value = '';
@@ -1271,7 +1417,7 @@ export default function AdminDashboard() {
                                 >
                                     <input 
                                         type="file" 
-                                        accept=".pdf" 
+                                        accept=".pdf,.png,.jpg,.jpeg,.webp,image/*" 
                                         className="hidden" 
                                         ref={fileInputRef}
                                         onChange={handlePdfUpload}
@@ -1287,8 +1433,8 @@ export default function AdminDashboard() {
                                     </div>
                                     
                                     <div className="text-center">
-                                        <h3 className="text-foreground font-bold text-lg mb-1">{isUploadingPdf ? "Reading & Storing Document..." : "Click to Upload PDF"}</h3>
-                                        <p className="text-muted-foreground text-sm">{isUploadingPdf ? "Please wait, extracting text and uploading to Supabase." : "Supports .pdf files up to 50MB"}</p>
+                                        <h3 className="text-foreground font-bold text-lg mb-1">{isUploadingPdf ? "Reading & Storing Document..." : "Upload PDF or Image"}</h3>
+                                        <p className="text-muted-foreground text-sm">{isUploadingPdf ? "Please wait — AI vision is extracting content..." : "PDF, PNG, JPG, WEBP • AI reads images & scanned docs"}</p>
                                     </div>
                                     
                                     {!isUploadingPdf && (
