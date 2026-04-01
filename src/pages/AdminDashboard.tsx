@@ -151,16 +151,42 @@ export default function AdminDashboard() {
                 setTeam(teamList);
             }
             
-            // Fetch all client conversations via Edge Function
+            // Fetch all client conversations via Edge Function (with DB fallback)
             const { data: chatResponse, error: chatError } = await supabase.functions.invoke('get-admin-chats', {
                 headers: {
                     Authorization: `Bearer ${sessionData.session?.access_token}`
                 }
             });
 
-            if (chatError) {
-                console.error("Chat fetch error:", chatError);
-            } else if (chatResponse?.success) {
+            if (chatError || !chatResponse?.success) {
+                console.warn("get-admin-chats edge function failed, using direct DB fallback:", chatError?.message || chatResponse?.error);
+                
+                // Direct DB fallback: fetch chats table directly
+                const { data: directChats, error: directChatsError } = await supabase
+                    .from('chats')
+                    .select('id, user_id, title, messages, created_at, updated_at')
+                    .order('updated_at', { ascending: false });
+
+                if (directChatsError) {
+                    console.error("Direct chats fetch also failed:", directChatsError);
+                } else {
+                    // Enrich with user emails from user_roles
+                    const { data: rolesForEmails } = await supabase
+                        .from('user_roles')
+                        .select('user_id, email');
+                    
+                    const emailMap: Record<string, string> = {};
+                    rolesForEmails?.forEach((r: any) => {
+                        if (r.user_id) emailMap[r.user_id] = r.email;
+                    });
+
+                    const enrichedChats = (directChats || []).map((chat: any) => ({
+                        ...chat,
+                        user_email: emailMap[chat.user_id] || 'Unknown User'
+                    }));
+                    setAllChats(enrichedChats);
+                }
+            } else {
                 setAllChats(chatResponse.chats || []);
             }
             
