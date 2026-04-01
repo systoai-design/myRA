@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
@@ -16,7 +16,6 @@ import {
 import { 
     TrendingUp, 
     ArrowUpRight, 
-    ArrowDownRight,
     Clock,
     Activity,
     CheckCircle2,
@@ -29,62 +28,55 @@ import {
     Shield,
     DollarSign,
     Wallet,
-    Building2,
     Home,
     Target,
-    Calendar,
     Flame,
+    Plus,
+    Info,
 } from "lucide-react";
 
 // ═══════════════════════════════════════════
-// MOCK DATA
+// TYPES & HELPERS
 // ═══════════════════════════════════════════
 
-const netWorthTrendData = [
-    { name: "Jan", value: 980000 },
-    { name: "Feb", value: 1010000 },
-    { name: "Mar", value: 995000 },
-    { name: "Apr", value: 1050000 },
-    { name: "May", value: 1080000 },
-    { name: "Jun", value: 1120000 },
-    { name: "Jul", value: 1100000 },
-    { name: "Aug", value: 1150000 },
-    { name: "Sep", value: 1180000 },
-    { name: "Oct", value: 1204500 },
-];
+interface ParsedAsset {
+    name: string;
+    value: number;
+    type: string; // "Pre-Tax", "Post-Tax", "Tax-Free", or raw type string
+    category: string;
+}
 
-const netWorthBreakdown = [
-    { label: "Cash", value: 45200, icon: Wallet, color: "text-emerald-400", bg: "bg-emerald-500/10", border: "border-emerald-500/10" },
-    { label: "Investments", value: 850300, icon: TrendingUp, color: "text-blue-400", bg: "bg-blue-500/10", border: "border-blue-500/10" },
-    { label: "Real Estate", value: 309000, icon: Home, color: "text-purple-400", bg: "bg-purple-500/10", border: "border-purple-500/10" },
-];
+interface UserProfile {
+    retirementAge: string | null;
+    state: string | null;
+    maritalStatus: string | null;
+    monthlyIncome: string | null;
+    monthlyExpenses: string | null;
+}
 
-const cashflowData = [
-    { name: "Income", value: 12400 },
-    { name: "Expenses", value: 8200 },
-];
-const CASHFLOW_COLORS = ["#10B981", "#334155"];
-
-const assetAllocation = [
-    { name: "US Equities", pct: 55, color: "bg-purple-500" },
-    { name: "Intl Equities", pct: 20, color: "bg-blue-500" },
-    { name: "Bonds", pct: 15, color: "bg-emerald-500" },
-    { name: "Crypto / Alts", pct: 10, color: "bg-amber-500" },
-];
-
-const recentTransactions = [
-    { name: "Whole Foods Market", category: "Groceries", amount: -142.50, icon: DollarSign, iconColor: "text-orange-400", iconBg: "bg-orange-500/10" },
-    { name: "Vanguard 401(k)", category: "Investing", amount: -1200.00, icon: TrendingUp, iconColor: "text-blue-400", iconBg: "bg-blue-500/10" },
-    { name: "Acme Corp Salary", category: "Income", amount: 6200.00, icon: DollarSign, iconColor: "text-emerald-400", iconBg: "bg-emerald-500/10" },
-    { name: "Netflix", category: "Entertainment", amount: -15.99, icon: Building2, iconColor: "text-red-400", iconBg: "bg-red-500/10" },
-    { name: "Equinox Gym", category: "Health", amount: -250.00, icon: Activity, iconColor: "text-violet-400", iconBg: "bg-violet-500/10" },
-];
-
-const activityLog = [
-    { id: 1, action: "Portfolio rebalanced", time: "2h ago", icon: Activity, color: "text-blue-400", bg: "bg-blue-500/10" },
-    { id: 2, action: "Social Security audit complete", time: "5h ago", icon: CheckCircle2, color: "text-emerald-400", bg: "bg-emerald-500/10" },
-    { id: 3, action: "Risk profile updated by myra", time: "Yesterday", icon: Zap, color: "text-purple-400", bg: "bg-purple-500/10" },
-];
+function parseAssetFact(category: string, fact: string): ParsedAsset | null {
+    // Format: "Fidelity 401k: $250,000 (Pre-Tax (401k, IRA))"
+    const match = fact.match(/^(.+?):\s*\$?([\d,]+(?:\.\d+)?)\s*(?:\((.+)\))?$/);
+    if (!match) return null;
+    
+    const name = match[1].trim();
+    const value = parseFloat(match[2].replace(/,/g, ''));
+    const rawType = match[3]?.trim() || 'Other';
+    
+    // Normalize type
+    let type = 'Other';
+    const lower = rawType.toLowerCase();
+    if (lower.includes('pre-tax') || lower.includes('401k') || lower.includes('ira') || lower.includes('traditional')) {
+        type = 'Pre-Tax';
+    } else if (lower.includes('post-tax') || lower.includes('brokerage') || lower.includes('taxable')) {
+        type = 'Post-Tax';
+    } else if (lower.includes('tax-free') || lower.includes('roth')) {
+        type = 'Tax-Free';
+    }
+    
+    if (isNaN(value)) return null;
+    return { name, value, type, category };
+}
 
 function formatCurrency(value: number) {
     return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', minimumFractionDigits: 0, maximumFractionDigits: 0 }).format(value);
@@ -110,21 +102,176 @@ const CustomTooltip = ({ active, payload, label }: any) => {
     return null;
 };
 
+// ═══════════════════════════════════════════
+// ALLOCATION COLORS
+// ═══════════════════════════════════════════
+
+const ALLOCATION_COLORS: Record<string, { bar: string; color: string; bg: string; border: string; icon: any }> = {
+    'Pre-Tax': { bar: 'bg-blue-500', color: 'text-blue-400', bg: 'bg-blue-500/10', border: 'border-blue-500/10', icon: Wallet },
+    'Post-Tax': { bar: 'bg-emerald-500', color: 'text-emerald-400', bg: 'bg-emerald-500/10', border: 'border-emerald-500/10', icon: TrendingUp },
+    'Tax-Free': { bar: 'bg-purple-500', color: 'text-purple-400', bg: 'bg-purple-500/10', border: 'border-purple-500/10', icon: Shield },
+    'Other': { bar: 'bg-amber-500', color: 'text-amber-400', bg: 'bg-amber-500/10', border: 'border-amber-500/10', icon: Home },
+};
+
+const PIE_COLORS = ['#3b82f6', '#10b981', '#8b5cf6', '#f59e0b', '#ef4444'];
+
 export default function DashboardHome() {
     const { user } = useAuth();
     const navigate = useNavigate();
     const [userName, setUserName] = useState<string>("Investor");
+    const [assets, setAssets] = useState<ParsedAsset[]>([]);
+    const [profile, setProfile] = useState<UserProfile>({
+        retirementAge: null,
+        state: null,
+        maritalStatus: null,
+        monthlyIncome: null,
+        monthlyExpenses: null,
+    });
+    const [recentChats, setRecentChats] = useState<any[]>([]);
+    const [loading, setLoading] = useState(true);
 
     useEffect(() => {
         if (!user) return;
         const name = user.user_metadata?.first_name || user.email?.split("@")[0];
         if (name) setUserName(name);
+
+        const loadData = async () => {
+            setLoading(true);
+            try {
+                // 1. Fetch all user memories
+                const { data: memories } = await supabase
+                    .from('user_memory')
+                    .select('category, fact')
+                    .eq('user_id', user.id);
+
+                if (memories) {
+                    // Parse assets (categories starting with "asset_")
+                    const parsedAssets: ParsedAsset[] = [];
+                    const profileData: UserProfile = {
+                        retirementAge: null,
+                        state: null,
+                        maritalStatus: null,
+                        monthlyIncome: null,
+                        monthlyExpenses: null,
+                    };
+
+                    memories.forEach(m => {
+                        if (m.category.startsWith('asset_')) {
+                            const parsed = parseAssetFact(m.category, m.fact);
+                            if (parsed) parsedAssets.push(parsed);
+                        }
+                        // Profile fields
+                        if (m.category === 'retirement_age') profileData.retirementAge = m.fact;
+                        if (m.category === 'state') profileData.state = m.fact;
+                        if (m.category === 'marital_status') profileData.maritalStatus = m.fact;
+                        if (m.category === 'monthly_income') profileData.monthlyIncome = m.fact;
+                        if (m.category === 'monthly_expenses') profileData.monthlyExpenses = m.fact;
+                    });
+
+                    setAssets(parsedAssets);
+                    setProfile(profileData);
+                }
+
+                // 2. Fetch recent chats for activity feed
+                const { data: chats } = await supabase
+                    .from('chats')
+                    .select('id, title, updated_at, messages')
+                    .eq('user_id', user.id)
+                    .order('updated_at', { ascending: false })
+                    .limit(5);
+
+                if (chats) setRecentChats(chats);
+
+            } catch (err) {
+                console.error("Dashboard data load error:", err);
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        loadData();
     }, [user]);
+
+    // ═══════════════════════════════════════════
+    // COMPUTED VALUES
+    // ═══════════════════════════════════════════
+
+    const totalNetWorth = useMemo(() => assets.reduce((sum, a) => sum + a.value, 0), [assets]);
+    const hasAssets = assets.length > 0;
+
+    // Group by type for allocation
+    const allocationByType = useMemo(() => {
+        const groups: Record<string, number> = {};
+        assets.forEach(a => {
+            groups[a.type] = (groups[a.type] || 0) + a.value;
+        });
+        return Object.entries(groups)
+            .map(([type, value]) => ({
+                type,
+                value,
+                pct: totalNetWorth > 0 ? Math.round((value / totalNetWorth) * 100) : 0,
+                ...ALLOCATION_COLORS[type] || ALLOCATION_COLORS['Other'],
+            }))
+            .sort((a, b) => b.value - a.value);
+    }, [assets, totalNetWorth]);
+
+    // Pie chart data for cashflow or allocation
+    const pieData = useMemo(() => {
+        if (!hasAssets) return [{ name: 'No Data', value: 1 }];
+        return allocationByType.map(a => ({ name: a.type, value: a.value }));
+    }, [allocationByType, hasAssets]);
+
+    // Recent activity from chats
+    const activityLog = useMemo(() => {
+        return recentChats.map(chat => {
+            const msgCount = Array.isArray(chat.messages) ? chat.messages.length : 0;
+            const updatedAt = new Date(chat.updated_at);
+            const now = new Date();
+            const diffMs = now.getTime() - updatedAt.getTime();
+            const diffH = Math.floor(diffMs / (1000 * 60 * 60));
+            const diffD = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+            
+            let timeAgo = 'Just now';
+            if (diffD > 0) timeAgo = `${diffD}d ago`;
+            else if (diffH > 0) timeAgo = `${diffH}h ago`;
+            else timeAgo = `${Math.max(1, Math.floor(diffMs / (1000 * 60)))}m ago`;
+
+            return {
+                id: chat.id,
+                action: chat.title || `Chat (${msgCount} messages)`,
+                time: timeAgo,
+                icon: MessageSquare,
+                color: 'text-blue-400',
+                bg: 'bg-blue-500/10',
+            };
+        });
+    }, [recentChats]);
 
     const hour = new Date().getHours();
     const greeting = hour < 12 ? "Good Morning" : hour < 17 ? "Good Afternoon" : "Good Evening";
 
-    const surplus = cashflowData[0].value - cashflowData[1].value;
+    // ═══════════════════════════════════════════
+    // EMPTY STATE COMPONENT
+    // ═══════════════════════════════════════════
+
+    const EmptyState = ({ icon: Icon, title, description, ctaLabel, ctaPath, iconColor = "text-primary", iconBg = "bg-primary/10" }: {
+        icon: any; title: string; description: string; ctaLabel: string; ctaPath: string; iconColor?: string; iconBg?: string;
+    }) => (
+        <div className="flex flex-col items-center justify-center py-8 text-center">
+            <div className={`w-14 h-14 rounded-2xl ${iconBg} flex items-center justify-center mb-4`}>
+                <Icon className={`w-6 h-6 ${iconColor}`} />
+            </div>
+            <h4 className="text-sm font-bold text-foreground mb-1">{title}</h4>
+            <p className="text-xs text-muted-foreground mb-4 max-w-xs">{description}</p>
+            <button
+                onClick={() => navigate(ctaPath)}
+                className="px-5 py-2.5 bg-primary/10 border border-primary/20 text-primary hover:bg-primary/20 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center gap-2"
+            >
+                <Plus className="w-3.5 h-3.5" />
+                {ctaLabel}
+            </button>
+        </div>
+    );
 
     return (
         <div className="space-y-6 animate-in fade-in duration-700">
@@ -144,69 +291,100 @@ export default function DashboardHome() {
                             Welcome back, <span className="bg-gradient-to-r from-blue-500 to-purple-500 bg-clip-text text-transparent">{userName}</span>
                         </h2>
                         <p className="text-muted-foreground text-sm font-medium max-w-md">
-                            Your retirement plan is being actively monitored by myra.
+                            {hasAssets 
+                                ? "Your retirement plan is being actively monitored by myra."
+                                : "Get started by adding your assets or chatting with myra."
+                            }
                         </p>
                     </div>
                     
-                    <div className="flex items-center gap-3 shrink-0">
-                        <div className="glass-card rounded-2xl px-5 py-3 flex items-center gap-3">
-                            <div className="w-10 h-10 rounded-xl bg-emerald-500/10 flex items-center justify-center">
-                                <ArrowUpRight className="w-5 h-5 text-emerald-400" />
-                            </div>
-                            <div>
-                                <p className="text-[10px] uppercase tracking-widest text-muted-foreground font-bold">Total Gain</p>
-                                <p className="text-lg font-bold text-emerald-400">+12.5%</p>
+                    {hasAssets && (
+                        <div className="flex items-center gap-3 shrink-0">
+                            <div className="glass-card rounded-2xl px-5 py-3 flex items-center gap-3">
+                                <div className="w-10 h-10 rounded-xl bg-emerald-500/10 flex items-center justify-center">
+                                    <DollarSign className="w-5 h-5 text-emerald-400" />
+                                </div>
+                                <div>
+                                    <p className="text-[10px] uppercase tracking-widest text-muted-foreground font-bold">Total Assets</p>
+                                    <p className="text-lg font-bold text-foreground">{formatCurrency(totalNetWorth)}</p>
+                                </div>
                             </div>
                         </div>
-                    </div>
+                    )}
                 </div>
             </div>
 
-            {/* ───────── Retirement Goal + Quick Stats ───────── */}
+            {/* ───────── Quick Stats ───────── */}
             <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-                {/* Retirement Countdown */}
+                {/* Net Worth */}
                 <div className="glass-card rounded-2xl p-5 flex items-center gap-4">
                     <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-blue-500/20 to-blue-600/10 flex items-center justify-center">
-                        <Target className="w-5 h-5 text-blue-400" />
+                        <Wallet className="w-5 h-5 text-blue-400" />
+                    </div>
+                    <div>
+                        <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Net Worth</p>
+                        <p className="text-xl font-bold text-foreground">{hasAssets ? formatCurrency(totalNetWorth) : '$0'}</p>
+                    </div>
+                </div>
+
+                {/* Retirement Age */}
+                <div className="glass-card rounded-2xl p-5 flex items-center gap-4">
+                    <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-purple-500/20 to-purple-600/10 flex items-center justify-center">
+                        <Target className="w-5 h-5 text-purple-400" />
                     </div>
                     <div>
                         <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Retire By</p>
-                        <p className="text-xl font-bold text-foreground">Age 62</p>
+                        <p className="text-xl font-bold text-foreground">
+                            {profile.retirementAge ? `Age ${profile.retirementAge}` : (
+                                <button onClick={() => navigate('/app/profile')} className="text-primary/60 text-base hover:text-primary transition-colors cursor-pointer">Set Goal →</button>
+                            )}
+                        </p>
                     </div>
                 </div>
 
-                {/* Savings Streak */}
-                <div className="glass-card rounded-2xl p-5 flex items-center gap-4">
-                    <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-orange-500/20 to-orange-600/10 flex items-center justify-center">
-                        <Flame className="w-5 h-5 text-orange-400" />
-                    </div>
-                    <div>
-                        <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Savings Streak</p>
-                        <p className="text-xl font-bold text-foreground">18 Months</p>
-                    </div>
-                </div>
-
-                {/* Monthly Savings */}
+                {/* Account Count */}
                 <div className="glass-card rounded-2xl p-5 flex items-center gap-4">
                     <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-emerald-500/20 to-emerald-600/10 flex items-center justify-center">
-                        <DollarSign className="w-5 h-5 text-emerald-400" />
+                        <BarChart3 className="w-5 h-5 text-emerald-400" />
                     </div>
                     <div>
-                        <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Monthly Savings</p>
-                        <p className="text-xl font-bold text-foreground">$2,400</p>
+                        <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Accounts</p>
+                        <p className="text-xl font-bold text-foreground">
+                            {hasAssets ? assets.length : (
+                                <button onClick={() => navigate('/app/portfolio')} className="text-primary/60 text-base hover:text-primary transition-colors cursor-pointer">Add →</button>
+                            )}
+                        </p>
                     </div>
                 </div>
 
-                {/* Goal Progress */}
+                {/* Profile Completion */}
                 <div className="glass-card rounded-2xl p-5">
                     <div className="flex items-center justify-between mb-3">
-                        <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Goal Progress</p>
-                        <span className="text-xs font-bold text-emerald-400">68%</span>
+                        <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Profile</p>
+                        {(() => {
+                            const fields = [profile.retirementAge, profile.state, profile.maritalStatus];
+                            const filled = fields.filter(Boolean).length;
+                            const pct = Math.round((filled / fields.length) * 100);
+                            return <span className={`text-xs font-bold ${pct === 100 ? 'text-emerald-400' : 'text-primary'}`}>{pct}%</span>;
+                        })()}
                     </div>
-                    <div className="h-2.5 w-full bg-black/[0.04] dark:bg-white/[0.06] rounded-full overflow-hidden">
-                        <div className="h-full rounded-full bg-gradient-to-r from-blue-500 to-emerald-500 transition-all duration-1000" style={{ width: "68%" }} />
-                    </div>
-                    <p className="text-xs text-muted-foreground mt-2">$1.2M of $2.4M target</p>
+                    {(() => {
+                        const fields = [profile.retirementAge, profile.state, profile.maritalStatus];
+                        const filled = fields.filter(Boolean).length;
+                        const pct = Math.round((filled / fields.length) * 100);
+                        return (
+                            <>
+                                <div className="h-2.5 w-full bg-black/[0.04] dark:bg-white/[0.06] rounded-full overflow-hidden">
+                                    <div className={`h-full rounded-full transition-all duration-1000 ${pct === 100 ? 'bg-gradient-to-r from-emerald-500 to-emerald-400' : 'bg-gradient-to-r from-blue-500 to-primary'}`} style={{ width: `${pct}%` }} />
+                                </div>
+                                <p className="text-xs text-muted-foreground mt-2">
+                                    {pct === 100 ? 'Profile complete ✓' : (
+                                        <button onClick={() => navigate('/app/profile')} className="text-primary/70 hover:text-primary cursor-pointer transition-colors">Complete your profile →</button>
+                                    )}
+                                </p>
+                            </>
+                        );
+                    })()}
                 </div>
             </div>
 
@@ -258,175 +436,148 @@ export default function DashboardHome() {
                 </button>
             </div>
 
-            {/* ═══════════ NET WORTH ═══════════ */}
-            <div className="glass-card rounded-3xl p-8 relative overflow-hidden group">
-                <div className="absolute -bottom-20 -right-20 w-80 h-80 bg-blue-600/5 blur-[100px] rounded-full group-hover:bg-blue-600/10 transition-all duration-700 pointer-events-none" />
-                
-                <div className="relative z-10">
-                    <div className="flex items-center justify-between mb-6">
-                        <div>
-                            <p className="text-xs text-muted-foreground font-bold uppercase tracking-widest mb-2">Total Net Worth</p>
-                            <h2 className="text-4xl lg:text-5xl font-bold text-foreground tracking-tight">{formatCurrencyFull(1204500)}</h2>
-                        </div>
-                        <div className="px-4 py-2 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex items-center gap-2">
-                            <ArrowUpRight className="w-4 h-4 text-emerald-400" />
-                            <span className="text-sm font-bold text-emerald-400">+12.5% All Time</span>
-                        </div>
-                    </div>
-
-                    {/* Net Worth Chart */}
-                    <div className="h-[200px] w-full -ml-4 mb-6">
-                        <ResponsiveContainer width="100%" height="100%">
-                            <AreaChart data={netWorthTrendData}>
-                                <defs>
-                                    <linearGradient id="netWorthGrad" x1="0" y1="0" x2="0" y2="1">
-                                        <stop offset="5%" stopColor="#3B82F6" stopOpacity={0.2}/>
-                                        <stop offset="95%" stopColor="#3B82F6" stopOpacity={0}/>
-                                    </linearGradient>
-                                </defs>
-                                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="var(--color-border, rgba(255,255,255,0.05))" />
-                                <XAxis 
-                                    dataKey="name" axisLine={false} tickLine={false} 
-                                    tick={{fill: 'var(--color-muted-foreground, #999)', fontSize: 10, fontWeight: 600}}
-                                    dy={10}
-                                />
-                                <Tooltip content={<CustomTooltip />} />
-                                <Area type="monotone" dataKey="value" stroke="#3B82F6" strokeWidth={2.5} fillOpacity={1} fill="url(#netWorthGrad)" />
-                            </AreaChart>
-                        </ResponsiveContainer>
-                    </div>
-
-                    {/* Breakdown Cards */}
-                    <div className="grid grid-cols-3 gap-3">
-                        {netWorthBreakdown.map((item) => {
-                            const Icon = item.icon;
-                            return (
-                                <div key={item.label} className={`rounded-2xl p-4 border ${item.border} bg-black/[0.02] dark:bg-white/[0.02] flex items-center gap-3 hover:bg-black/[0.04] dark:hover:bg-white/[0.04] transition-colors`}>
-                                    <div className={`w-10 h-10 rounded-xl ${item.bg} flex items-center justify-center`}>
-                                        <Icon className={`w-4 h-4 ${item.color}`} />
-                                    </div>
-                                    <div>
-                                        <p className="text-[10px] text-muted-foreground font-bold uppercase tracking-widest">{item.label}</p>
-                                        <p className="text-base font-bold text-foreground">{formatCurrency(item.value)}</p>
-                                    </div>
-                                </div>
-                            );
-                        })}
-                    </div>
-                </div>
-            </div>
-
-            {/* ═══════════ CASHFLOW + TRANSACTIONS ═══════════ */}
+            {/* ═══════════ NET WORTH + ALLOCATION ═══════════ */}
             <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
-                
-                {/* Monthly Cashflow */}
-                <div className="lg:col-span-2 glass-card rounded-3xl p-8">
-                    <h3 className="text-base font-bold text-foreground mb-6">Monthly Cashflow</h3>
+
+                {/* Net Worth Overview */}
+                <div className="lg:col-span-3 glass-card rounded-3xl p-8 relative overflow-hidden group">
+                    <div className="absolute -bottom-20 -right-20 w-80 h-80 bg-blue-600/5 blur-[100px] rounded-full group-hover:bg-blue-600/10 transition-all duration-700 pointer-events-none" />
                     
-                    <div className="flex flex-col items-center">
-                        <div className="relative w-[180px] h-[180px]">
-                            <ResponsiveContainer width="100%" height="100%">
-                                <PieChart>
-                                    <Pie
-                                        data={cashflowData}
-                                        cx="50%"
-                                        cy="50%"
-                                        innerRadius={62}
-                                        outerRadius={85}
-                                        startAngle={90}
-                                        endAngle={-270}
-                                        paddingAngle={4}
-                                        dataKey="value"
-                                        stroke="none"
-                                    >
-                                        {cashflowData.map((_, index) => (
-                                            <Cell key={`cell-${index}`} fill={CASHFLOW_COLORS[index]} />
-                                        ))}
-                                    </Pie>
-                                </PieChart>
-                            </ResponsiveContainer>
-                            <div className="absolute inset-0 flex flex-col items-center justify-center">
-                                <span className="text-2xl font-bold text-emerald-400">+${(surplus / 1000).toFixed(1)}k</span>
-                                <span className="text-[10px] text-muted-foreground font-bold uppercase tracking-widest">Surplus</span>
+                    <div className="relative z-10">
+                        <div className="flex items-center justify-between mb-6">
+                            <div>
+                                <p className="text-xs text-muted-foreground font-bold uppercase tracking-widest mb-2">Total Net Worth</p>
+                                <h2 className="text-4xl lg:text-5xl font-bold text-foreground tracking-tight">
+                                    {hasAssets ? formatCurrency(totalNetWorth) : '$0'}
+                                </h2>
                             </div>
+                            {hasAssets && (
+                                <div className="px-4 py-2 rounded-xl bg-blue-500/10 border border-blue-500/20 flex items-center gap-2">
+                                    <Info className="w-4 h-4 text-blue-400" />
+                                    <span className="text-sm font-bold text-blue-400">{assets.length} Account{assets.length !== 1 ? 's' : ''}</span>
+                                </div>
+                            )}
                         </div>
 
-                        <div className="mt-6 w-full space-y-3">
-                            <div className="flex items-center justify-between p-3 rounded-xl bg-black/[0.02] dark:bg-white/[0.02]">
-                                <div className="flex items-center gap-2">
-                                    <div className="w-2 h-2 rounded-full bg-emerald-400" />
-                                    <span className="text-sm text-muted-foreground font-medium">Income</span>
+                        {hasAssets ? (
+                            <>
+                                {/* Asset Breakdown Cards */}
+                                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                                    {allocationByType.map((item) => {
+                                        const Icon = item.icon;
+                                        return (
+                                            <div key={item.type} className={`rounded-2xl p-4 border ${item.border} bg-black/[0.02] dark:bg-white/[0.02] flex items-center gap-3 hover:bg-black/[0.04] dark:hover:bg-white/[0.04] transition-colors`}>
+                                                <div className={`w-10 h-10 rounded-xl ${item.bg} flex items-center justify-center`}>
+                                                    <Icon className={`w-4 h-4 ${item.color}`} />
+                                                </div>
+                                                <div>
+                                                    <p className="text-[10px] text-muted-foreground font-bold uppercase tracking-widest">{item.type}</p>
+                                                    <p className="text-base font-bold text-foreground">{formatCurrency(item.value)}</p>
+                                                </div>
+                                            </div>
+                                        );
+                                    })}
                                 </div>
-                                <span className="text-sm font-bold text-foreground">{formatCurrencyFull(12400)}</span>
-                            </div>
-                            <div className="flex items-center justify-between p-3 rounded-xl bg-black/[0.02] dark:bg-white/[0.02]">
-                                <div className="flex items-center gap-2">
-                                    <div className="w-2 h-2 rounded-full bg-slate-400 dark:bg-slate-600" />
-                                    <span className="text-sm text-muted-foreground font-medium">Expenses</span>
+
+                                {/* Individual Assets List */}
+                                <div className="mt-6 space-y-2">
+                                    <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground mb-3">Your Accounts</p>
+                                    {assets.map((asset, i) => (
+                                        <div key={asset.category} className="flex items-center justify-between p-3 rounded-xl hover:bg-black/[0.02] dark:hover:bg-white/[0.02] transition-colors">
+                                            <div className="flex items-center gap-3">
+                                                <div className={`w-8 h-8 rounded-lg ${ALLOCATION_COLORS[asset.type]?.bg || 'bg-primary/10'} flex items-center justify-center`}>
+                                                    <Wallet className={`w-3.5 h-3.5 ${ALLOCATION_COLORS[asset.type]?.color || 'text-primary'}`} />
+                                                </div>
+                                                <div>
+                                                    <p className="text-sm font-bold text-foreground">{asset.name}</p>
+                                                    <p className="text-[10px] text-muted-foreground font-medium uppercase tracking-widest">{asset.type}</p>
+                                                </div>
+                                            </div>
+                                            <span className="text-sm font-bold text-foreground tabular-nums">{formatCurrency(asset.value)}</span>
+                                        </div>
+                                    ))}
                                 </div>
-                                <span className="text-sm font-bold text-foreground">{formatCurrencyFull(8200)}</span>
-                            </div>
-                        </div>
+                            </>
+                        ) : (
+                            <EmptyState
+                                icon={Wallet}
+                                title="No Assets Added Yet"
+                                description="Add your accounts manually or tell myra about them in chat to see your portfolio here."
+                                ctaLabel="Add Your First Asset"
+                                ctaPath="/app/portfolio"
+                            />
+                        )}
                     </div>
                 </div>
 
-                {/* Recent Transactions */}
-                <div className="lg:col-span-3 glass-card rounded-3xl p-8">
-                    <div className="flex items-center justify-between mb-6">
-                        <h3 className="text-base font-bold text-foreground">Recent Transactions</h3>
-                        <button className="text-xs text-primary font-bold hover:underline">View All</button>
-                    </div>
-                    
-                    <div className="space-y-2">
-                        {recentTransactions.map((tx, i) => {
-                            const Icon = tx.icon;
-                            return (
-                                <div key={i} className="flex items-center justify-between p-4 rounded-2xl hover:bg-black/[0.02] dark:hover:bg-white/[0.02] transition-colors">
-                                    <div className="flex items-center gap-3">
-                                        <div className={`w-10 h-10 rounded-xl ${tx.iconBg} flex items-center justify-center`}>
-                                            <Icon className={`w-4 h-4 ${tx.iconColor}`} />
-                                        </div>
-                                        <div>
-                                            <p className="text-sm font-bold text-foreground">{tx.name}</p>
-                                            <p className="text-[10px] text-muted-foreground font-medium uppercase tracking-widest">{tx.category}</p>
+                {/* Allocation Donut + AI Insight */}
+                <div className="lg:col-span-2 space-y-4">
+                    {/* Allocation Donut */}
+                    <div className="glass-card rounded-3xl p-8">
+                        <h3 className="text-base font-bold text-foreground mb-1">Asset Allocation</h3>
+                        <p className="text-[10px] text-muted-foreground font-bold uppercase tracking-widest mb-6">By Tax Category</p>
+                        
+                        {hasAssets ? (
+                            <>
+                                <div className="flex justify-center mb-6">
+                                    <div className="relative w-[180px] h-[180px]">
+                                        <ResponsiveContainer width="100%" height="100%">
+                                            <PieChart>
+                                                <Pie
+                                                    data={pieData}
+                                                    cx="50%"
+                                                    cy="50%"
+                                                    innerRadius={62}
+                                                    outerRadius={85}
+                                                    startAngle={90}
+                                                    endAngle={-270}
+                                                    paddingAngle={4}
+                                                    dataKey="value"
+                                                    stroke="none"
+                                                >
+                                                    {pieData.map((_, index) => (
+                                                        <Cell key={`cell-${index}`} fill={PIE_COLORS[index % PIE_COLORS.length]} />
+                                                    ))}
+                                                </Pie>
+                                            </PieChart>
+                                        </ResponsiveContainer>
+                                        <div className="absolute inset-0 flex flex-col items-center justify-center">
+                                            <span className="text-2xl font-bold text-foreground">{formatCurrency(totalNetWorth)}</span>
+                                            <span className="text-[10px] text-muted-foreground font-bold uppercase tracking-widest">Total</span>
                                         </div>
                                     </div>
-                                    <span className={`text-sm font-bold tabular-nums ${tx.amount >= 0 ? "text-emerald-400" : "text-foreground/70"}`}>
-                                        {tx.amount >= 0 ? "+" : "-"}{formatCurrencyFull(Math.abs(tx.amount))}
-                                    </span>
                                 </div>
-                            );
-                        })}
+
+                                {/* Legend */}
+                                <div className="space-y-3">
+                                    {allocationByType.map((item, i) => (
+                                        <div key={item.type} className="flex items-center justify-between p-3 rounded-xl bg-black/[0.02] dark:bg-white/[0.02]">
+                                            <div className="flex items-center gap-2">
+                                                <div className="w-2 h-2 rounded-full" style={{ backgroundColor: PIE_COLORS[i % PIE_COLORS.length] }} />
+                                                <span className="text-sm text-muted-foreground font-medium">{item.type}</span>
+                                            </div>
+                                            <div className="flex items-center gap-3">
+                                                <span className="text-sm font-bold text-foreground">{formatCurrency(item.value)}</span>
+                                                <span className="text-xs text-muted-foreground font-bold tabular-nums">{item.pct}%</span>
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            </>
+                        ) : (
+                            <EmptyState
+                                icon={BarChart3}
+                                title="No Allocation Data"
+                                description="Add assets to see your tax-optimized allocation chart."
+                                ctaLabel="Go to Portfolio"
+                                ctaPath="/app/portfolio"
+                                iconColor="text-emerald-400"
+                                iconBg="bg-emerald-500/10"
+                            />
+                        )}
                     </div>
-                </div>
-            </div>
 
-            {/* ═══════════ ASSET ALLOCATION + AI + ACTIVITY ═══════════ */}
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-
-                {/* Asset Allocation */}
-                <div className="glass-card rounded-3xl p-8">
-                    <h3 className="text-base font-bold text-foreground mb-1">Asset Allocation</h3>
-                    <p className="text-3xl font-bold text-foreground mb-8 tracking-tight">{formatCurrency(850300)}</p>
-                    
-                    <div className="space-y-5">
-                        {assetAllocation.map((asset, i) => (
-                            <div key={i} className="space-y-2">
-                                <div className="flex items-center justify-between text-sm">
-                                    <span className="text-muted-foreground font-medium">{asset.name}</span>
-                                    <span className="text-foreground font-bold tabular-nums">{asset.pct}%</span>
-                                </div>
-                                <div className="h-2 w-full bg-black/[0.04] dark:bg-white/[0.06] rounded-full overflow-hidden">
-                                    <div className={`h-full rounded-full ${asset.color} transition-all duration-1000`} style={{ width: `${asset.pct}%` }} />
-                                </div>
-                            </div>
-                        ))}
-                    </div>
-                </div>
-
-                {/* AI Insights Column */}
-                <div className="space-y-4">
-                    {/* AI Tax Harvest */}
+                    {/* AI Insight */}
                     <div className="relative overflow-hidden rounded-3xl p-7 border border-purple-500/20 bg-gradient-to-br from-purple-500/10 via-purple-600/5 to-violet-900/10 dark:from-purple-500/15 dark:via-purple-600/10 dark:to-violet-900/20">
                         <div className="absolute top-0 right-0 w-32 h-32 bg-purple-500/15 blur-[60px] rounded-full pointer-events-none" />
                         <div className="relative z-10">
@@ -434,53 +585,89 @@ export default function DashboardHome() {
                                 <div className="w-7 h-7 rounded-lg bg-purple-500/20 flex items-center justify-center">
                                     <Sparkles className="w-3.5 h-3.5 text-purple-400" />
                                 </div>
-                                <span className="text-sm font-bold text-purple-400 dark:text-purple-300">AI Tax Harvest Found</span>
+                                <span className="text-sm font-bold text-purple-400 dark:text-purple-300">myra Insight</span>
                             </div>
                             <p className="text-sm text-muted-foreground leading-relaxed mb-5">
-                                myra identified <span className="text-foreground font-bold">$3,240</span> in harvestable losses on AAPL.
+                                {hasAssets 
+                                    ? `You have ${assets.length} account${assets.length !== 1 ? 's' : ''} totaling ${formatCurrency(totalNetWorth)}. Ask myra to analyze your tax diversification strategy.`
+                                    : "Start by adding your accounts. myra can help you build a tax-optimized retirement plan."
+                                }
                             </p>
-                            <button className="px-5 py-2.5 bg-purple-500 hover:bg-purple-400 text-white font-bold rounded-xl transition-all cursor-pointer active:scale-[0.97] text-sm shadow-lg shadow-purple-500/20">
-                                Execute Strategy
+                            <button 
+                                onClick={() => navigate("/app/chat")}
+                                className="px-5 py-2.5 bg-purple-500 hover:bg-purple-400 text-white font-bold rounded-xl transition-all cursor-pointer active:scale-[0.97] text-sm shadow-lg shadow-purple-500/20"
+                            >
+                                {hasAssets ? "Analyze with myra" : "Chat with myra"}
                             </button>
                         </div>
                     </div>
-
-                    {/* Dividend */}
-                    <div className="glass-card rounded-2xl p-5 flex items-center justify-between">
-                        <div className="flex items-center gap-3">
-                            <div className="w-10 h-10 rounded-xl bg-blue-500/10 flex items-center justify-center">
-                                <TrendingUp className="w-4 h-4 text-blue-400" />
-                            </div>
-                            <div>
-                                <p className="text-sm font-bold text-foreground">SPY Dividend Reinvested</p>
-                                <p className="text-[10px] text-muted-foreground font-medium uppercase tracking-widest">Today at 9:30 AM</p>
-                            </div>
-                        </div>
-                        <span className="text-sm font-bold text-emerald-400">+$450</span>
-                    </div>
                 </div>
+            </div>
 
-                {/* Activity + Security Column */}
-                <div className="space-y-4">
-                    {/* Recent Activity */}
-                    <div className="glass-card rounded-3xl p-6">
-                        <div className="flex items-center gap-2 mb-5">
+            {/* ═══════════ RECENT ACTIVITY + SECURITY ═══════════ */}
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+
+                {/* Recent Activity */}
+                <div className="lg:col-span-2 glass-card rounded-3xl p-8">
+                    <div className="flex items-center justify-between mb-6">
+                        <div className="flex items-center gap-2">
                             <Clock className="w-4 h-4 text-muted-foreground" />
-                            <h3 className="text-sm font-bold text-foreground">Recent Activity</h3>
+                            <h3 className="text-base font-bold text-foreground">Recent Activity</h3>
                         </div>
-                        <div className="space-y-4">
+                        {recentChats.length > 0 && (
+                            <button onClick={() => navigate("/app/chat")} className="text-xs text-primary font-bold hover:underline cursor-pointer">View All</button>
+                        )}
+                    </div>
+                    
+                    {activityLog.length > 0 ? (
+                        <div className="space-y-2">
                             {activityLog.map((log) => (
-                                <div key={log.id} className="flex gap-3 items-start">
-                                    <div className={`w-9 h-9 rounded-xl ${log.bg} flex items-center justify-center shrink-0`}>
-                                        <log.icon className={`w-4 h-4 ${log.color}`} />
-                                    </div>
-                                    <div className="min-w-0">
-                                        <p className="text-xs font-bold text-foreground leading-snug">{log.action}</p>
-                                        <p className="text-[10px] font-medium text-muted-foreground mt-1">{log.time}</p>
+                                <div key={log.id} className="flex items-center justify-between p-4 rounded-2xl hover:bg-black/[0.02] dark:hover:bg-white/[0.02] transition-colors">
+                                    <div className="flex items-center gap-3">
+                                        <div className={`w-10 h-10 rounded-xl ${log.bg} flex items-center justify-center`}>
+                                            <log.icon className={`w-4 h-4 ${log.color}`} />
+                                        </div>
+                                        <div>
+                                            <p className="text-sm font-bold text-foreground truncate max-w-xs">{log.action}</p>
+                                            <p className="text-[10px] text-muted-foreground font-medium uppercase tracking-widest">{log.time}</p>
+                                        </div>
                                     </div>
                                 </div>
                             ))}
                         </div>
+                    ) : (
+                        <EmptyState
+                            icon={MessageSquare}
+                            title="No Activity Yet"
+                            description="Start a conversation with myra to see your activity here."
+                            ctaLabel="Start Chatting"
+                            ctaPath="/app/chat"
+                            iconColor="text-blue-400"
+                            iconBg="bg-blue-500/10"
+                        />
+                    )}
+                </div>
+
+                {/* Security + Connect */}
+                <div className="space-y-4">
+                    {/* Connect CTA */}
+                    <div className="glass-card rounded-3xl p-6 border-primary/10">
+                        <div className="flex items-center gap-3 mb-4">
+                            <div className="w-9 h-9 rounded-xl bg-primary/10 flex items-center justify-center">
+                                <Zap className="w-4 h-4 text-primary" />
+                            </div>
+                            <div>
+                                <h3 className="text-sm font-bold text-foreground">Connect Accounts</h3>
+                                <p className="text-[10px] text-muted-foreground">Link real brokerage data</p>
+                            </div>
+                        </div>
+                        <button 
+                            onClick={() => navigate("/app/portfolio")}
+                            className="w-full px-4 py-3 bg-primary/10 border border-primary/20 text-primary hover:bg-primary/20 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center justify-center gap-2"
+                        >
+                            <Plus className="w-3.5 h-3.5" />
+                            Coming Soon
+                        </button>
                     </div>
 
                     {/* Security Badge */}
