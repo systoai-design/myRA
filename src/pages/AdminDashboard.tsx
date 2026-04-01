@@ -128,11 +128,9 @@ export default function AdminDashboard() {
                 }
                 setTeam(teamList);
                 
-                if (teamError || teamResponse?.error) {
-                    toast.error("Limited view: Sync service unavailable", {
-                        description: teamError?.message || teamResponse?.error || "Using fallback data source."
-                    });
-                }
+                // Fallback succeeded — no need to alarm the user
+                // The edge function may just not be deployed; direct DB works fine
+                console.info("Using direct DB fallback for team data (edge function unavailable).");
             } else {
                 // Also ensure protected admins appear in the edge function response
                 let teamList = teamResponse.team || [];
