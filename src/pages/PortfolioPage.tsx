@@ -111,11 +111,13 @@ function LinkedAccountsSection() {
                         )}
                         <button
                             onClick={() => openPlaidLink()}
-                            disabled={!readyToLink || isLinking}
+                            disabled={isLinking}
                             className="px-5 py-2.5 bg-emerald-500 hover:bg-emerald-400 disabled:bg-emerald-500/50 text-white font-bold rounded-xl text-xs transition-all cursor-pointer flex items-center gap-2 shadow-lg shadow-emerald-500/20 disabled:cursor-not-allowed"
                         >
                             {isLinking ? (
                                 <><Loader2 className="w-3.5 h-3.5 animate-spin" /> Connecting...</>
+                            ) : !readyToLink ? (
+                                <><Loader2 className="w-3.5 h-3.5 animate-spin" /> Loading...</>
                             ) : (
                                 <><Link2 className="w-3.5 h-3.5" /> Connect Account</>
                             )}

@@ -30,7 +30,7 @@ interface PlaidHolding {
   institution_name: string | null;
 }
 
-interface UsePlaidReturn {
+export interface UsePlaidReturn {
   linkToken: string | null;
   linkedAccounts: PlaidAccount[];
   linkedInvestments: PlaidHolding[];
@@ -52,13 +52,10 @@ export function usePlaid(): UsePlaidReturn {
   const [isLinking, setIsLinking] = useState(false);
   const [isLoadingAccounts, setIsLoadingAccounts] = useState(false);
 
-  // 1. Create a link token on mount
+  // 1. Create a link token when user becomes available
   useEffect(() => {
-    if (!user) {
-      console.log('[usePlaid] No user yet, skipping link token creation');
-      return;
-    }
-    console.log('[usePlaid] Creating link token for user:', user.id);
+    if (!user) return;
+    let cancelled = false;
     const createLinkToken = async () => {
       try {
         const res = await fetch(`${API_BASE}/create-link-token`, {
@@ -67,17 +64,15 @@ export function usePlaid(): UsePlaidReturn {
           body: JSON.stringify({ user_id: user.id }),
         });
         const data = await res.json();
-        if (data.link_token) {
-          console.log('[usePlaid] Link token received:', data.link_token.substring(0, 30) + '...');
+        if (!cancelled && data.link_token) {
           setLinkToken(data.link_token);
-        } else {
-          console.error('[usePlaid] No link_token returned:', data);
         }
       } catch (err) {
         console.error('[usePlaid] Create link token error:', err);
       }
     };
     createLinkToken();
+    return () => { cancelled = true; };
   }, [user]);
 
   // 2. Fetch existing linked accounts
@@ -94,7 +89,7 @@ export function usePlaid(): UsePlaidReturn {
       setLinkedAccounts(data.accounts || []);
       setLinkedInvestments(data.investments || []);
     } catch (err) {
-      console.error('Fetch accounts error:', err);
+      console.error('[usePlaid] Fetch accounts error:', err);
     } finally {
       setIsLoadingAccounts(false);
     }
@@ -123,32 +118,26 @@ export function usePlaid(): UsePlaidReturn {
       const data = await res.json();
       if (data.success) {
         toast.success(`Connected ${metadata.institution?.name || 'account'} successfully!`);
-        await fetchAccounts(); // Refresh
+        await fetchAccounts();
       } else {
         toast.error('Failed to link account. Please try again.');
       }
     } catch (err) {
-      console.error('Exchange token error:', err);
+      console.error('[usePlaid] Exchange token error:', err);
       toast.error('Something went wrong linking your account.');
     } finally {
       setIsLinking(false);
     }
   }, [user, fetchAccounts]);
 
-  // 4. Plaid Link hook
-  const config = {
+  // 4. Plaid Link hook — pass token (may be null initially, hook handles it)
+  const { open, ready } = usePlaidLink({
     token: linkToken,
     onSuccess,
-    onExit: (err: any) => {
+    onExit: (err) => {
       if (err) console.warn('[usePlaid] Plaid Link exited with error:', err);
     },
-  };
-  const { open, ready } = usePlaidLink(config);
-
-  // Debug: log ready state changes
-  useEffect(() => {
-    console.log('[usePlaid] ready:', ready, 'linkToken:', linkToken ? 'set' : 'null');
-  }, [ready, linkToken]);
+  });
 
   // 5. Remove a linked item
   const removeItem = useCallback(async (itemId: string, institutionName: string) => {
@@ -167,7 +156,7 @@ export function usePlaid(): UsePlaidReturn {
         toast.error('Failed to remove account.');
       }
     } catch (err) {
-      console.error('Remove item error:', err);
+      console.error('[usePlaid] Remove item error:', err);
       toast.error('Failed to disconnect account.');
     }
   }, [user, fetchAccounts]);
@@ -178,8 +167,14 @@ export function usePlaid(): UsePlaidReturn {
     linkedInvestments,
     isLinking,
     isLoadingAccounts,
-    openPlaidLink: () => open(),
-    readyToLink: ready,
+    openPlaidLink: () => {
+      if (ready) {
+        open();
+      } else {
+        toast.info('Plaid is still loading. Please try again in a moment.');
+      }
+    },
+    readyToLink: ready && !!linkToken,
     fetchAccounts,
     removeItem,
   };
