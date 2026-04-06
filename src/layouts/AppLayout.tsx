@@ -40,7 +40,7 @@ export default function AppLayout({ children }: AppLayoutProps) {
     ];
 
     return (
-        <div className="min-h-screen bg-background text-foreground flex overflow-hidden font-sans selection:bg-primary/30">
+        <div className="h-screen bg-background text-foreground flex overflow-hidden font-sans selection:bg-primary/30">
             {/* Background Effects */}
             <div className="fixed inset-0 z-0 pointer-events-none">
                 {/* Light mode: soft gradient wash */}

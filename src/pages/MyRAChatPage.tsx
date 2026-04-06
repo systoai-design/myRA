@@ -36,7 +36,7 @@ export default function MyRAChatPage() {
     const effectiveRole = testRole || role;
 
     return (
-        <div className="h-[calc(100vh-100px)] w-full flex flex-col relative">
+        <div className="h-full w-full flex flex-col relative min-h-0">
             {/* Profile Survey Modal */}
             {showSurvey && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">

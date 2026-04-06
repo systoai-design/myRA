@@ -2,7 +2,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, useLocation } from "react-router-dom";
 import { useState } from "react";
 import Index from "./pages/Index";
 import ThankYou from "./pages/ThankYou";
@@ -27,6 +27,48 @@ import DashboardHome from "./components/app/DashboardHome";
 
 const queryClient = new QueryClient();
 
+// SmoothScroll (Lenis) is great for the landing page but hijacks scroll
+// inside the dashboard app where we need native overflow-y-auto in panels.
+// This component conditionally wraps only non-app routes with SmoothScroll.
+function AppRoutes() {
+  const location = useLocation();
+  const isAppRoute = location.pathname.startsWith('/app') || location.pathname.startsWith('/agent-chat') || location.pathname.startsWith('/dashboard') || location.pathname.startsWith('/admin');
+
+  const routes = (
+    <Routes>
+      <Route path="/" element={<Index />} />
+      <Route path="/app" element={<AppLayout><DashboardHome /></AppLayout>} />
+      <Route path="/app/chat" element={<AppLayout><MyRAChatPage /></AppLayout>} />
+      <Route path="/agent-chat" element={<AppLayout><MyRAChatPage /></AppLayout>} />
+      <Route path="/dashboard" element={<AppLayout><MyRAChatPage /></AppLayout>} />
+      <Route path="/app/portfolio" element={<AppLayout><PortfolioPage /></AppLayout>} />
+      <Route path="/app/profile" element={<AppLayout><ProfilePage /></AppLayout>} />
+      <Route path="/app/settings" element={<AppLayout><SettingsPage /></AppLayout>} />
+      <Route path="/reset-password" element={<ResetPassword />} />
+      <Route path="/new-design" element={
+        <Suspense fallback={<div className="min-h-screen bg-black" />}>
+          <NewDesign />
+        </Suspense>
+      } />
+      <Route path="/admin" element={
+        <Suspense fallback={<div className="min-h-screen bg-black" />}>
+          <AdminDashboard />
+        </Suspense>
+      } />
+      <Route path="/offer" element={
+        <Suspense fallback={<div className="min-h-screen flex items-center justify-center bg-black"><span className="text-white">Loading...</span></div>}>
+          <SignUpOffer />
+        </Suspense>
+      } />
+      <Route path="*" element={<NotFound />} />
+    </Routes>
+  );
+
+  // Wrap with SmoothScroll only on marketing/landing pages
+  if (isAppRoute) return routes;
+  return <SmoothScroll>{routes}</SmoothScroll>;
+}
+
 const App = () => {
   const [showSplash, setShowSplash] = useState(() => {
     // Only show splash once per browser visit globally
@@ -48,41 +90,12 @@ const App = () => {
         <QueryClientProvider client={queryClient}>
           <TooltipProvider>
             <AuthProvider>
-              <SmoothScroll>
-                <Toaster />
-                <Sonner />
-                <BrowserRouter>
-                  <Routes>
-                    <Route path="/" element={<Index />} />
-                    <Route path="/app" element={<AppLayout><DashboardHome /></AppLayout>} />
-                    <Route path="/app/chat" element={<AppLayout><MyRAChatPage /></AppLayout>} />
-                    <Route path="/agent-chat" element={<AppLayout><MyRAChatPage /></AppLayout>} />
-                    <Route path="/dashboard" element={<AppLayout><MyRAChatPage /></AppLayout>} />
-                    <Route path="/app/portfolio" element={<AppLayout><PortfolioPage /></AppLayout>} />
-                    <Route path="/app/profile" element={<AppLayout><ProfilePage /></AppLayout>} />
-                    <Route path="/app/settings" element={<AppLayout><SettingsPage /></AppLayout>} />
-                    <Route path="/reset-password" element={<ResetPassword />} />
-                    <Route path="/new-design" element={
-                      <Suspense fallback={<div className="min-h-screen bg-black" />}>
-                        <NewDesign />
-                      </Suspense>
-                    } />
-                    <Route path="/admin" element={
-                      <Suspense fallback={<div className="min-h-screen bg-black" />}>
-                        <AdminDashboard />
-                      </Suspense>
-                    } />
-                    <Route path="/offer" element={
-                      <Suspense fallback={<div className="min-h-screen flex items-center justify-center bg-black"><span className="text-white">Loading...</span></div>}>
-                        <SignUpOffer />
-                      </Suspense>
-                    } />
-                    {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-                    <Route path="*" element={<NotFound />} />
-                  </Routes>
-                  <RoleSwitcher />
-                </BrowserRouter>
-              </SmoothScroll>
+              <Toaster />
+              <Sonner />
+              <BrowserRouter>
+                <AppRoutes />
+                <RoleSwitcher />
+              </BrowserRouter>
             </AuthProvider>
           </TooltipProvider>
         </QueryClientProvider>
