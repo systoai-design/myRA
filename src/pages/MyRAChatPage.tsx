@@ -1,4 +1,4 @@
-﻿import { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { useMyRAChat } from "@/hooks/useMyRAChat";
 import ChatArea from "@/components/chat-ui/ChatArea";
 import { useAuth } from "@/contexts/AuthContext";
@@ -64,7 +64,7 @@ export default function MyRAChatPage() {
             )}
 
             {/* Full-Screen Chat */}
-            <div className="flex-1 w-full max-w-5xl mx-auto">
+            <div className="flex-1 w-full max-w-5xl mx-auto min-h-0 overflow-hidden">
                 <ChatArea
                     messages={messages}
                     input={input}
