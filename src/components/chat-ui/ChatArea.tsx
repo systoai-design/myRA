@@ -78,6 +78,15 @@ export default function ChatArea({
         messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
     };
 
+    const scrollContainerRef = useRef<HTMLDivElement>(null);
+
+    // Check if user is near the bottom of the chat
+    const isNearBottom = () => {
+        const el = scrollContainerRef.current;
+        if (!el) return true;
+        return el.scrollHeight - el.scrollTop - el.clientHeight < 150;
+    };
+
     const prevMessagesLengthRef = useRef(messages.length);
 
     useEffect(() => {
@@ -86,7 +95,6 @@ export default function ChatArea({
         prevMessagesLengthRef.current = messages.length;
 
         // If the newest message is from the assistant, scroll to the TOP of that message
-        // so the user can begin reading from the very beginning of her response.
         if (isNewMessage && lastMessage?.role === 'assistant') {
             const el = document.getElementById(`msg-${lastMessage.id}`);
             if (el) {
@@ -95,8 +103,16 @@ export default function ChatArea({
             }
         }
 
-        // Default behavior (user sending messages, typing indicators, etc.)
-        scrollToBottom();
+        // If user sent a new message, always scroll to bottom
+        if (isNewMessage && lastMessage?.role === 'user') {
+            scrollToBottom();
+            return;
+        }
+
+        // For typing indicator: only scroll if user is already near the bottom
+        if (isTyping && isNearBottom()) {
+            scrollToBottom();
+        }
     }, [messages, isTyping]);
 
     // Handle Enter key (shift+enter for newline)
@@ -260,7 +276,7 @@ export default function ChatArea({
 
                     <div className="flex gap-2.5 font-semibold text-foreground items-center">
                         <span className="drop-shadow-sm">myra</span>
-                        <span className="text-[10px] bg-blue-500/20 text-blue-100 px-2 py-0.5 rounded-full uppercase tracking-wider font-bold border border-blue-500/30">Llama3.3 70B</span>
+                        <span className="text-[10px] bg-blue-500/20 text-blue-100 px-2 py-0.5 rounded-full uppercase tracking-wider font-bold border border-blue-500/30">GPT-4o</span>
                     </div>
                 </div>
 
@@ -304,7 +320,7 @@ export default function ChatArea({
             </div>
 
             {/* Main Scrollable Messages */}
-            <div className="flex-1 overflow-y-auto custom-scrollbar overflow-x-hidden">
+            <div ref={scrollContainerRef} className="flex-1 overflow-y-auto custom-scrollbar overflow-x-hidden">
                 {messages.length === 0 ? (
                     <div className="h-full flex flex-col items-center justify-center p-4 sm:p-8 max-w-4xl mx-auto w-full relative z-10">
                         {/* Background decoration */}
