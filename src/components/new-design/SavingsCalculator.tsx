@@ -12,11 +12,21 @@ const SavingsCalculator = () => {
     const [portfolioSize, setPortfolioSize] = useState(500000);
     const [currentFee, setCurrentFee] = useState(1.0);
 
-    const myraFee = 0.50; // 50 basis points
+    // Option B tiered fee schedule based on portfolio size
+    const getMyraFee = (balance: number): number => {
+        if (balance <= 100_000) return 0.60;
+        if (balance <= 500_000) return 0.50;
+        if (balance <= 2_000_000) return 0.40;
+        return 0.30;
+    };
+
+    const myraFee = getMyraFee(portfolioSize);
+    const myraFeeBps = Math.round(myraFee * 100); // basis points for display
 
     const savings = useMemo(() => {
+        const fee = getMyraFee(portfolioSize);
         const currentAnnual = portfolioSize * (currentFee / 100);
-        const myraAnnual = portfolioSize * (myraFee / 100);
+        const myraAnnual = portfolioSize * (fee / 100);
         const annualSavings = currentAnnual - myraAnnual;
         const tenYearSavings = annualSavings * 10;
         // Compound savings over 10 years at 7% avg return
@@ -122,14 +132,14 @@ const SavingsCalculator = () => {
                                 </div>
                             </div>
 
-                            {/* myra rate callout */}
-                            <div className="flex items-center gap-3 p-4 rounded-2xl bg-emerald-500/5 dark:bg-emerald-500/10 border border-emerald-500/15">
+                            {/* myra rate callout — updates dynamically with portfolio size */}
+                            <div className="flex items-center gap-3 p-4 rounded-2xl bg-emerald-500/5 dark:bg-emerald-500/10 border border-emerald-500/15 transition-all">
                                 <div className="w-10 h-10 rounded-xl bg-emerald-500/10 flex items-center justify-center shrink-0">
                                     <TrendingDown className="w-5 h-5 text-emerald-400" />
                                 </div>
                                 <div>
-                                    <p className="text-sm font-bold text-foreground">myra's fee: 0.50%</p>
-                                    <p className="text-xs text-muted-foreground">Based on 50 basis points annual management</p>
+                                    <p className="text-sm font-bold text-foreground">myra's fee: {myraFee.toFixed(2)}%</p>
+                                    <p className="text-xs text-muted-foreground">Based on {myraFeeBps} basis points for portfolios {portfolioSize <= 100_000 ? 'up to $100K' : portfolioSize <= 500_000 ? '$100K–$500K' : portfolioSize <= 2_000_000 ? '$500K–$2M' : 'over $2M'}</p>
                                 </div>
                             </div>
                         </div>
