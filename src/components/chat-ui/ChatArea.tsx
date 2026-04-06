@@ -88,6 +88,18 @@ export default function ChatArea({
     };
 
     const prevMessagesLengthRef = useRef(messages.length);
+    const hasScrolledInitially = useRef(false);
+
+    // Scroll to bottom on initial load (when chat opens with existing messages)
+    useEffect(() => {
+        if (!hasScrolledInitially.current && messages.length > 0) {
+            // Use instant scroll (no animation) for initial load
+            requestAnimationFrame(() => {
+                messagesEndRef.current?.scrollIntoView({ behavior: "instant" });
+            });
+            hasScrolledInitially.current = true;
+        }
+    }, [messages]);
 
     useEffect(() => {
         const lastMessage = messages[messages.length - 1];
