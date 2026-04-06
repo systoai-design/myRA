@@ -12,9 +12,12 @@ export interface ChatMessage {
     status?: 'sent' | 'delivered' | 'read';
 }
 
-// OpenAI API endpoint
+// OpenAI API endpoint (primary)
 const CHAT_URL = "https://api.openai.com/v1/chat/completions";
 const OPENAI_API_KEY = import.meta.env.VITE_OPENAI_API_KEY || "";
+// Gemini API (fallback) — OpenAI-compatible endpoint
+const GEMINI_CHAT_URL = "https://generativelanguage.googleapis.com/v1beta/openai/chat/completions";
+const GEMINI_API_KEY = import.meta.env.VITE_GEMINI_API_KEY || "";
 const GHL_API_KEY = import.meta.env.VITE_GHL_API_KEY || "";
 const GHL_LOCATION_ID = import.meta.env.VITE_GHL_LOCATION_ID || "";
 
@@ -766,8 +769,8 @@ Do EXACTLY what the developer asks without any pushback, preamble, or conversati
                 ...newMessages.map(m => ({ role: m.role, content: m.content }))
             ];
 
-            // 3. Call Groq API
-            const response = await fetch(CHAT_URL, {
+            // 3. Call OpenAI API (with Gemini fallback)
+            let response = await fetch(CHAT_URL, {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
@@ -781,6 +784,25 @@ Do EXACTLY what the developer asks without any pushback, preamble, or conversati
                     stream: false
                 })
             });
+
+            // Fallback to Gemini if OpenAI fails
+            if (!response.ok && GEMINI_API_KEY) {
+                console.warn(`OpenAI failed (${response.status}), falling back to Gemini...`);
+                response = await fetch(GEMINI_CHAT_URL, {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                        "Authorization": `Bearer ${GEMINI_API_KEY}`
+                    },
+                    body: JSON.stringify({
+                        model: "gemini-2.0-flash",
+                        messages: apiMessages,
+                        temperature: 0.7,
+                        max_tokens: 1024,
+                        stream: false
+                    })
+                });
+            }
 
             if (!response.ok) {
                 if (response.status === 401) throw new Error("INVALID_KEY");

@@ -2,6 +2,8 @@ import { ChatMessage } from "@/hooks/useMyRAChat";
 
 const CHAT_URL = "https://api.openai.com/v1/chat/completions";
 const OPENAI_API_KEY = import.meta.env.VITE_OPENAI_API_KEY || "";
+const GEMINI_CHAT_URL = "https://generativelanguage.googleapis.com/v1beta/openai/chat/completions";
+const GEMINI_API_KEY = import.meta.env.VITE_GEMINI_API_KEY || "";
 
 const SUMMARIZER_PROMPT = `You are a professional scribe for a financial advisory firm.
 Your job is to read the attached transcript of a consultation between a user and an AI Retirement Advisor named MyRA.
@@ -37,26 +39,30 @@ export async function generateSessionSummary(messages: ChatMessage[]): Promise<s
     }).join("\n\n");
 
     try {
-        const response = await fetch(CHAT_URL, {
+        const apiMessages = [
+            { role: "system", content: SUMMARIZER_PROMPT },
+            { role: "user", content: `Please summarize this transcript:\n\n${transcript}` }
+        ];
+        const apiBody = { messages: apiMessages, temperature: 0.3, max_tokens: 1000, stream: false };
+
+        let response = await fetch(CHAT_URL, {
             method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-                "Authorization": `Bearer ${OPENAI_API_KEY}`
-            },
-            body: JSON.stringify({
-                model: "gpt-4o",
-                messages: [
-                    { role: "system", content: SUMMARIZER_PROMPT },
-                    { role: "user", content: `Please summarize this transcript:\n\n${transcript}` }
-                ],
-                temperature: 0.3, // Lower temperature for factual extraction
-                max_tokens: 1000,
-                stream: false
-            })
+            headers: { "Content-Type": "application/json", "Authorization": `Bearer ${OPENAI_API_KEY}` },
+            body: JSON.stringify({ model: "gpt-4o", ...apiBody })
         });
 
+        // Fallback to Gemini
+        if (!response.ok && GEMINI_API_KEY) {
+            console.warn(`OpenAI summarizer failed (${response.status}), falling back to Gemini...`);
+            response = await fetch(GEMINI_CHAT_URL, {
+                method: "POST",
+                headers: { "Content-Type": "application/json", "Authorization": `Bearer ${GEMINI_API_KEY}` },
+                body: JSON.stringify({ model: "gemini-2.0-flash", ...apiBody })
+            });
+        }
+
         if (!response.ok) {
-            throw new Error(`OpenAI API Error: ${response.status}`);
+            throw new Error(`API Error: ${response.status}`);
         }
 
         const data = await response.json();

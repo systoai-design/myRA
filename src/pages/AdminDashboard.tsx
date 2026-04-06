@@ -272,34 +272,41 @@ export default function AdminDashboard() {
         if (!transcript.content.trim()) return;
         setIsSummarizing(true);
         try {
-            // Call Groq directly (non-streaming) to get a parseable JSON summary
+            // Call OpenAI (with Gemini fallback) to get a parseable JSON summary
             const openaiKey = import.meta.env.VITE_OPENAI_API_KEY;
-            if (!openaiKey) throw new Error("OPENAI_API_KEY not configured");
+            const geminiKey = import.meta.env.VITE_GEMINI_API_KEY;
+            if (!openaiKey && !geminiKey) throw new Error("No API key configured");
 
-            const response = await fetch("https://api.openai.com/v1/chat/completions", {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                    "Authorization": `Bearer ${openaiKey}`
+            const apiMessages = [
+                {
+                    role: 'system',
+                    content: 'You are a knowledge extraction assistant. Analyze the following transcript and return a JSON object with exactly this structure: {"summary": "A 2-3 sentence summary of the transcript", "keyPoints": ["Point 1", "Point 2", ...]}. Extract 3-8 key learning points that a retirement planning AI should learn from this transcript. Return ONLY valid JSON, no markdown.'
                 },
-                body: JSON.stringify({
-                    model: "gpt-4o",
-                    messages: [
-                        {
-                            role: 'system',
-                            content: 'You are a knowledge extraction assistant. Analyze the following transcript and return a JSON object with exactly this structure: {"summary": "A 2-3 sentence summary of the transcript", "keyPoints": ["Point 1", "Point 2", ...]}. Extract 3-8 key learning points that a retirement planning AI should learn from this transcript. Return ONLY valid JSON, no markdown.'
-                        },
-                        { role: 'user', content: transcript.content.substring(0, 12000) }
-                    ],
-                    temperature: 0.3,
-                    max_tokens: 1024,
-                    stream: false
+                { role: 'user', content: transcript.content.substring(0, 12000) }
+            ];
+            const apiBody = { messages: apiMessages, temperature: 0.3, max_tokens: 1024, stream: false };
+
+            let response = openaiKey
+                ? await fetch("https://api.openai.com/v1/chat/completions", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json", "Authorization": `Bearer ${openaiKey}` },
+                    body: JSON.stringify({ model: "gpt-4o", ...apiBody })
                 })
-            });
+                : new Response(null, { status: 0 });
+
+            // Fallback to Gemini
+            if (!response.ok && geminiKey) {
+                console.warn(`OpenAI summarizer failed (${response.status}), falling back to Gemini...`);
+                response = await fetch("https://generativelanguage.googleapis.com/v1beta/openai/chat/completions", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json", "Authorization": `Bearer ${geminiKey}` },
+                    body: JSON.stringify({ model: "gemini-2.0-flash", ...apiBody })
+                });
+            }
 
             if (!response.ok) {
                 const errText = await response.text();
-                throw new Error(`Groq API error: ${response.status} ${errText}`);
+                throw new Error(`API error: ${response.status} ${errText}`);
             }
 
             const data = await response.json();
@@ -408,43 +415,49 @@ export default function AdminDashboard() {
     };
 
     // ═══════════════════════════════════════════
-    // VISION OCR HELPER — uses Groq Llama 4 Scout for image reading
+    // VISION OCR HELPER — uses OpenAI gpt-4o with Gemini fallback
     // ═══════════════════════════════════════════
     const extractTextFromImageViaVision = async (base64Image: string, pageLabel: string): Promise<string> => {
         const openaiKey = import.meta.env.VITE_OPENAI_API_KEY;
-        if (!openaiKey) throw new Error("OPENAI_API_KEY not configured — cannot use vision OCR");
+        const geminiKey = import.meta.env.VITE_GEMINI_API_KEY;
+        if (!openaiKey && !geminiKey) throw new Error("No API key configured for vision OCR");
 
-        const response = await fetch("https://api.openai.com/v1/chat/completions", {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-                "Authorization": `Bearer ${openaiKey}`
+        const visionMessages = [
+            {
+                role: "system",
+                content: "You are an OCR assistant. Extract ALL text content from the given image. Include headings, body text, bullet points, table data, captions, and any visible text. Preserve the logical reading order and structure. If there are charts/graphs, describe their data. Return the extracted text only, no commentary."
             },
-            body: JSON.stringify({
-                model: "gpt-4o",
-                messages: [
+            {
+                role: "user",
+                content: [
+                    { type: "text", text: `Extract all text and information from this image (${pageLabel}):` },
                     {
-                        role: "system",
-                        content: "You are an OCR assistant. Extract ALL text content from the given image. Include headings, body text, bullet points, table data, captions, and any visible text. Preserve the logical reading order and structure. If there are charts/graphs, describe their data. Return the extracted text only, no commentary."
-                    },
-                    {
-                        role: "user",
-                        content: [
-                            { type: "text", text: `Extract all text and information from this image (${pageLabel}):` },
-                            {
-                                type: "image_url",
-                                image_url: {
-                                    url: base64Image.startsWith('data:') ? base64Image : `data:image/png;base64,${base64Image}`
-                                }
-                            }
-                        ]
+                        type: "image_url",
+                        image_url: {
+                            url: base64Image.startsWith('data:') ? base64Image : `data:image/png;base64,${base64Image}`
+                        }
                     }
-                ],
-                temperature: 0.1,
-                max_completion_tokens: 2048,
-                stream: false,
+                ]
+            }
+        ];
+
+        let response = openaiKey
+            ? await fetch("https://api.openai.com/v1/chat/completions", {
+                method: "POST",
+                headers: { "Content-Type": "application/json", "Authorization": `Bearer ${openaiKey}` },
+                body: JSON.stringify({ model: "gpt-4o", messages: visionMessages, temperature: 0.1, max_completion_tokens: 2048, stream: false })
             })
-        });
+            : new Response(null, { status: 0 });
+
+        // Fallback to Gemini for vision
+        if (!response.ok && geminiKey) {
+            console.warn(`OpenAI vision failed (${response.status}), falling back to Gemini...`);
+            response = await fetch("https://generativelanguage.googleapis.com/v1beta/openai/chat/completions", {
+                method: "POST",
+                headers: { "Content-Type": "application/json", "Authorization": `Bearer ${geminiKey}` },
+                body: JSON.stringify({ model: "gemini-2.0-flash", messages: visionMessages, temperature: 0.1, max_tokens: 2048, stream: false })
+            });
+        }
 
         if (!response.ok) {
             const errText = await response.text();
