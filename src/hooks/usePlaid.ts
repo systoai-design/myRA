@@ -54,7 +54,11 @@ export function usePlaid(): UsePlaidReturn {
 
   // 1. Create a link token on mount
   useEffect(() => {
-    if (!user) return;
+    if (!user) {
+      console.log('[usePlaid] No user yet, skipping link token creation');
+      return;
+    }
+    console.log('[usePlaid] Creating link token for user:', user.id);
     const createLinkToken = async () => {
       try {
         const res = await fetch(`${API_BASE}/create-link-token`, {
@@ -64,12 +68,13 @@ export function usePlaid(): UsePlaidReturn {
         });
         const data = await res.json();
         if (data.link_token) {
+          console.log('[usePlaid] Link token received:', data.link_token.substring(0, 30) + '...');
           setLinkToken(data.link_token);
         } else {
-          console.error('No link_token returned:', data);
+          console.error('[usePlaid] No link_token returned:', data);
         }
       } catch (err) {
-        console.error('Create link token error:', err);
+        console.error('[usePlaid] Create link token error:', err);
       }
     };
     createLinkToken();
@@ -131,13 +136,19 @@ export function usePlaid(): UsePlaidReturn {
   }, [user, fetchAccounts]);
 
   // 4. Plaid Link hook
-  const { open, ready } = usePlaidLink({
+  const config = {
     token: linkToken,
     onSuccess,
-    onExit: (err) => {
-      if (err) console.warn('Plaid Link exited with error:', err);
+    onExit: (err: any) => {
+      if (err) console.warn('[usePlaid] Plaid Link exited with error:', err);
     },
-  });
+  };
+  const { open, ready } = usePlaidLink(config);
+
+  // Debug: log ready state changes
+  useEffect(() => {
+    console.log('[usePlaid] ready:', ready, 'linkToken:', linkToken ? 'set' : 'null');
+  }, [ready, linkToken]);
 
   // 5. Remove a linked item
   const removeItem = useCallback(async (itemId: string, institutionName: string) => {
