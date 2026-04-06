@@ -1,7 +1,7 @@
 import { ChatMessage } from "@/hooks/useMyRAChat";
 
-const CHAT_URL = "https://api.groq.com/openai/v1/chat/completions";
-const GROQ_API_KEY = import.meta.env.VITE_GROQ_API_KEY || "";
+const CHAT_URL = "https://api.openai.com/v1/chat/completions";
+const OPENAI_API_KEY = import.meta.env.VITE_OPENAI_API_KEY || "";
 
 const SUMMARIZER_PROMPT = `You are a professional scribe for a financial advisory firm.
 Your job is to read the attached transcript of a consultation between a user and an AI Retirement Advisor named MyRA.
@@ -41,10 +41,10 @@ export async function generateSessionSummary(messages: ChatMessage[]): Promise<s
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
-                "Authorization": `Bearer ${GROQ_API_KEY}`
+                "Authorization": `Bearer ${OPENAI_API_KEY}`
             },
             body: JSON.stringify({
-                model: "llama-3.3-70b-versatile",
+                model: "gpt-4o",
                 messages: [
                     { role: "system", content: SUMMARIZER_PROMPT },
                     { role: "user", content: `Please summarize this transcript:\n\n${transcript}` }
@@ -56,7 +56,7 @@ export async function generateSessionSummary(messages: ChatMessage[]): Promise<s
         });
 
         if (!response.ok) {
-            throw new Error(`Groq API Error: ${response.status}`);
+            throw new Error(`OpenAI API Error: ${response.status}`);
         }
 
         const data = await response.json();

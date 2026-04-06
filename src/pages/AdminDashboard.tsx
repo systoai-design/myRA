@@ -273,17 +273,17 @@ export default function AdminDashboard() {
         setIsSummarizing(true);
         try {
             // Call Groq directly (non-streaming) to get a parseable JSON summary
-            const groqKey = import.meta.env.VITE_GROQ_API_KEY;
-            if (!groqKey) throw new Error("GROQ_API_KEY not configured");
+            const openaiKey = import.meta.env.VITE_OPENAI_API_KEY;
+            if (!openaiKey) throw new Error("OPENAI_API_KEY not configured");
 
-            const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+            const response = await fetch("https://api.openai.com/v1/chat/completions", {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
-                    "Authorization": `Bearer ${groqKey}`
+                    "Authorization": `Bearer ${openaiKey}`
                 },
                 body: JSON.stringify({
-                    model: "llama-3.3-70b-versatile",
+                    model: "gpt-4o",
                     messages: [
                         {
                             role: 'system',
@@ -411,17 +411,17 @@ export default function AdminDashboard() {
     // VISION OCR HELPER — uses Groq Llama 4 Scout for image reading
     // ═══════════════════════════════════════════
     const extractTextFromImageViaVision = async (base64Image: string, pageLabel: string): Promise<string> => {
-        const groqKey = import.meta.env.VITE_GROQ_API_KEY;
-        if (!groqKey) throw new Error("GROQ_API_KEY not configured — cannot use vision OCR");
+        const openaiKey = import.meta.env.VITE_OPENAI_API_KEY;
+        if (!openaiKey) throw new Error("OPENAI_API_KEY not configured — cannot use vision OCR");
 
-        const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+        const response = await fetch("https://api.openai.com/v1/chat/completions", {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
-                "Authorization": `Bearer ${groqKey}`
+                "Authorization": `Bearer ${openaiKey}`
             },
             body: JSON.stringify({
-                model: "meta-llama/llama-4-scout-17b-16e-instruct",
+                model: "gpt-4o",
                 messages: [
                     {
                         role: "system",

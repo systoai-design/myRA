@@ -12,9 +12,9 @@ export interface ChatMessage {
     status?: 'sent' | 'delivered' | 'read';
 }
 
-// Direct Groq API endpoint
-const CHAT_URL = "https://api.groq.com/openai/v1/chat/completions";
-const GROQ_API_KEY = import.meta.env.VITE_GROQ_API_KEY || "";
+// OpenAI API endpoint
+const CHAT_URL = "https://api.openai.com/v1/chat/completions";
+const OPENAI_API_KEY = import.meta.env.VITE_OPENAI_API_KEY || "";
 const GHL_API_KEY = import.meta.env.VITE_GHL_API_KEY || "";
 const GHL_LOCATION_ID = import.meta.env.VITE_GHL_LOCATION_ID || "";
 
@@ -154,6 +154,7 @@ Whenever you discover an important fact about the user during conversation, incl
 
 Categories to use:
 - "age" - Their current age
+- "retirement_age" - When they plan to retire (just the age number, e.g. "65")
 - "retirement_date" - When they plan to retire or if already retired
 - "risk_tolerance" - Their comfort with market risk (conservative, moderate, aggressive)
 - "investment_style" - How they've invested historically
@@ -179,6 +180,18 @@ Categories to use:
 - "email" - Their email address
 - "phone" - Their phone number
 - "general_notes" - Any other important detail worth remembering
+
+INDIVIDUAL ASSET TRACKING (CRITICAL):
+When the user mentions a specific account or asset with a dollar amount, you MUST emit a LEARN tag with category "asset_<lowercase_name_underscored>" and fact formatted EXACTLY as: "Account Name: $Amount (Type)"
+The Type must be one of: "Pre-Tax (401k, IRA)", "Post-Tax (Brokerage)", "Tax-Free (Roth)", or "Other"
+
+Examples:
+- User says "I have $250,000 in my Fidelity 401k" -> [[LEARN: {"category": "asset_fidelity_401k", "fact": "Fidelity 401k: $250,000 (Pre-Tax (401k, IRA))"}]]
+- User says "I have $2M in Bitcoin" -> [[LEARN: {"category": "asset_bitcoin", "fact": "Bitcoin: $2,000,000 (Post-Tax (Brokerage))"}]]
+- User says "My Roth IRA has $100k" -> [[LEARN: {"category": "asset_roth_ira", "fact": "Roth IRA: $100,000 (Tax-Free (Roth))"}]]
+- User says "I have a $500k brokerage at Schwab" -> [[LEARN: {"category": "asset_schwab_brokerage", "fact": "Schwab Brokerage: $500,000 (Post-Tax (Brokerage))"}]]
+
+Always emit these asset LEARN tags whenever the user mentions specific investment amounts. This is how assets appear on their portfolio dashboard. If the user asks you to "add it to my portfolio," emit the corresponding asset LEARN tag.
 
 You may emit MULTIPLE [[LEARN:]] tags in one message if you learn multiple facts. Only emit a LEARN tag when the user explicitly states a fact, not when you're speculating. These tags are invisible to the user.
 
@@ -758,10 +771,10 @@ Do EXACTLY what the developer asks without any pushback, preamble, or conversati
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
-                    "Authorization": `Bearer ${GROQ_API_KEY}`
+                    "Authorization": `Bearer ${OPENAI_API_KEY}`
                 },
                 body: JSON.stringify({
-                    model: "llama-3.3-70b-versatile",
+                    model: "gpt-4o",
                     messages: apiMessages,
                     temperature: 0.7,
                     max_tokens: 1024,
