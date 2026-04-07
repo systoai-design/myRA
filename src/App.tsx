@@ -3,7 +3,7 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, useLocation } from "react-router-dom";
-import { useState } from "react";
+
 import Index from "./pages/Index";
 import ThankYou from "./pages/ThankYou";
 import MyRAChatPage from "./pages/MyRAChatPage";
@@ -14,7 +14,7 @@ import ResetPassword from "./pages/ResetPassword";
 import React, { lazy, Suspense } from "react";
 import NotFound from "./pages/NotFound";
 import { AuthProvider } from "@/contexts/AuthContext";
-import SplashScreen from "@/components/SplashScreen";
+
 import { RoleSwitcher } from "@/components/RoleSwitcher";
 import { ThemeProvider } from "@/components/theme-provider";
 import { SmoothScroll } from "@/components/SmoothScroll";
@@ -70,37 +70,21 @@ function AppRoutes() {
 }
 
 const App = () => {
-  const [showSplash, setShowSplash] = useState(() => {
-    // Only show splash once per browser visit globally
-    if (localStorage.getItem('myra-splash-shown')) return false;
-    return true;
-  });
-
-  const handleSplashComplete = () => {
-    localStorage.setItem('myra-splash-shown', 'true');
-    // Only set this flag if we actually just finished playing the splash screen right now
-    sessionStorage.setItem('myra-just-finished-splash', 'true');
-    setShowSplash(false);
-  };
-
   return (
-    <>
-      {showSplash && <SplashScreen onComplete={handleSplashComplete} />}
-      <ThemeProvider defaultTheme="system" storageKey="myra-theme">
-        <QueryClientProvider client={queryClient}>
-          <TooltipProvider>
-            <AuthProvider>
-              <Toaster />
-              <Sonner />
-              <BrowserRouter>
-                <AppRoutes />
-                <RoleSwitcher />
-              </BrowserRouter>
-            </AuthProvider>
-          </TooltipProvider>
-        </QueryClientProvider>
-      </ThemeProvider>
-    </>
+    <ThemeProvider defaultTheme="system" storageKey="myra-theme">
+      <QueryClientProvider client={queryClient}>
+        <TooltipProvider>
+          <AuthProvider>
+            <Toaster />
+            <Sonner />
+            <BrowserRouter>
+              <AppRoutes />
+              <RoleSwitcher />
+            </BrowserRouter>
+          </AuthProvider>
+        </TooltipProvider>
+      </QueryClientProvider>
+    </ThemeProvider>
   );
 };
 
