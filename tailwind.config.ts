@@ -51,9 +51,11 @@ export default {
         },
       },
       fontFamily: {
-        sans: ['"Space Grotesk"', "sans-serif"],
-        serif: ['"Space Grotesk"', "sans-serif"],
-        display: ["Outfit", "sans-serif"],
+        sans: ['"Lato"', 'system-ui', 'sans-serif'],
+        serif: ['"Cormorant Garamond"', 'Georgia', 'serif'],
+        script: ['"Pinyon Script"', 'cursive'],
+        display: ['"Cormorant Garamond"', 'Georgia', 'serif'],
+        mono: ['"Space Grotesk"', 'monospace'],
       },
       borderRadius: {
         lg: "0.5rem",

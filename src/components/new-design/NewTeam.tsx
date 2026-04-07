@@ -2,7 +2,7 @@ import { motion } from "framer-motion";
 
 const teamData = [
     { name: "Darren P.", role: "Creator", img: "/team/Darren.avif" },
-    { name: "Sierra P.", role: "Creator", img: "/team/Sierra.avif" },
+    { name: "Sierrah P.", role: "Creator", img: "/team/Sierra.avif" },
     { name: "Marquis L.", role: "Strategy", img: "/team/Marquis.avif" },
     { name: "Amanda W.", role: "Designer", img: "/team/Amanda.avif" },
     { name: "Ally L.", role: "Designer", img: "/team/Ally.avif" },
@@ -35,33 +35,51 @@ const NewTeam = () => {
                     </p>
                 </motion.div>
 
-                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6">
-                    {teamData.map((member, idx) => (
-                        <motion.div 
-                            key={idx} 
-                            initial={{ opacity: 0, y: 30 }}
-                            whileInView={{ opacity: 1, y: 0 }}
-                            viewport={{ once: true }}
-                            transition={{ duration: 0.6, delay: idx * 0.05 }}
-                            className="group relative glass-card rounded-3xl overflow-hidden aspect-[3/4] transition-all duration-500 hover:-translate-y-2"
-                        >
-                            <img 
-                                src={member.img} 
-                                alt={member.name}
-                                className="w-full h-full object-cover transition-all duration-700 grayscale group-hover:grayscale-0 opacity-80 group-hover:opacity-100 group-hover:scale-105"
-                            />
-                            
-                            <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent opacity-90 transition-opacity duration-500" />
-                            
-                            <div className="absolute bottom-0 left-0 w-full p-6 text-left transform translate-y-2 group-hover:translate-y-0 transition-transform duration-500">
-                                <h3 className="text-white font-serif text-xl mb-1">{member.name}</h3>
-                                <p className="text-[10px] font-bold tracking-[0.2em] uppercase text-white/50 font-sans">{member.role}</p>
+                {/* Infinite scrolling marquee */}
+                <div className="overflow-hidden -mx-6 py-4">
+                    <div 
+                        className="flex gap-5 w-max marquee-track"
+                        style={{
+                            animation: "marquee 30s linear infinite",
+                        }}
+                    >
+                        {/* Render team twice for seamless loop */}
+                        {[...teamData, ...teamData].map((member, idx) => (
+                            <div 
+                                key={idx} 
+                                className="group relative glass-card rounded-3xl overflow-hidden flex-shrink-0 w-[200px] h-[280px] transition-all duration-500 hover:-translate-y-2"
+                            >
+                                <img 
+                                    src={member.img} 
+                                    alt={member.name}
+                                    className="w-full h-full object-cover transition-all duration-700 grayscale group-hover:grayscale-0 opacity-80 group-hover:opacity-100 group-hover:scale-105"
+                                />
+                                
+                                <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent opacity-90 transition-opacity duration-500" />
+                                
+                                <div className="absolute bottom-0 left-0 w-full p-5 text-left transform translate-y-2 group-hover:translate-y-0 transition-transform duration-500">
+                                    <h3 className="text-white font-serif text-lg mb-0.5">{member.name}</h3>
+                                    <p className="text-[10px] font-bold tracking-[0.2em] uppercase text-white/50 font-sans">{member.role}</p>
+                                </div>
+                                
+                                <div className="absolute inset-0 border border-black/5 dark:border-white/10 rounded-3xl pointer-events-none transition-colors duration-500 group-hover:border-black/10 dark:group-hover:border-white/20" />
                             </div>
-                            
-                            <div className="absolute inset-0 border border-black/5 dark:border-white/10 rounded-3xl pointer-events-none transition-colors duration-500 group-hover:border-black/10 dark:group-hover:border-white/20" />
-                        </motion.div>
-                    ))}
+                        ))}
+                    </div>
                 </div>
+
+                <style>{`
+                    @keyframes marquee {
+                        0% { transform: translateX(0); }
+                        100% { transform: translateX(-50%); }
+                    }
+                    .marquee-track {
+                        animation: marquee 30s linear infinite;
+                    }
+                    .marquee-track:hover {
+                        animation-duration: 180s;
+                    }
+                `}</style>
             </div>
         </section>
     );

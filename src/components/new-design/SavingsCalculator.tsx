@@ -89,7 +89,7 @@ const SavingsCalculator = () => {
                                             const val = Number(e.target.value.replace(/[^0-9]/g, ""));
                                             if (!isNaN(val)) setPortfolioSize(val);
                                         }}
-                                        className="w-full h-14 pl-12 pr-4 rounded-2xl bg-black/[0.03] dark:bg-white/5 border border-border text-foreground text-lg font-bold focus:outline-none focus:ring-2 focus:ring-primary/30 transition-all"
+                                        className="w-full h-14 pl-12 pr-4 rounded-2xl bg-black/[0.03] dark:bg-white/5 border border-border text-foreground text-lg font-bold font-mono focus:outline-none focus:ring-2 focus:ring-primary/30 transition-all"
                                     />
                                 </div>
                                 <input
@@ -123,7 +123,7 @@ const SavingsCalculator = () => {
                                         className="flex-1 accent-blue-500 h-1.5 bg-border rounded-full appearance-none cursor-pointer"
                                     />
                                     <div className="w-20 h-12 rounded-xl bg-black/[0.03] dark:bg-white/5 border border-border flex items-center justify-center">
-                                        <span className="text-lg font-bold text-foreground">{currentFee.toFixed(2)}%</span>
+                                        <span className="text-lg font-bold font-mono text-foreground">{currentFee.toFixed(2)}%</span>
                                     </div>
                                 </div>
                                 <div className="flex justify-between text-[10px] text-muted-foreground mt-1">
@@ -138,7 +138,7 @@ const SavingsCalculator = () => {
                                     <TrendingDown className="w-5 h-5 text-emerald-400" />
                                 </div>
                                 <div>
-                                    <p className="text-sm font-bold text-foreground">myra's fee: {myraFee.toFixed(2)}%</p>
+                                    <p className="text-sm font-bold font-mono text-foreground">myra's fee: {myraFee.toFixed(2)}%</p>
                                     <p className="text-xs text-muted-foreground">Based on {myraFeeBps} basis points for portfolios {portfolioSize <= 100_000 ? 'up to $100K' : portfolioSize <= 500_000 ? '$100K–$500K' : portfolioSize <= 2_000_000 ? '$500K–$2M' : 'over $2M'}</p>
                                 </div>
                             </div>
@@ -149,7 +149,7 @@ const SavingsCalculator = () => {
                             {/* Annual Savings */}
                             <div className="p-6 rounded-2xl bg-black/[0.02] dark:bg-white/[0.02] border border-border">
                                 <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground mb-2">Annual Savings</p>
-                                <p className="text-4xl font-bold text-emerald-400 tracking-tight">
+                                <p className="text-4xl font-bold font-mono text-emerald-400 tracking-tight">
                                     {formatCurrency(savings.annualSavings)}
                                 </p>
                                 <p className="text-xs text-muted-foreground mt-1">
@@ -160,7 +160,7 @@ const SavingsCalculator = () => {
                             {/* 10-Year Compound Savings */}
                             <div className="p-6 rounded-2xl bg-gradient-to-br from-emerald-500/5 to-blue-500/5 dark:from-emerald-500/10 dark:to-blue-500/10 border border-emerald-500/15">
                                 <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground mb-2">10-Year Compound Savings</p>
-                                <p className="text-5xl font-bold text-foreground tracking-tight">
+                                <p className="text-5xl font-bold font-mono text-foreground tracking-tight">
                                     {formatCurrency(savings.compoundSavings)}
                                 </p>
                                 <p className="text-xs text-muted-foreground mt-1">

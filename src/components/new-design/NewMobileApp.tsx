@@ -126,21 +126,25 @@ const NewMobileApp = () => {
                 </div>
 
                 {/* RIGHT Col: 3D iPhone Mockup */}
-                <div className="w-full lg:w-1/2 flex justify-center perspective-[2000px] z-20 mt-12 lg:mt-0">
-                    {/* Colored Orb Behind Phone */}
+                <div className="w-full lg:w-1/2 flex justify-center perspective-[2000px] mt-12 lg:mt-0 relative">
+                    {/* Colored Orb — sits behind the phone as a sibling */}
                     <div 
-                        className={`absolute w-[340px] h-[340px] lg:w-[420px] lg:h-[420px] rounded-full blur-[80px] transition-colors duration-1000 pointer-events-none ${
+                        className={`absolute z-10 rounded-full blur-[80px] transition-colors duration-1000 pointer-events-none ${
                             activeTab === 0 ? 'bg-blue-500' : activeTab === 1 ? 'bg-emerald-500' : 'bg-purple-500'
                         }`}
                         style={{
                             animation: "orbPulse 6s ease-in-out infinite",
+                            width: "420px",
+                            height: "420px",
                             top: "50%",
                             left: "50%",
                             transform: "translate(-50%, -50%)",
                         }}
                     />
+
+                    {/* Phone — renders above the orb */}
                     <div 
-                        className="relative w-[280px] h-[580px] lg:w-[320px] lg:h-[660px]"
+                        className="relative z-20 w-[280px] h-[580px] lg:w-[320px] lg:h-[660px]"
                         style={{ 
                             transform: "translateZ(80px) rotateY(-15deg) rotateX(10deg) rotateZ(2deg)",
                             transformStyle: "preserve-3d"
