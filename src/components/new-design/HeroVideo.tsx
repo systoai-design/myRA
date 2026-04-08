@@ -20,7 +20,7 @@ const HeroVideo = () => {
 
                     {/* Play Button Overlay */}
                     <div className="absolute inset-0 flex flex-col items-center justify-center z-10">
-                        <div className="w-20 h-20 rounded-full bg-white/10 backdrop-blur-md border border-white/20 flex items-center justify-center group-hover:bg-white/20 group-hover:scale-110 transition-all duration-500 shadow-2xl">
+                        <div className="w-20 h-20 rounded-full bg-white/10 backdrop-blur-md flex items-center justify-center group-hover:bg-white/20 group-hover:scale-110 transition-all duration-500 shadow-2xl gradient-ring">
                             <Play className="w-8 h-8 text-white ml-1" fill="white" />
                         </div>
                         <p className="text-white/60 text-sm font-sans font-medium mt-6 tracking-wide">Watch the myra story</p>

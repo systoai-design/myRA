@@ -108,6 +108,38 @@
     display: none;
   }
 
+  /* ═══ ANIMATED GRADIENT TEXT ═══ */
+  .gradient-text {
+    background: linear-gradient(135deg, #60a5fa, #a78bfa, #f472b6, #60a5fa);
+    background-size: 300% 300%;
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    animation: gradientShift 6s ease infinite;
+  }
+
+  /* ═══ GRADIENT BORDER RING ═══ */
+  .gradient-ring {
+    position: relative;
+  }
+  .gradient-ring::before {
+    content: '';
+    position: absolute;
+    inset: -2px;
+    border-radius: inherit;
+    background: linear-gradient(135deg, #60a5fa, #a78bfa, #f472b6, #60a5fa);
+    background-size: 300% 300%;
+    animation: gradientShift 6s ease infinite;
+    z-index: -1;
+    opacity: 0.8;
+  }
+
+  @keyframes gradientShift {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
+  }
+
   /* ═══ GLASSMORPHISM — Theme-Aware ═══ */
 
   /* Light glass: Apple-style frosted white */

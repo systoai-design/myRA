@@ -58,13 +58,17 @@ const NewHero = () => {
 
     return (
         <section className="relative min-h-[95vh] flex flex-col items-center justify-center overflow-hidden bg-black pt-20">
-            {/* Background Image */}
+            {/* Background Video */}
             <div className="absolute inset-0 z-0">
-                <img 
-                    src="/hero-bg.png" 
-                    alt="" 
+                <video 
+                    autoPlay 
+                    loop 
+                    muted 
+                    playsInline
                     className="absolute inset-0 w-full h-full object-cover opacity-60"
-                />
+                >
+                    <source src="/hero-bg.mp4" type="video/mp4" />
+                </video>
                 
                 {/* Black fade — top */}
                 <div className="absolute inset-x-0 top-0 h-[30%] bg-gradient-to-b from-black via-black/80 to-transparent" />
@@ -110,7 +114,7 @@ const NewHero = () => {
                     initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.4 }}
                     className="mb-16 inline-flex rounded-full transition-all hover:scale-[1.02] active:scale-[0.98] cursor-pointer"
                 >
-                    <Link to="/offer" target="_blank" className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-white px-8 text-sm font-semibold text-black transition-all hover:opacity-90 shadow-lg">
+                    <Link to="/offer" target="_blank" className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-white px-8 text-sm font-semibold text-black transition-all hover:opacity-90 shadow-lg gradient-ring">
                         GET STARTED
                         <ArrowRight className="w-4 h-4 opacity-50 transition-transform group-hover:translate-x-1" />
                     </Link>

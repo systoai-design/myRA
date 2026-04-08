@@ -18,7 +18,7 @@ const NewFeatures = () => {
                     className="text-center mb-20"
                 >
                     <h2 className="text-5xl md:text-6xl font-serif text-foreground mb-6">
-                        <span className="italic font-light">Simplify</span> your future
+                        <span className="gradient-text">Simplify</span> your future
                     </h2>
                     <p className="max-w-2xl mx-auto text-lg text-muted-foreground font-sans font-light">
                         Connect all your accounts to see your retirement income plan in one<br className="hidden sm:block" />
@@ -27,7 +27,13 @@ const NewFeatures = () => {
                 </motion.div>
 
                 {/* Origin-style 3-Column Image Bento Grid */}
-                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 auto-rows-[600px]">
+                <div className="relative">
+                    {/* Gradient orbs behind the cards */}
+                    <div className="absolute -top-20 left-[10%] w-[400px] h-[400px] bg-blue-500/20 rounded-full blur-[120px] pointer-events-none" />
+                    <div className="absolute top-[30%] left-[45%] w-[350px] h-[350px] bg-purple-500/20 rounded-full blur-[120px] pointer-events-none" />
+                    <div className="absolute -bottom-10 right-[10%] w-[400px] h-[400px] bg-pink-500/15 rounded-full blur-[120px] pointer-events-none" />
+
+                <div className="relative z-10 grid grid-cols-1 lg:grid-cols-3 gap-6 auto-rows-[600px]">
                     
                     {/* Card 1: Calendar / Spend */}
                     <motion.div 
@@ -35,10 +41,10 @@ const NewFeatures = () => {
                         whileInView={{ opacity: 1, y: 0 }}
                         viewport={{ once: true }}
                         transition={{ duration: 0.8, delay: 0.1 }}
-                        className="glass-premium rounded-[2rem] overflow-hidden relative group flex flex-col"
+                        className="rounded-[2rem] overflow-hidden relative group flex flex-col bg-white/[0.04] dark:bg-white/[0.03] backdrop-blur-xl border border-white/10"
                     >
-                        {/* Pure Glass Background */}
-                        <div className="absolute inset-0 bg-gradient-to-br from-white/[0.03] to-transparent z-0" />
+                        {/* Subtle inner glass sheen */}
+                        <div className="absolute inset-0 bg-gradient-to-br from-white/[0.05] to-transparent z-0" />
                         
                         {/* Inner Floating UI Panel */}
                         <div className="relative z-10 mt-8 mx-6 flex-1 bg-black/40 backdrop-blur-2xl border border-white/10 rounded-3xl p-5 flex flex-col shadow-2xl overflow-hidden group-hover:-translate-y-2 transition-transform duration-500">
@@ -86,10 +92,10 @@ const NewFeatures = () => {
                         whileInView={{ opacity: 1, y: 0 }}
                         viewport={{ once: true }}
                         transition={{ duration: 0.8, delay: 0.2 }}
-                        className="glass-premium rounded-[2rem] overflow-hidden relative group flex flex-col"
+                        className="rounded-[2rem] overflow-hidden relative group flex flex-col bg-white/[0.04] dark:bg-white/[0.03] backdrop-blur-xl border border-white/10"
                     >
-                        {/* Pure Glass Background */}
-                        <div className="absolute inset-0 bg-gradient-to-br from-white/[0.02] to-transparent z-0" />
+                        {/* Subtle inner glass sheen */}
+                        <div className="absolute inset-0 bg-gradient-to-br from-white/[0.04] to-transparent z-0" />
                         
                         <div className="relative z-10 mt-8 mx-6 flex-1 bg-[#1a1512]/40 backdrop-blur-2xl border border-white/10 rounded-3xl p-6 flex flex-col shadow-2xl group-hover:-translate-y-2 transition-transform duration-500">
                             
@@ -175,10 +181,10 @@ const NewFeatures = () => {
                         whileInView={{ opacity: 1, y: 0 }}
                         viewport={{ once: true }}
                         transition={{ duration: 0.8, delay: 0.3 }}
-                        className="glass-premium rounded-[2rem] overflow-hidden relative group flex flex-col"
+                        className="rounded-[2rem] overflow-hidden relative group flex flex-col bg-white/[0.04] dark:bg-white/[0.03] backdrop-blur-xl border border-white/10"
                     >
-                        {/* Pure Glass Background */}
-                        <div className="absolute inset-0 bg-gradient-to-br from-white/[0.04] to-transparent z-0" />
+                        {/* Subtle inner glass sheen */}
+                        <div className="absolute inset-0 bg-gradient-to-br from-white/[0.05] to-transparent z-0" />
                         
                         <div className="relative z-10 mt-8 mx-6 flex-1 bg-[#0b141d]/40 backdrop-blur-2xl border border-white/10 rounded-3xl p-5 flex flex-col shadow-2xl overflow-hidden group-hover:-translate-y-2 transition-transform duration-500">
                             
@@ -300,6 +306,7 @@ const NewFeatures = () => {
                         </div>
                     </motion.div>
 
+                </div>
                 </div>
             </div>
         </section>

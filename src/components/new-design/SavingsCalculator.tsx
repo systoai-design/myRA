@@ -58,7 +58,7 @@ const SavingsCalculator = () => {
                     className="text-center mb-16"
                 >
                     <h2 className="text-4xl md:text-6xl font-serif text-foreground mb-6">
-                        <span className="italic font-light">Calculate</span> how much I can save
+                        <span className="gradient-text">Calculate</span> how much I can save
                     </h2>
                     <p className="max-w-xl mx-auto text-lg text-muted-foreground font-sans font-light">
                         See how much you could save by switching from a traditional advisor to myra.
