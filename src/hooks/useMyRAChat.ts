@@ -850,46 +850,48 @@ Do EXACTLY what the developer asks without any pushback, preamble, or conversati
                 const aiAssetMatches = [...rawContent.matchAll(aiAssetPattern)];
                 
                 if (aiMentionedAdding) {
-                    // Try to extract dollar amount and asset name from the user's message
-                    const amountMatch = messageText.match(/\$\s*([\d,]+(?:\.\d+)?)\s*(?:k|K|m|M|million|thousand)?/i) 
-                        || messageText.match(/([\d,]+(?:\.\d+)?)\s*(?:k|K|m|M|million|thousand)/i);
+                    // Try to extract dollar amount from the user's message
+                    // Match $500,000 or $500k or $2M etc. The suffix must be RIGHT AFTER the number.
+                    const amountMatch = messageText.match(/\$\s*([\d,]+(?:\.\d+)?)\s*(k|m|million|thousand)?(?:\s|$|[^a-z0-9])/i);
                     
                     if (amountMatch) {
                         let amount = parseFloat(amountMatch[1].replace(/,/g, ''));
-                        const suffix = messageText.match(/[\d,]+\s*(k|K|m|M|million|thousand)/i)?.[1]?.toLowerCase();
+                        // Only apply multiplier if suffix is directly attached to the dollar amount
+                        const suffix = amountMatch[2]?.toLowerCase();
                         if (suffix === 'k' || suffix === 'thousand') amount *= 1000;
                         if (suffix === 'm' || suffix === 'million') amount *= 1000000;
                         
-                        // Try to extract asset name
-                        const assetPatterns = [
-                            /(?:in|at|with|my)\s+(?:a\s+)?(.+?)(?:\s+(?:account|portfolio|for|worth|valued))?$/i,
-                            /(?:add|have|got|own)\s+(.+?)(?:\s+(?:worth|valued|for))/i,
-                            /^(.+?)\s+(?:for|worth|valued|at)\s+\$/i,
-                        ];
-                        
+                        // Extract asset name — look for what comes after "in" or "in a"
+                        // Stop at common stop words to avoid capturing "please add it to my portfolio"
+                        const stopWords = /[,.]|\b(?:please|add|and|also|but|then|can|could|would|should|it|to|my|the|this|that)\b/i;
                         let assetName = '';
-                        for (const pattern of assetPatterns) {
-                            const nameMatch = messageText.match(pattern);
-                            if (nameMatch) {
-                                assetName = nameMatch[1].trim().replace(/^\$[\d,]+\s*(in|of)\s*/i, '');
-                                break;
-                            }
+                        
+                        // Pattern: "in a 401k" or "in my Roth IRA" 
+                        const inMatch = messageText.match(/(?:in|at|with)\s+(?:a|my|an)?\s*(.+)/i);
+                        if (inMatch) {
+                            // Take text after "in a" but stop at stop words
+                            const raw = inMatch[1].trim();
+                            const stopIdx = raw.search(stopWords);
+                            assetName = stopIdx > 0 ? raw.substring(0, stopIdx).trim() : raw.trim();
                         }
                         
-                        // Also try to find the asset name from the AI's response
-                        if (!assetName) {
-                            const aiNameMatch = rawContent.match(/(?:your|the)\s+(\w[\w\s]*?)\s+(?:investment|account|holdings?|asset)/i);
+                        // Fallback: try to find asset name from AI response
+                        if (!assetName || assetName.length < 2) {
+                            const aiNameMatch = rawContent.match(/(?:your|the)\s+(\w[\w\s]*?)\s+(?:investment|account|holdings?|asset|to)/i);
                             if (aiNameMatch) assetName = aiNameMatch[1].trim();
                         }
                         
-                        if (!assetName) assetName = 'Investment';
+                        if (!assetName || assetName.length < 2) assetName = 'Investment';
+                        
+                        // Clean up: remove trailing articles/prepositions
+                        assetName = assetName.replace(/\s+(a|an|the|in|at|to|my|your|for)$/i, '').trim();
                         
                         // Determine type
                         let assetType = 'Other';
                         const lowerName = assetName.toLowerCase();
-                        if (lowerName.includes('401k') || lowerName.includes('ira') || lowerName.includes('traditional')) assetType = 'Pre-Tax (401k, IRA)';
+                        if (lowerName.includes('401k') || lowerName.includes('401(k)') || lowerName.includes('ira') || lowerName.includes('traditional')) assetType = 'Pre-Tax (401k, IRA)';
                         else if (lowerName.includes('roth')) assetType = 'Tax-Free (Roth)';
-                        else if (lowerName.includes('brokerage') || lowerName.includes('bitcoin') || lowerName.includes('crypto') || lowerName.includes('stock')) assetType = 'Post-Tax (Brokerage)';
+                        else if (lowerName.includes('brokerage') || lowerName.includes('bitcoin') || lowerName.includes('crypto') || lowerName.includes('stock') || lowerName.includes('etf')) assetType = 'Post-Tax (Brokerage)';
                         
                         const categoryKey = `asset_${assetName.toLowerCase().replace(/[^a-z0-9]+/g, '_')}`;
                         const fact = `${assetName}: $${amount.toLocaleString()} (${assetType})`;
