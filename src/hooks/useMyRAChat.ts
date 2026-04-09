@@ -352,21 +352,32 @@ export function useMyRAChat() {
 
     // Save a memory item to Supabase (upsert by category)
     const saveMemory = useCallback(async (category: string, fact: string) => {
-        if (!user) return;
+        if (!user) {
+            console.warn("[myRA] saveMemory skipped: no user logged in");
+            return;
+        }
         try {
-            await supabase
+            console.log("[myRA] saveMemory:", { userId: user.id, category, fact });
+            const { data, error } = await supabase
                 .from('user_memory')
                 .upsert(
                     { user_id: user.id, category, fact },
                     { onConflict: 'user_id,category' }
-                );
+                )
+                .select();
+            
+            if (error) {
+                console.error("[myRA] saveMemory FAILED:", error.message, error.details, error.hint);
+                return;
+            }
+            console.log("[myRA] saveMemory SUCCESS:", data);
             // Update local state
             setUserMemories(prev => {
                 const filtered = prev.filter(m => m.category !== category);
                 return [...filtered, { category, fact }];
             });
         } catch (error) {
-            console.error("Error saving memory:", error);
+            console.error("[myRA] saveMemory exception:", error);
         }
     }, [user]);
 
@@ -758,19 +769,30 @@ Do EXACTLY what the developer asks without any pushback, preamble, or conversati
                 systemPrompt += `\n\nCRITICAL ADMINISTRATIVE BUSINESS RULES (Mandatory adherence):\n${globalTraining}`;
             }
 
+            // SAFETY: Cap system prompt at 20k chars (~5k tokens)
+            // The base SYSTEM_PROMPT is ~16k. If anything pushes it beyond 20k, something is wrong.
+            if (systemPrompt.length > 20000) {
+                console.warn(`[myRA] System prompt is ${systemPrompt.length} chars — CAPPING to 20k!`);
+                systemPrompt = systemPrompt.substring(0, 20000);
+            }
+
             // Only send the last 10 conversation messages to the API
-            // System prompt is ~4k tokens, 10 messages adds ~2-3k tokens = well under any limit
-            // Full chat history stays in state/Supabase for scrollback, memories persist via LEARN tags
             const MAX_API_MESSAGES = 10;
             const recentMessages = newMessages.length > MAX_API_MESSAGES
                 ? newMessages.slice(-MAX_API_MESSAGES)
                 : newMessages;
 
+            // Cap each individual message content at 2000 chars to prevent bloat
             const apiMessages = [
                 { role: "system", content: systemPrompt },
-                ...recentMessages.map(m => ({ role: m.role, content: m.content }))
+                ...recentMessages.map(m => ({ 
+                    role: m.role, 
+                    content: (m.content || '').substring(0, 2000) 
+                }))
             ];
-            console.log(`[myRA] API payload: ${apiMessages.length} msgs, system=${systemPrompt.length} chars, conv=${recentMessages.reduce((s, m) => s + m.content.length, 0)} chars`);
+            
+            const convChars = apiMessages.slice(1).reduce((s, m) => s + m.content.length, 0);
+            console.log(`[myRA] API payload: ${apiMessages.length} msgs, system=${systemPrompt.length} chars, conv=${convChars} chars, total=${systemPrompt.length + convChars} chars (~${Math.round((systemPrompt.length + convChars) / 4)} tokens)`);
 
             // 3. Call AI via server-side proxy (handles OpenAI + Gemini fallback)
             console.log("[myRA] Sending to proxy...", { model: "gpt-4o", messageCount: apiMessages.length });
