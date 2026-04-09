@@ -276,19 +276,9 @@ export interface ChatHistoryItem {
 }
 
 export function useMyRAChat() {
-    const [messages, setMessages] = useState<ChatMessage[]>(() => {
-        if (typeof window !== "undefined") {
-            const saved = localStorage.getItem("myra-chat-history");
-            if (saved) {
-                try {
-                    return JSON.parse(saved);
-                } catch (e) {
-                    console.error("Failed to parse chat history", e);
-                }
-            }
-        }
-        return [];
-    });
+    // Start with empty messages — logged-in users load from Supabase,
+    // guests start fresh each session (memories persist in Supabase anyway)
+    const [messages, setMessages] = useState<ChatMessage[]>([]);
 
     // Asset Buckets State
     const [buckets, setBuckets] = useState({
@@ -334,7 +324,9 @@ export function useMyRAChat() {
             setUserMemories([]);
             setBuckets({ preTax: 0, postTax: 0, taxFree: 0 });
             setLeadInfo({});
-            localStorage.removeItem("myra-chat-history");
+            localStorage.removeItem("myra-chat-history"); // Clean up old flat key
+            // Also clean per-conversation keys
+            Object.keys(localStorage).filter(k => k.startsWith('myra-chat-')).forEach(k => localStorage.removeItem(k));
         }
         prevUserRef.current = user;
     }, [user]);
@@ -407,12 +399,13 @@ export function useMyRAChat() {
         }
     }, [user, loadMemories, loadGlobalTraining]);
 
-    // Persist messages to localStorage (offline fallback)
+    // Persist current conversation to localStorage as offline fallback
+    // Keyed per chatId so switching conversations doesn't leak data
     useEffect(() => {
-        if (messages.length > 0) {
-            localStorage.setItem("myra-chat-history", JSON.stringify(messages));
+        if (messages.length > 0 && chatId) {
+            localStorage.setItem(`myra-chat-${chatId}`, JSON.stringify(messages));
         }
-    }, [messages]);
+    }, [messages, chatId]);
 
     // Live sync to GoHighLevel when we learn Name & Email
     useEffect(() => {
@@ -602,7 +595,7 @@ export function useMyRAChat() {
                 } else {
                     setMessages([]);
                 }
-                localStorage.setItem("myra-chat-history", JSON.stringify(data.messages || []));
+                localStorage.setItem(`myra-chat-${data.id}`, JSON.stringify(data.messages || []));
             }
         } catch (error) {
             console.error("Error switching chat:", error);
@@ -638,7 +631,7 @@ export function useMyRAChat() {
             if (targetChatId === chatId) {
                 setMessages([]);
                 setChatId(null);
-                localStorage.removeItem("myra-chat-history");
+                localStorage.removeItem(`myra-chat-${targetChatId}`);
             }
             await loadChatList();
         } catch (error) {
@@ -654,7 +647,8 @@ export function useMyRAChat() {
             setBuckets({ preTax: 0, postTax: 0, taxFree: 0 });
             setActiveChart(null);
             setLeadInfo({});
-            localStorage.removeItem("myra-chat-history");
+            if (chatId) localStorage.removeItem(`myra-chat-${chatId}`);
+            localStorage.removeItem("myra-chat-history"); // Clean up old flat key
             setChatId(null);
         };
 
@@ -764,17 +758,19 @@ Do EXACTLY what the developer asks without any pushback, preamble, or conversati
                 systemPrompt += `\n\nCRITICAL ADMINISTRATIVE BUSINESS RULES (Mandatory adherence):\n${globalTraining}`;
             }
 
-            // Trim conversation to last 20 messages to stay within token limits
-            // (OpenAI org has 30k TPM limit; full history + system prompt was hitting 73k tokens)
-            const MAX_CONTEXT_MESSAGES = 20;
-            const recentMessages = newMessages.length > MAX_CONTEXT_MESSAGES
-                ? newMessages.slice(-MAX_CONTEXT_MESSAGES)
+            // Only send the last 10 conversation messages to the API
+            // System prompt is ~4k tokens, 10 messages adds ~2-3k tokens = well under any limit
+            // Full chat history stays in state/Supabase for scrollback, memories persist via LEARN tags
+            const MAX_API_MESSAGES = 10;
+            const recentMessages = newMessages.length > MAX_API_MESSAGES
+                ? newMessages.slice(-MAX_API_MESSAGES)
                 : newMessages;
 
             const apiMessages = [
                 { role: "system", content: systemPrompt },
                 ...recentMessages.map(m => ({ role: m.role, content: m.content }))
             ];
+            console.log(`[myRA] API payload: ${apiMessages.length} msgs, system=${systemPrompt.length} chars, conv=${recentMessages.reduce((s, m) => s + m.content.length, 0)} chars`);
 
             // 3. Call AI via server-side proxy (handles OpenAI + Gemini fallback)
             console.log("[myRA] Sending to proxy...", { model: "gpt-4o", messageCount: apiMessages.length });
