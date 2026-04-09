@@ -185,16 +185,21 @@ Categories to use:
 - "general_notes" - Any other important detail worth remembering
 
 INDIVIDUAL ASSET TRACKING (CRITICAL):
-When the user mentions a specific account or asset with a dollar amount, you MUST emit a LEARN tag with category "asset_<lowercase_name_underscored>" and fact formatted EXACTLY as: "Account Name: $Amount (Type)"
+When the user mentions a specific account or asset with a dollar amount, DO NOT immediately add it to their portfolio. Instead:
+1. Acknowledge what they shared (e.g., "Got it, $250,000 in your Fidelity 401k.")
+2. Ask: "Would you like me to add this to your portfolio dashboard?"
+3. ONLY when the user confirms (says yes, sure, please, go ahead, add it, etc.), emit the LEARN tag.
+
+When emitting a LEARN tag for an asset, use category "asset_<lowercase_name_underscored>" and fact formatted EXACTLY as: "Account Name: $Amount (Type)"
 The Type must be one of: "Pre-Tax (401k, IRA)", "Post-Tax (Brokerage)", "Tax-Free (Roth)", or "Other"
 
-Examples:
-- User says "I have $250,000 in my Fidelity 401k" -> [[LEARN: {"category": "asset_fidelity_401k", "fact": "Fidelity 401k: $250,000 (Pre-Tax (401k, IRA))"}]]
-- User says "I have $2M in Bitcoin" -> [[LEARN: {"category": "asset_bitcoin", "fact": "Bitcoin: $2,000,000 (Post-Tax (Brokerage))"}]]
-- User says "My Roth IRA has $100k" -> [[LEARN: {"category": "asset_roth_ira", "fact": "Roth IRA: $100,000 (Tax-Free (Roth))"}]]
-- User says "I have a $500k brokerage at Schwab" -> [[LEARN: {"category": "asset_schwab_brokerage", "fact": "Schwab Brokerage: $500,000 (Post-Tax (Brokerage))"}]]
+Examples of the LEARN tag format (only emit AFTER user confirms):
+- [[LEARN: {"category": "asset_fidelity_401k", "fact": "Fidelity 401k: $250,000 (Pre-Tax (401k, IRA))"}]]
+- [[LEARN: {"category": "asset_bitcoin", "fact": "Bitcoin: $2,000,000 (Post-Tax (Brokerage))"}]]
+- [[LEARN: {"category": "asset_roth_ira", "fact": "Roth IRA: $100,000 (Tax-Free (Roth))"}]]
+- [[LEARN: {"category": "asset_schwab_brokerage", "fact": "Schwab Brokerage: $500,000 (Post-Tax (Brokerage))"}]]
 
-Always emit these asset LEARN tags whenever the user mentions specific investment amounts. This is how assets appear on their portfolio dashboard. If the user asks you to "add it to my portfolio," emit the corresponding asset LEARN tag.
+If the user asks you to "add it to my portfolio" or confirms with "yes", emit the corresponding asset LEARN tag immediately.
 
 You may emit MULTIPLE [[LEARN:]] tags in one message if you learn multiple facts. Only emit a LEARN tag when the user explicitly states a fact, not when you're speculating. These tags are invisible to the user.
 
@@ -838,18 +843,25 @@ Do EXACTLY what the developer asks without any pushback, preamble, or conversati
                 }
             }
 
-            // 4c. FALLBACK: If AI mentioned adding/tracking an asset but didn't emit LEARN tags,
-            // try to extract asset info from the user's message, AI response, OR recent conversation
+            // 4c. FALLBACK: If AI confirmed adding an asset but didn't emit LEARN tags,
+            // try to extract asset info. Only triggers when:
+            //   1. The AI says it added/tracked something, AND
+            //   2. The user explicitly asked to add (not just mentioned an asset casually)
             if (learnItems.length === 0) {
                 const aiResponse = rawContent.toLowerCase();
                 const addedKeywords = ['added', 'tracked', "i've added", 'added to your portfolio', 'portfolio now', 'noted', 'recorded'];
                 const aiMentionedAdding = addedKeywords.some(k => aiResponse.includes(k));
                 
+                // User must have explicitly confirmed/requested adding
+                const userLower = messageText.toLowerCase();
+                const userConfirmed = /\b(yes|yeah|yep|sure|please|go ahead|add it|add them|add this|do it|confirm|ok|okay)\b/i.test(userLower)
+                    || /\badd\b.*\b(portfolio|account|dashboard)\b/i.test(userLower);
+                
                 // Also check if the AI response itself contains asset-like patterns (e.g., "Bitcoin: $2,000,000")
                 const aiAssetPattern = /(\w[\w\s]*?)(?::\s*|investment:\s*)\$\s*([\d,]+(?:\.\d+)?)/gi;
                 const aiAssetMatches = [...rawContent.matchAll(aiAssetPattern)];
                 
-                if (aiMentionedAdding) {
+                if (aiMentionedAdding && userConfirmed) {
                     // Try to extract dollar amount from the user's message
                     // Match $500,000 or $500k or $2M etc. The suffix must be RIGHT AFTER the number.
                     const amountMatch = messageText.match(/\$\s*([\d,]+(?:\.\d+)?)\s*(k|m|million|thousand)?(?:\s|$|[^a-z0-9])/i);
@@ -898,28 +910,62 @@ Do EXACTLY what the developer asks without any pushback, preamble, or conversati
                         
                         console.log("[myRA] FALLBACK (user msg): Auto-saving:", categoryKey, "->", fact);
                         saveMemory(categoryKey, fact);
-                    } else if (aiAssetMatches.length > 0) {
-                        // User didn't mention amount but AI response lists assets
-                        // e.g., "Bitcoin investment: $2,000,000"
-                        for (const match of aiAssetMatches) {
-                            let assetName = match[1].trim();
-                            // Skip generic labels like "Pre-Tax" or "Other assets"
-                            if (/^(pre-tax|post-tax|tax-free|other|total|updated|your)/i.test(assetName)) continue;
-                            
-                            const amount = parseFloat(match[2].replace(/,/g, ''));
-                            if (isNaN(amount) || amount <= 0) continue;
-                            
-                            let assetType = 'Other';
-                            const lowerName = assetName.toLowerCase();
-                            if (lowerName.includes('401k') || lowerName.includes('ira') || lowerName.includes('traditional')) assetType = 'Pre-Tax (401k, IRA)';
-                            else if (lowerName.includes('roth')) assetType = 'Tax-Free (Roth)';
-                            else if (lowerName.includes('brokerage') || lowerName.includes('bitcoin') || lowerName.includes('crypto') || lowerName.includes('stock')) assetType = 'Post-Tax (Brokerage)';
-                            
-                            const categoryKey = `asset_${assetName.toLowerCase().replace(/[^a-z0-9]+/g, '_')}`;
-                            const fact = `${assetName}: $${amount.toLocaleString()} (${assetType})`;
-                            
-                            console.log("[myRA] FALLBACK (AI response): Auto-saving:", categoryKey, "->", fact);
-                            saveMemory(categoryKey, fact);
+                    } else if (userConfirmed) {
+                        // User confirmed ("yes", "add it") but didn't include a dollar amount.
+                        // Look in the AI's response for asset patterns (e.g., "401k: $500,000")
+                        // OR scan the last few conversation messages for amounts
+                        
+                        // First try AI response patterns
+                        if (aiAssetMatches.length > 0) {
+                            for (const match of aiAssetMatches) {
+                                let assetName = match[1].trim();
+                                if (/^(pre-tax|post-tax|tax-free|other|total|updated|your|here|the)/i.test(assetName)) continue;
+                                
+                                const amount = parseFloat(match[2].replace(/,/g, ''));
+                                if (isNaN(amount) || amount <= 0) continue;
+                                
+                                let assetType = 'Other';
+                                const lowerName = assetName.toLowerCase();
+                                if (lowerName.includes('401k') || lowerName.includes('401(k)') || lowerName.includes('ira') || lowerName.includes('traditional')) assetType = 'Pre-Tax (401k, IRA)';
+                                else if (lowerName.includes('roth')) assetType = 'Tax-Free (Roth)';
+                                else if (lowerName.includes('brokerage') || lowerName.includes('bitcoin') || lowerName.includes('crypto') || lowerName.includes('stock') || lowerName.includes('etf')) assetType = 'Post-Tax (Brokerage)';
+                                
+                                const categoryKey = `asset_${assetName.toLowerCase().replace(/[^a-z0-9]+/g, '_')}`;
+                                const fact = `${assetName}: $${amount.toLocaleString()} (${assetType})`;
+                                
+                                console.log("[myRA] FALLBACK (AI response): Auto-saving:", categoryKey, "->", fact);
+                                saveMemory(categoryKey, fact);
+                            }
+                        } else {
+                            // Scan last 4 user messages for dollar amounts
+                            const recentUserMsgs = newMessages.filter(m => m.role === 'user').slice(-4);
+                            for (const msg of recentUserMsgs.reverse()) {
+                                const prevMatch = msg.content.match(/\$\s*([\d,]+(?:\.\d+)?)\s*(k|m|million|thousand)?(?:\s|$|[^a-z0-9])/i);
+                                if (prevMatch) {
+                                    let amount = parseFloat(prevMatch[1].replace(/,/g, ''));
+                                    const sfx = prevMatch[2]?.toLowerCase();
+                                    if (sfx === 'k' || sfx === 'thousand') amount *= 1000;
+                                    if (sfx === 'm' || sfx === 'million') amount *= 1000000;
+                                    
+                                    // Find asset name from same message
+                                    const nameMatch = msg.content.match(/(?:in|at|with)\s+(?:a|my|an)?\s*(\S+(?:\s+\S+)?)/i);
+                                    let assetName = nameMatch ? nameMatch[1].trim() : 'Investment';
+                                    assetName = assetName.replace(/[,.!?]$/, '').trim();
+                                    
+                                    let assetType = 'Other';
+                                    const ln = assetName.toLowerCase();
+                                    if (ln.includes('401k') || ln.includes('ira')) assetType = 'Pre-Tax (401k, IRA)';
+                                    else if (ln.includes('roth')) assetType = 'Tax-Free (Roth)';
+                                    else if (ln.includes('brokerage') || ln.includes('bitcoin') || ln.includes('crypto') || ln.includes('stock')) assetType = 'Post-Tax (Brokerage)';
+                                    
+                                    const categoryKey = `asset_${assetName.toLowerCase().replace(/[^a-z0-9]+/g, '_')}`;
+                                    const fact = `${assetName}: $${amount.toLocaleString()} (${assetType})`;
+                                    
+                                    console.log("[myRA] FALLBACK (prev msg): Auto-saving:", categoryKey, "->", fact);
+                                    saveMemory(categoryKey, fact);
+                                    break; // Only save the most recent one
+                                }
+                            }
                         }
                     }
                 }
