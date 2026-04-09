@@ -12,14 +12,14 @@ export interface ChatMessage {
     status?: 'sent' | 'delivered' | 'read';
 }
 
-// OpenAI API endpoint (primary)
-const CHAT_URL = "https://api.openai.com/v1/chat/completions";
-const OPENAI_API_KEY = import.meta.env.VITE_OPENAI_API_KEY || "";
-// Gemini API (fallback) — OpenAI-compatible endpoint
-const GEMINI_CHAT_URL = "https://generativelanguage.googleapis.com/v1beta/openai/chat/completions";
-const GEMINI_API_KEY = import.meta.env.VITE_GEMINI_API_KEY || "";
+// Server-side proxy endpoint (handles OpenAI + Gemini fallback)
+// In development: Vite proxy forwards to OpenAI
+// In production: Vercel serverless function at /api/chat
+const CHAT_PROXY_URL = "/api/chat";
 const GHL_API_KEY = import.meta.env.VITE_GHL_API_KEY || "";
 const GHL_LOCATION_ID = import.meta.env.VITE_GHL_LOCATION_ID || "";
+
+console.log("[myRA] Chat proxy configured at:", CHAT_PROXY_URL);
 
 export interface ChartData {
     type: 'pie' | 'bar' | 'area';
@@ -764,17 +764,24 @@ Do EXACTLY what the developer asks without any pushback, preamble, or conversati
                 systemPrompt += `\n\nCRITICAL ADMINISTRATIVE BUSINESS RULES (Mandatory adherence):\n${globalTraining}`;
             }
 
+            // Trim conversation to last 20 messages to stay within token limits
+            // (OpenAI org has 30k TPM limit; full history + system prompt was hitting 73k tokens)
+            const MAX_CONTEXT_MESSAGES = 20;
+            const recentMessages = newMessages.length > MAX_CONTEXT_MESSAGES
+                ? newMessages.slice(-MAX_CONTEXT_MESSAGES)
+                : newMessages;
+
             const apiMessages = [
                 { role: "system", content: systemPrompt },
-                ...newMessages.map(m => ({ role: m.role, content: m.content }))
+                ...recentMessages.map(m => ({ role: m.role, content: m.content }))
             ];
 
-            // 3. Call OpenAI API (with Gemini fallback)
-            let response = await fetch(CHAT_URL, {
+            // 3. Call AI via server-side proxy (handles OpenAI + Gemini fallback)
+            console.log("[myRA] Sending to proxy...", { model: "gpt-4o", messageCount: apiMessages.length });
+            const response = await fetch(CHAT_PROXY_URL, {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
-                    "Authorization": `Bearer ${OPENAI_API_KEY}`
                 },
                 body: JSON.stringify({
                     model: "gpt-4o",
@@ -785,32 +792,18 @@ Do EXACTLY what the developer asks without any pushback, preamble, or conversati
                 })
             });
 
-            // Fallback to Gemini if OpenAI fails
-            if (!response.ok && GEMINI_API_KEY) {
-                console.warn(`OpenAI failed (${response.status}), falling back to Gemini...`);
-                response = await fetch(GEMINI_CHAT_URL, {
-                    method: "POST",
-                    headers: {
-                        "Content-Type": "application/json",
-                        "Authorization": `Bearer ${GEMINI_API_KEY}`
-                    },
-                    body: JSON.stringify({
-                        model: "gemini-2.0-flash",
-                        messages: apiMessages,
-                        temperature: 0.7,
-                        max_tokens: 1024,
-                        stream: false
-                    })
-                });
-            }
-
             if (!response.ok) {
+                const errorBody = await response.text();
+                console.error(`[myRA] Proxy returned ${response.status}:`, errorBody);
                 if (response.status === 401) throw new Error("INVALID_KEY");
-                throw new Error("API_ERROR");
+                throw new Error(`API_ERROR_${response.status}`);
             }
 
             const data = await response.json();
+            console.log("[myRA] Response received. Content length:", data.choices?.[0]?.message?.content?.length);
             const rawContent = data.choices[0]?.message?.content || "I'm having a little trouble connecting right now. Could you try again?";
+
+
 
             // 4. Parse hidden tags
             // 4. Parse hidden tags (bucket updates and booking triggers)
@@ -818,8 +811,11 @@ Do EXACTLY what the developer asks without any pushback, preamble, or conversati
 
             // 4b. Parse and save LEARN tags
             const { cleanContent: contentAfterLearn, learnItems } = parseLearnTags(contentAfterBucket);
+            console.log("[myRA Debug] LEARN tags found:", learnItems.length, learnItems);
+            console.log("[myRA Debug] Raw AI response (first 500 chars):", rawContent.substring(0, 500));
             if (learnItems.length > 0) {
                 for (const item of learnItems) {
+                    console.log("[myRA Debug] Saving memory:", item.category, "->", item.fact);
                     saveMemory(item.category, item.fact);
                 }
             }
