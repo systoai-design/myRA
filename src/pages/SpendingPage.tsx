@@ -13,6 +13,7 @@ import {
     ArrowDownRight,
     CreditCard,
     Wallet,
+    AlertCircle,
 } from "lucide-react";
 
 // ═══════════════════════════════════════════
@@ -130,6 +131,52 @@ export default function SpendingPage() {
         fetchTransactions();
     }, [user?.id, currentMonth]);
 
+    // ═══════════ Demo data ═══════════
+    const isDemo = transactions.length === 0 && !error;
+
+    const demoData = useMemo(() => {
+        const now = new Date();
+        const y = currentMonth.year;
+        const m = currentMonth.month;
+        const pad = (n: number) => String(n).padStart(2, "0");
+        const mo = pad(m + 1);
+
+        const demoTx: Transaction[] = [
+            { id: "d1", name: "Whole Foods", merchant_name: "Whole Foods", amount: 87.32, date: `${y}-${mo}-02`, category: "FOOD_AND_DRINK", category_detailed: "", pending: false, institution_name: "Chase", logo_url: null, payment_channel: "in store" },
+            { id: "d2", name: "Shell Gas", merchant_name: "Shell", amount: 52.10, date: `${y}-${mo}-03`, category: "TRANSPORTATION", category_detailed: "", pending: false, institution_name: "Chase", logo_url: null, payment_channel: "in store" },
+            { id: "d3", name: "Amazon", merchant_name: "Amazon", amount: 34.99, date: `${y}-${mo}-04`, category: "SHOPPING", category_detailed: "", pending: false, institution_name: "Chase", logo_url: null, payment_channel: "online" },
+            { id: "d4", name: "Netflix", merchant_name: "Netflix", amount: 15.99, date: `${y}-${mo}-05`, category: "ENTERTAINMENT", category_detailed: "", pending: false, institution_name: "Chase", logo_url: null, payment_channel: "online" },
+            { id: "d5", name: "Uber Eats", merchant_name: "Uber Eats", amount: 28.50, date: `${y}-${mo}-06`, category: "FOOD_AND_DRINK", category_detailed: "", pending: false, institution_name: "Chase", logo_url: null, payment_channel: "online" },
+            { id: "d6", name: "Target", merchant_name: "Target", amount: 126.43, date: `${y}-${mo}-08`, category: "GENERAL_MERCHANDISE", category_detailed: "", pending: false, institution_name: "Chase", logo_url: null, payment_channel: "in store" },
+            { id: "d7", name: "Starbucks", merchant_name: "Starbucks", amount: 6.75, date: `${y}-${mo}-09`, category: "FOOD_AND_DRINK", category_detailed: "", pending: false, institution_name: "Chase", logo_url: null, payment_channel: "in store" },
+            { id: "d8", name: "Con Edison", merchant_name: "Con Edison", amount: 142.00, date: `${y}-${mo}-10`, category: "RENT_AND_UTILITIES", category_detailed: "", pending: false, institution_name: "Chase", logo_url: null, payment_channel: "online" },
+            { id: "d9", name: "Spotify", merchant_name: "Spotify", amount: 9.99, date: `${y}-${mo}-12`, category: "ENTERTAINMENT", category_detailed: "", pending: false, institution_name: "Chase", logo_url: null, payment_channel: "online" },
+            { id: "d10", name: "Trader Joe's", merchant_name: "Trader Joe's", amount: 64.21, date: `${y}-${mo}-14`, category: "FOOD_AND_DRINK", category_detailed: "", pending: false, institution_name: "Chase", logo_url: null, payment_channel: "in store" },
+            { id: "d11", name: "AT&T", merchant_name: "AT&T", amount: 85.00, date: `${y}-${mo}-15`, category: "RENT_AND_UTILITIES", category_detailed: "", pending: false, institution_name: "Chase", logo_url: null, payment_channel: "online" },
+            { id: "d12", name: "CVS Pharmacy", merchant_name: "CVS", amount: 22.49, date: `${y}-${mo}-17`, category: "MEDICAL", category_detailed: "", pending: false, institution_name: "Chase", logo_url: null, payment_channel: "in store" },
+            { id: "d13", name: "Chevron", merchant_name: "Chevron", amount: 48.30, date: `${y}-${mo}-19`, category: "TRANSPORTATION", category_detailed: "", pending: false, institution_name: "Chase", logo_url: null, payment_channel: "in store" },
+            { id: "d14", name: "Chipotle", merchant_name: "Chipotle", amount: 14.25, date: `${y}-${mo}-20`, category: "FOOD_AND_DRINK", category_detailed: "", pending: false, institution_name: "Chase", logo_url: null, payment_channel: "in store" },
+            { id: "d15", name: "Home Depot", merchant_name: "Home Depot", amount: 189.99, date: `${y}-${mo}-22`, category: "GENERAL_MERCHANDISE", category_detailed: "", pending: false, institution_name: "Chase", logo_url: null, payment_channel: "in store" },
+        ];
+
+        const demoCats: Record<string, CategorySummary> = {};
+        const demoDaily: Record<string, number> = {};
+        let demoTotal = 0;
+        for (const tx of demoTx) {
+            demoTotal += tx.amount;
+            if (!demoCats[tx.category]) demoCats[tx.category] = { total: 0, count: 0 };
+            demoCats[tx.category].total += tx.amount;
+            demoCats[tx.category].count += 1;
+            demoDaily[tx.date] = (demoDaily[tx.date] || 0) + tx.amount;
+        }
+        return { transactions: demoTx, categories: demoCats, dailySpending: demoDaily, totalSpending: Math.round(demoTotal * 100) / 100 };
+    }, [currentMonth]);
+
+    const displayTx = isDemo ? demoData.transactions : transactions;
+    const displayCats = isDemo ? demoData.categories : categories;
+    const displayDaily = isDemo ? demoData.dailySpending : dailySpending;
+    const displayTotal = isDemo ? demoData.totalSpending : totalSpending;
+
     // ═══════════ Calendar grid ═══════════
     const calendarDays = useMemo(() => {
         const firstDay = new Date(currentMonth.year, currentMonth.month, 1);
@@ -150,32 +197,32 @@ export default function SpendingPage() {
             days.push({
                 date: d,
                 key: dateStr,
-                amount: dailySpending[dateStr] || 0,
+                amount: displayDaily[dateStr] || 0,
                 isToday: today.getDate() === d && today.getMonth() === currentMonth.month && today.getFullYear() === currentMonth.year,
                 isPad: false,
             });
         }
         return days;
-    }, [currentMonth, dailySpending]);
+    }, [currentMonth, displayDaily]);
 
     // Max daily spend for heat-map intensity
     const maxDailySpend = useMemo(() => {
-        return Math.max(1, ...Object.values(dailySpending));
-    }, [dailySpending]);
+        return Math.max(1, ...Object.values(displayDaily));
+    }, [displayDaily]);
 
     // Sorted categories
     const sortedCategories = useMemo(() => {
-        return Object.entries(categories)
+        return Object.entries(displayCats)
             .sort(([, a], [, b]) => b.total - a.total);
-    }, [categories]);
+    }, [displayCats]);
 
-    // Recent transactions (last 10)
+    // Recent transactions (last 15)
     const recentTransactions = useMemo(() => {
-        return [...transactions]
+        return [...displayTx]
             .filter(tx => !tx.pending)
             .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
             .slice(0, 15);
-    }, [transactions]);
+    }, [displayTx]);
 
     const goToPrevMonth = () => {
         setCurrentMonth(prev => {
@@ -239,14 +286,19 @@ export default function SpendingPage() {
                     <p className="font-semibold">Failed to load transactions</p>
                     <p className="text-sm text-muted-foreground mt-1">{error}</p>
                 </div>
-            ) : transactions.length === 0 ? (
-                <div className="text-center py-32">
-                    <Wallet className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
-                    <h3 className="text-lg font-semibold text-foreground mb-2">No transactions yet</h3>
-                    <p className="text-sm text-muted-foreground">Connect a bank account in your Portfolio to see spending data.</p>
-                </div>
             ) : (
                 <>
+                    {/* Demo Banner */}
+                    {isDemo && (
+                        <div className="bg-primary/5 border border-primary/20 rounded-2xl px-6 py-4 flex items-center gap-3">
+                            <AlertCircle className="w-5 h-5 text-primary shrink-0" />
+                            <div className="flex-1">
+                                <p className="text-sm font-semibold text-foreground">Showing sample data</p>
+                                <p className="text-xs text-muted-foreground">Connect a bank account in your <a href="/app/portfolio" className="text-primary underline underline-offset-2 hover:opacity-80">Portfolio</a> to see your real spending.</p>
+                            </div>
+                        </div>
+                    )}
+
                     {/* ═══════════ STAT CARDS ═══════════ */}
                     <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                         {/* Total Spent */}
@@ -256,7 +308,7 @@ export default function SpendingPage() {
                             </div>
                             <div>
                                 <p className="text-xs font-bold uppercase tracking-widest text-muted-foreground">Spent this month</p>
-                                <p className="text-2xl font-bold text-foreground">${totalSpending.toLocaleString("en-US", { minimumFractionDigits: 2 })}</p>
+                                <p className="text-2xl font-bold text-foreground">${displayTotal.toLocaleString("en-US", { minimumFractionDigits: 2 })}</p>
                             </div>
                         </div>
                         {/* Transactions */}
@@ -266,7 +318,7 @@ export default function SpendingPage() {
                             </div>
                             <div>
                                 <p className="text-xs font-bold uppercase tracking-widest text-muted-foreground">Transactions</p>
-                                <p className="text-2xl font-bold text-foreground">{transactions.filter(t => t.amount > 0 && !t.pending).length}</p>
+                                <p className="text-2xl font-bold text-foreground">{displayTx.filter(t => t.amount > 0 && !t.pending).length}</p>
                             </div>
                         </div>
                         {/* Categories */}
@@ -276,7 +328,7 @@ export default function SpendingPage() {
                             </div>
                             <div>
                                 <p className="text-xs font-bold uppercase tracking-widest text-muted-foreground">Categories</p>
-                                <p className="text-2xl font-bold text-foreground">{Object.keys(categories).length}</p>
+                                <p className="text-2xl font-bold text-foreground">{Object.keys(displayCats).length}</p>
                             </div>
                         </div>
                     </div>
@@ -357,7 +409,7 @@ export default function SpendingPage() {
                             <div className="space-y-4">
                                 {sortedCategories.map(([cat, data]) => {
                                     const conf = getCategoryConfig(cat);
-                                    const pct = totalSpending > 0 ? (data.total / totalSpending) * 100 : 0;
+                                    const pct = displayTotal > 0 ? (data.total / displayTotal) * 100 : 0;
                                     return (
                                         <div key={cat} className="space-y-2">
                                             <div className="flex items-center justify-between">

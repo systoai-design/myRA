@@ -188,9 +188,30 @@ export default function SubscriptionsPage() {
         });
     };
 
+    // ═══════════ Demo data for empty state ═══════════
+
+    const DEMO_SUBS: DetectedSubscription[] = useMemo(() => {
+        const now = new Date();
+        const y = now.getFullYear();
+        const m = now.getMonth();
+        return [
+            { merchant: "Netflix", amount: 15.99, frequency: "monthly", lastCharge: `${y}-${String(m + 1).padStart(2, "0")}-03`, nextEstimate: `${y}-${String(m + 2 > 12 ? 1 : m + 2).padStart(2, "0")}-03`, occurrences: 6, category: "ENTERTAINMENT", logo_url: null },
+            { merchant: "Spotify", amount: 9.99, frequency: "monthly", lastCharge: `${y}-${String(m + 1).padStart(2, "0")}-12`, nextEstimate: `${y}-${String(m + 2 > 12 ? 1 : m + 2).padStart(2, "0")}-12`, occurrences: 8, category: "ENTERTAINMENT", logo_url: null },
+            { merchant: "iCloud Storage", amount: 2.99, frequency: "monthly", lastCharge: `${y}-${String(m + 1).padStart(2, "0")}-01`, nextEstimate: `${y}-${String(m + 2 > 12 ? 1 : m + 2).padStart(2, "0")}-01`, occurrences: 12, category: "GENERAL_SERVICES", logo_url: null },
+            { merchant: "Adobe Creative Cloud", amount: 54.99, frequency: "monthly", lastCharge: `${y}-${String(m + 1).padStart(2, "0")}-17`, nextEstimate: `${y}-${String(m + 2 > 12 ? 1 : m + 2).padStart(2, "0")}-17`, occurrences: 4, category: "GENERAL_SERVICES", logo_url: null },
+            { merchant: "ChatGPT Plus", amount: 20.00, frequency: "monthly", lastCharge: `${y}-${String(m + 1).padStart(2, "0")}-22`, nextEstimate: `${y}-${String(m + 2 > 12 ? 1 : m + 2).padStart(2, "0")}-22`, occurrences: 5, category: "GENERAL_SERVICES", logo_url: null },
+            { merchant: "YouTube Premium", amount: 13.99, frequency: "monthly", lastCharge: `${y}-${String(m + 1).padStart(2, "0")}-08`, nextEstimate: `${y}-${String(m + 2 > 12 ? 1 : m + 2).padStart(2, "0")}-08`, occurrences: 10, category: "ENTERTAINMENT", logo_url: null },
+            { merchant: "Gym Membership", amount: 49.99, frequency: "monthly", lastCharge: `${y}-${String(m + 1).padStart(2, "0")}-01`, nextEstimate: `${y}-${String(m + 2 > 12 ? 1 : m + 2).padStart(2, "0")}-01`, occurrences: 7, category: "PERSONAL_CARE", logo_url: null },
+            { merchant: "Car Insurance", amount: 142.00, frequency: "monthly", lastCharge: `${y}-${String(m + 1).padStart(2, "0")}-15`, nextEstimate: `${y}-${String(m + 2 > 12 ? 1 : m + 2).padStart(2, "0")}-15`, occurrences: 6, category: "TRANSPORTATION", logo_url: null },
+        ];
+    }, []);
+
+    const isDemo = subscriptions.length === 0;
+    const displaySubs = isDemo ? DEMO_SUBS : subscriptions;
+
     // ═══════════ Computed ═══════════
 
-    const activeSubs = useMemo(() => subscriptions.filter(s => !dismissed.has(s.merchant)), [subscriptions, dismissed]);
+    const activeSubs = useMemo(() => displaySubs.filter(s => !dismissed.has(s.merchant)), [displaySubs, dismissed]);
 
     const monthlyTotal = useMemo(() => {
         return activeSubs.reduce((sum, s) => {
@@ -204,10 +225,10 @@ export default function SubscriptionsPage() {
     const yearlyTotal = monthlyTotal * 12;
 
     const filtered = useMemo(() => {
-        if (!searchQuery) return subscriptions;
+        if (!searchQuery) return displaySubs;
         const q = searchQuery.toLowerCase();
-        return subscriptions.filter(s => s.merchant.toLowerCase().includes(q));
-    }, [subscriptions, searchQuery]);
+        return displaySubs.filter(s => s.merchant.toLowerCase().includes(q));
+    }, [displaySubs, searchQuery]);
 
     // Calendar
     const calendarDays = useMemo(() => {
@@ -275,14 +296,19 @@ export default function SubscriptionsPage() {
                 <div className="flex items-center justify-center py-32">
                     <Loader2 className="w-8 h-8 animate-spin text-primary" />
                 </div>
-            ) : subscriptions.length === 0 ? (
-                <div className="text-center py-32">
-                    <Wallet className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
-                    <h3 className="text-lg font-semibold text-foreground mb-2">No subscriptions detected</h3>
-                    <p className="text-sm text-muted-foreground">Connect a bank account and we'll automatically find recurring charges.</p>
-                </div>
             ) : (
                 <>
+                    {/* Demo Banner */}
+                    {isDemo && (
+                        <div className="bg-primary/5 border border-primary/20 rounded-2xl px-6 py-4 flex items-center gap-3">
+                            <AlertCircle className="w-5 h-5 text-primary shrink-0" />
+                            <div className="flex-1">
+                                <p className="text-sm font-semibold text-foreground">Showing sample data</p>
+                                <p className="text-xs text-muted-foreground">Connect a bank account in your <a href="/app/portfolio" className="text-primary underline underline-offset-2 hover:opacity-80">Portfolio</a> to see your real subscriptions.</p>
+                            </div>
+                        </div>
+                    )}
+
                     {/* ═══════════ STAT CARDS ═══════════ */}
                     <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                         <div className="bg-card border border-border rounded-3xl p-6 flex items-center gap-4">

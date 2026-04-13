@@ -10,6 +10,7 @@ import {
     Target,
     CheckCircle2,
     AlertTriangle,
+    AlertCircle,
     X,
     Save,
     Wallet,
@@ -121,19 +122,46 @@ export default function BudgetPage() {
         fetchSpending();
     }, [user?.id]);
 
+    // ═══════════ Demo data ═══════════
+    const isDemo = totalSpending === 0 && budgets.length === 0;
+
+    const demoCategories: Record<string, CategorySpending> = useMemo(() => ({
+        FOOD_AND_DRINK: { total: 201.03, count: 5 },
+        TRANSPORTATION: { total: 100.40, count: 2 },
+        ENTERTAINMENT: { total: 25.98, count: 2 },
+        RENT_AND_UTILITIES: { total: 227.00, count: 2 },
+        GENERAL_MERCHANDISE: { total: 316.42, count: 2 },
+        SHOPPING: { total: 34.99, count: 1 },
+        MEDICAL: { total: 22.49, count: 1 },
+    }), []);
+
+    const demoBudgets: BudgetEntry[] = useMemo(() => [
+        { category: "FOOD_AND_DRINK", monthly_limit: 300 },
+        { category: "TRANSPORTATION", monthly_limit: 150 },
+        { category: "ENTERTAINMENT", monthly_limit: 50 },
+        { category: "RENT_AND_UTILITIES", monthly_limit: 250 },
+        { category: "GENERAL_MERCHANDISE", monthly_limit: 200 },
+        { category: "SHOPPING", monthly_limit: 100 },
+        { category: "MEDICAL", monthly_limit: 50 },
+    ], []);
+
+    const displayCats = isDemo ? demoCategories : categories;
+    const displayBudgets = isDemo ? demoBudgets : budgets;
+    const displayTotal = isDemo ? 928.31 : totalSpending;
+
     // ═══════════ Computed ═══════════
 
-    const totalBudget = useMemo(() => budgets.reduce((s, b) => s + b.monthly_limit, 0), [budgets]);
+    const totalBudget = useMemo(() => displayBudgets.reduce((s, b) => s + b.monthly_limit, 0), [displayBudgets]);
 
-    const overallPct = totalBudget > 0 ? Math.min(100, (totalSpending / totalBudget) * 100) : 0;
+    const overallPct = totalBudget > 0 ? Math.min(100, (displayTotal / totalBudget) * 100) : 0;
 
     const budgetWithSpending = useMemo(() => {
-        return budgets.map(b => {
-            const spent = categories[b.category]?.total || 0;
+        return displayBudgets.map(b => {
+            const spent = displayCats[b.category]?.total || 0;
             const pct = b.monthly_limit > 0 ? (spent / b.monthly_limit) * 100 : 0;
             return { ...b, spent, pct };
         }).sort((a, b) => b.pct - a.pct);
-    }, [budgets, categories]);
+    }, [displayBudgets, displayCats]);
 
     // ═══════════ Actions ═══════════
 
@@ -182,20 +210,25 @@ export default function BudgetPage() {
                 <div className="flex items-center justify-center py-32">
                     <Loader2 className="w-8 h-8 animate-spin text-primary" />
                 </div>
-            ) : totalSpending === 0 && budgets.length === 0 ? (
-                <div className="text-center py-32">
-                    <Wallet className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
-                    <h3 className="text-lg font-semibold text-foreground mb-2">No spending data yet</h3>
-                    <p className="text-sm text-muted-foreground">Connect a bank account in your Portfolio to auto-generate your budget.</p>
-                </div>
             ) : (
                 <>
+                    {/* Demo Banner */}
+                    {isDemo && (
+                        <div className="bg-primary/5 border border-primary/20 rounded-2xl px-6 py-4 flex items-center gap-3">
+                            <AlertCircle className="w-5 h-5 text-primary shrink-0" />
+                            <div className="flex-1">
+                                <p className="text-sm font-semibold text-foreground">Showing sample budget</p>
+                                <p className="text-xs text-muted-foreground">Connect a bank account in your <a href="/app/portfolio" className="text-primary underline underline-offset-2 hover:opacity-80">Portfolio</a> to auto-generate your real budget.</p>
+                            </div>
+                        </div>
+                    )}
+
                     {/* ═══════════ TOTAL BUDGET CARD ═══════════ */}
                     <div className="bg-card border border-border rounded-3xl p-8">
                         <div className="flex items-center justify-between mb-2">
                             <h3 className="text-xs font-bold uppercase tracking-[0.2em] text-muted-foreground">Total Budget</h3>
                             <span className="text-sm font-bold text-foreground tabular-nums">
-                                ${totalSpending.toLocaleString("en-US", { minimumFractionDigits: 2 })} of ${totalBudget.toLocaleString("en-US", { minimumFractionDigits: 0 })}
+                                ${displayTotal.toLocaleString("en-US", { minimumFractionDigits: 2 })} of ${totalBudget.toLocaleString("en-US", { minimumFractionDigits: 0 })}
                             </span>
                         </div>
                         <div className="h-4 bg-muted rounded-full overflow-hidden mb-2">
