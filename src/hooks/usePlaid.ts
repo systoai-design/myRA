@@ -52,9 +52,23 @@ export function usePlaid(): UsePlaidReturn {
   const [isLinking, setIsLinking] = useState(false);
   const [isLoadingAccounts, setIsLoadingAccounts] = useState(false);
 
-  // 1. Create a link token when user becomes available
+  // Check if returning from OAuth redirect
+  const isOAuthReturn = typeof window !== 'undefined' && 
+    new URLSearchParams(window.location.search).has('oauth_state_id');
+
+  // 1. Create a link token when user becomes available, or restore for OAuth
   useEffect(() => {
     if (!user) return;
+
+    // If returning from OAuth, restore the stored link token
+    if (isOAuthReturn) {
+      const storedToken = sessionStorage.getItem('plaid_link_token');
+      if (storedToken) {
+        setLinkToken(storedToken);
+        return;
+      }
+    }
+
     let cancelled = false;
     const createLinkToken = async () => {
       try {
@@ -66,6 +80,8 @@ export function usePlaid(): UsePlaidReturn {
         const data = await res.json();
         if (!cancelled && data.link_token) {
           setLinkToken(data.link_token);
+          // Store for OAuth return
+          sessionStorage.setItem('plaid_link_token', data.link_token);
         }
       } catch (err) {
         console.error('[usePlaid] Create link token error:', err);
@@ -73,7 +89,7 @@ export function usePlaid(): UsePlaidReturn {
     };
     createLinkToken();
     return () => { cancelled = true; };
-  }, [user]);
+  }, [user, isOAuthReturn]);
 
   // 2. Fetch existing linked accounts
   const fetchAccounts = useCallback(async () => {
@@ -130,14 +146,26 @@ export function usePlaid(): UsePlaidReturn {
     }
   }, [user, fetchAccounts]);
 
-  // 4. Plaid Link hook — pass token (may be null initially, hook handles it)
+  // 4. Plaid Link hook — pass token + OAuth redirect URI if returning
   const { open, ready } = usePlaidLink({
     token: linkToken,
     onSuccess,
     onExit: (err) => {
       if (err) console.warn('[usePlaid] Plaid Link exited with error:', err);
+      // Clean up OAuth params from URL
+      if (isOAuthReturn) {
+        window.history.replaceState({}, '', window.location.pathname);
+      }
     },
+    ...(isOAuthReturn ? { receivedRedirectUri: window.location.href } : {}),
   });
+
+  // Auto-open Plaid Link when returning from OAuth
+  useEffect(() => {
+    if (isOAuthReturn && ready) {
+      open();
+    }
+  }, [isOAuthReturn, ready, open]);
 
   // 5. Remove a linked item
   const removeItem = useCallback(async (itemId: string, institutionName: string) => {

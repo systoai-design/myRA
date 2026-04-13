@@ -32,6 +32,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       products: [Products.Auth, Products.Transactions, Products.Investments],
       country_codes: [CountryCode.Us],
       language: 'en',
+      redirect_uri: 'https://www.retirewithmyra.com/app/portfolio',
     });
 
     return res.status(200).json({ link_token: response.data.link_token });
