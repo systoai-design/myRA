@@ -91,49 +91,83 @@ export default function SettingsPage() {
 
         setUploadingAvatar(true);
         try {
-            const ext = file.name.split(".").pop();
-            const fileName = `avatars/${user.id}.${ext}`;
+            // Compress image to a small square for avatar use
+            const compressImage = (f: File): Promise<Blob> => {
+                return new Promise((resolve, reject) => {
+                    const img = new Image();
+                    img.onload = () => {
+                        const canvas = document.createElement("canvas");
+                        const size = 128; // Small for metadata storage
+                        canvas.width = size;
+                        canvas.height = size;
+                        const ctx = canvas.getContext("2d")!;
+                        // Crop to center square
+                        const min = Math.min(img.width, img.height);
+                        const sx = (img.width - min) / 2;
+                        const sy = (img.height - min) / 2;
+                        ctx.drawImage(img, sx, sy, min, min, 0, 0, size, size);
+                        canvas.toBlob(
+                            (blob) => blob ? resolve(blob) : reject(new Error("Canvas toBlob failed")),
+                            "image/jpeg",
+                            0.7
+                        );
+                    };
+                    img.onerror = () => reject(new Error("Failed to load image"));
+                    img.src = URL.createObjectURL(f);
+                });
+            };
 
-            // Upload to Supabase Storage
-            const { error: uploadError } = await supabase.storage
-                .from("avatars")
-                .upload(fileName, file, { upsert: true });
+            const compressed = await compressImage(file);
 
-            if (uploadError) {
-                // If bucket doesn't exist, store as base64 in user metadata
-                console.warn("Storage upload failed, using metadata fallback:", uploadError.message);
-                const reader = new FileReader();
-                reader.onload = async () => {
-                    const dataUrl = reader.result as string;
-                    const { error: metaError } = await supabase.auth.updateUser({
-                        data: { avatar_url: dataUrl }
-                    });
-                    if (metaError) throw metaError;
-                    setAvatarUrl(dataUrl);
-                    setAvatarPreview(null);
-                    toast.success("Profile picture updated!");
-                };
-                reader.readAsDataURL(file);
-                return;
+            // Convert to base64 data URL for user metadata storage
+            const toDataUrl = (blob: Blob): Promise<string> => {
+                return new Promise((resolve, reject) => {
+                    const reader = new FileReader();
+                    reader.onload = () => resolve(reader.result as string);
+                    reader.onerror = () => reject(new Error("FileReader failed"));
+                    reader.readAsDataURL(blob);
+                });
+            };
+
+            // Try storage first
+            let savedUrl: string | null = null;
+            const fileName = `${user.id}.jpg`;
+
+            try {
+                const { error: uploadError } = await supabase.storage
+                    .from("avatars")
+                    .upload(fileName, compressed, { upsert: true, contentType: "image/jpeg" });
+
+                if (!uploadError) {
+                    const { data: urlData } = supabase.storage
+                        .from("avatars")
+                        .getPublicUrl(fileName);
+                    savedUrl = urlData.publicUrl + `?t=${Date.now()}`;
+                }
+            } catch {
+                // Storage not available, will use data URL fallback
             }
 
-            // Get public URL
-            const { data: urlData } = supabase.storage
-                .from("avatars")
-                .getPublicUrl(fileName);
+            // Fallback to data URL in metadata
+            if (!savedUrl) {
+                savedUrl = await toDataUrl(compressed);
+            }
 
-            const url = urlData.publicUrl + `?t=${Date.now()}`;
-
-            // Save URL to user metadata
+            // Save to user metadata
             const { error: metaError } = await supabase.auth.updateUser({
-                data: { avatar_url: url }
+                data: { avatar_url: savedUrl }
             });
             if (metaError) throw metaError;
 
-            setAvatarUrl(url);
+            // Force session refresh so sidebar avatar updates immediately
+            await supabase.auth.refreshSession();
+
+            setAvatarUrl(savedUrl);
             setAvatarPreview(null);
+            if (fileInputRef.current) fileInputRef.current.value = "";
             toast.success("Profile picture updated!");
         } catch (err: any) {
+            console.error("Avatar upload error:", err);
             toast.error(err.message || "Failed to upload avatar");
         } finally {
             setUploadingAvatar(false);
