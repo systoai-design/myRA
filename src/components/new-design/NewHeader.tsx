@@ -3,7 +3,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { 
     Menu, X, ShieldAlert, LogOut, User, Settings, 
     BookOpen, TrendingUp, Shield, DollarSign, BarChart3,
-    ChevronRight, Info, Lock
+    ChevronRight, Info, Lock, LayoutDashboard, Wallet
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useAuth } from "@/contexts/AuthContext";
@@ -140,7 +140,7 @@ export const NewHeader = () => {
 
                         {/* Logo — myra. wordmark */}
                         <Link to="/" className="flex items-center group">
-                            <span className="text-[22px] font-serif tracking-tight" style={{ color: '#6B9FCE' }}>
+                            <span className="text-[22px] font-serif tracking-tight" style={{ color: '#4A8DCA' }}>
                                 myra<span className="text-[22px]">.</span>
                             </span>
                         </Link>
@@ -210,18 +210,32 @@ export const NewHeader = () => {
                                                         </p>
                                                     </div>
                                                     <button
+                                                        onClick={() => { setUserMenuOpen(false); navigate("/app"); }}
+                                                        className="w-full flex items-center gap-3 px-5 py-3 text-left hover:bg-foreground/5 transition-colors text-sm text-foreground"
+                                                    >
+                                                        <LayoutDashboard className="w-4 h-4 text-foreground/50" />
+                                                        Dashboard
+                                                    </button>
+                                                    <button
+                                                        onClick={() => { setUserMenuOpen(false); navigate("/app/profile"); }}
+                                                        className="w-full flex items-center gap-3 px-5 py-3 text-left hover:bg-foreground/5 transition-colors text-sm text-foreground"
+                                                    >
+                                                        <User className="w-4 h-4 text-foreground/50" />
+                                                        Profile
+                                                    </button>
+                                                    <button
+                                                        onClick={() => { setUserMenuOpen(false); navigate("/app/portfolio"); }}
+                                                        className="w-full flex items-center gap-3 px-5 py-3 text-left hover:bg-foreground/5 transition-colors text-sm text-foreground"
+                                                    >
+                                                        <Wallet className="w-4 h-4 text-foreground/50" />
+                                                        Portfolio
+                                                    </button>
+                                                    <button
                                                         onClick={() => { setUserMenuOpen(false); navigate("/app/settings"); }}
                                                         className="w-full flex items-center gap-3 px-5 py-3 text-left hover:bg-foreground/5 transition-colors text-sm text-foreground"
                                                     >
                                                         <Settings className="w-4 h-4 text-foreground/50" />
                                                         Settings
-                                                    </button>
-                                                    <button
-                                                        onClick={() => { setUserMenuOpen(false); navigate("/app"); }}
-                                                        className="w-full flex items-center gap-3 px-5 py-3 text-left hover:bg-foreground/5 transition-colors text-sm text-foreground"
-                                                    >
-                                                        <User className="w-4 h-4 text-foreground/50" />
-                                                        Profile
                                                     </button>
                                                     <div className="mx-4 my-1 border-t border-border/50" />
                                                 </>

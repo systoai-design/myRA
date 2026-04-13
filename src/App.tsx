@@ -10,6 +10,9 @@ import MyRAChatPage from "./pages/MyRAChatPage";
 import PortfolioPage from "./pages/PortfolioPage";
 import ProfilePage from "./pages/ProfilePage";
 import SettingsPage from "./pages/SettingsPage";
+import SpendingPage from "./pages/SpendingPage";
+import BudgetPage from "./pages/BudgetPage";
+import SubscriptionsPage from "./pages/SubscriptionsPage";
 import ResetPassword from "./pages/ResetPassword";
 import React, { lazy, Suspense } from "react";
 import NotFound from "./pages/NotFound";
@@ -44,6 +47,9 @@ function AppRoutes() {
       <Route path="/app/portfolio" element={<AppLayout><PortfolioPage /></AppLayout>} />
       <Route path="/app/profile" element={<AppLayout><ProfilePage /></AppLayout>} />
       <Route path="/app/settings" element={<AppLayout><SettingsPage /></AppLayout>} />
+      <Route path="/app/spending" element={<AppLayout><SpendingPage /></AppLayout>} />
+      <Route path="/app/budget" element={<AppLayout><BudgetPage /></AppLayout>} />
+      <Route path="/app/subscriptions" element={<AppLayout><SubscriptionsPage /></AppLayout>} />
       <Route path="/reset-password" element={<ResetPassword />} />
       <Route path="/new-design" element={
         <Suspense fallback={<div className="min-h-screen bg-black" />}>

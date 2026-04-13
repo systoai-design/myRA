@@ -163,39 +163,24 @@ const NewHero = () => {
                     initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.6, duration: 1 }}
                     className="mt-20 flex flex-wrap items-center justify-center gap-x-16 gap-y-8 opacity-50 hover:opacity-80 transition-all duration-500"
                 >
-                    {/* Plaid Badge */}
-                    <div className="flex flex-col items-center gap-2">
-                        <svg width="36" height="36" viewBox="0 0 100 100" className="text-white">
-                            <rect x="10" y="10" width="35" height="35" rx="4" fill="currentColor" opacity="0.3" />
-                            <rect x="55" y="10" width="35" height="35" rx="4" fill="currentColor" opacity="0.2" />
-                            <rect x="10" y="55" width="35" height="35" rx="4" fill="currentColor" opacity="0.2" />
-                            <rect x="55" y="55" width="35" height="35" rx="4" fill="currentColor" opacity="0.3" />
-                        </svg>
-                        <p className="text-xs font-bold tracking-widest text-white">PLAID</p>
+                    {/* Plaid Badge — actual logo */}
+                    <div className="flex items-center gap-3">
+                        <img src="/plaid-logo.png" alt="Plaid" className="h-7 invert brightness-0 invert" style={{ filter: 'brightness(0) invert(1)' }} />
                     </div>
 
-                    {/* CFP Badge */}
-                    <div className="flex flex-col items-center gap-2">
-                        <svg width="44" height="44" viewBox="0 0 100 100" className="text-white">
-                            <polygon 
-                                points="50,2 55,18 62,5 63,22 72,10 69,27 80,18 74,33 87,28 78,40 92,38 81,48 95,50 81,52 92,62 78,60 87,72 74,67 80,82 69,73 72,90 63,78 62,95 55,82 50,98 45,82 38,95 37,78 28,90 31,73 20,82 26,67 13,72 22,60 8,62 19,52 5,50 19,48 8,38 22,40 13,28 26,33 20,18 31,27 28,10 37,22 38,5 45,18"
-                                fill="currentColor" 
-                                opacity="0.15"
-                            />
-                            <circle cx="50" cy="50" r="30" fill="none" stroke="currentColor" strokeWidth="2" opacity="0.3" />
-                            <text x="50" y="48" textAnchor="middle" dominantBaseline="central" fill="currentColor" fontSize="18" fontWeight="700" fontFamily="Lato, sans-serif">CFP</text>
-                            <text x="72" y="36" textAnchor="middle" fill="currentColor" fontSize="8" fontWeight="400" fontFamily="Lato, sans-serif">®</text>
-                        </svg>
-                        <p className="text-xs font-bold tracking-widest text-white">CERTIFIED</p>
+                    {/* CFP® Badge — actual logo */}
+                    <div className="flex items-center gap-2">
+                        <img src="/cfp-logo.png" alt="CFP Certified" className="h-10" />
+                        <p className="text-sm font-bold tracking-widest text-white">CERTIFIED</p>
                     </div>
 
                     {/* Secured Badge */}
-                    <div className="flex flex-col items-center gap-2">
-                        <svg width="36" height="36" viewBox="0 0 100 100" className="text-white">
-                            <path d="M50 5 L90 25 V55 C90 78 68 95 50 100 C32 95 10 78 10 55 V25 Z" fill="none" stroke="currentColor" strokeWidth="4" opacity="0.3" />
-                            <path d="M35 50 L45 60 L65 40" fill="none" stroke="currentColor" strokeWidth="6" strokeLinecap="round" strokeLinejoin="round" opacity="0.5" />
+                    <div className="flex items-center gap-2">
+                        <svg width="30" height="30" viewBox="0 0 100 100" className="text-white">
+                            <path d="M50 5 L90 25 V55 C90 78 68 95 50 100 C32 95 10 78 10 55 V25 Z" fill="none" stroke="currentColor" strokeWidth="5" opacity="0.6" />
+                            <path d="M35 50 L45 60 L65 40" fill="none" stroke="currentColor" strokeWidth="7" strokeLinecap="round" strokeLinejoin="round" opacity="0.8" />
                         </svg>
-                        <p className="text-xs font-bold tracking-widest text-white">SECURED</p>
+                        <p className="text-sm font-bold tracking-widest text-white">SECURED</p>
                     </div>
                 </motion.div>
             </motion.div>

@@ -334,7 +334,7 @@ export function MegaMenuPanel({ item, onClose }: MegaMenuPanelProps) {
             {/* Sticky header bar */}
             <div className="sticky top-0 z-10 flex items-center justify-between px-6 md:px-12 py-4 bg-background/90 backdrop-blur-xl border-b border-border/30">
                 <div className="flex items-center gap-3">
-                    <span className="text-lg font-serif tracking-tight" style={{ color: '#6B9FCE' }}>myra.</span>
+                    <span className="text-lg font-serif tracking-tight" style={{ color: '#4A8DCA' }}>myra.</span>
                     <span className="text-foreground/30">|</span>
                     <h2 className="text-base font-semibold text-foreground tracking-tight">{item.headline}</h2>
                 </div>

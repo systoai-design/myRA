@@ -10,6 +10,9 @@ import {
     Menu,
     ShieldAlert,
     ChevronRight,
+    DollarSign,
+    PieChart,
+    Bell,
 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
@@ -37,6 +40,12 @@ export default function AppLayout({ children }: AppLayoutProps) {
         { icon: MessageSquare, label: "myra Chat", path: "/app/chat", id: "chat" },
         { icon: BarChart3, label: "Portfolio", path: "/app/portfolio", id: "portfolio" },
         { icon: User, label: "Profile", path: "/app/profile", id: "profile" },
+    ];
+
+    const toolItems = [
+        { icon: DollarSign, label: "Spending", path: "/app/spending", id: "spending" },
+        { icon: PieChart, label: "Budget", path: "/app/budget", id: "budget" },
+        { icon: Bell, label: "Subscriptions", path: "/app/subscriptions", id: "subscriptions" },
     ];
 
     return (
@@ -75,6 +84,34 @@ export default function AppLayout({ children }: AppLayoutProps) {
                 {/* Navigation */}
                 <nav className="flex-1 px-4 space-y-1.5">
                     {navItems.map((item) => (
+                        <button
+                            key={item.id}
+                            onClick={() => navigate(item.path)}
+                            className={`w-full flex items-center gap-3 px-4 py-3.5 rounded-2xl transition-all duration-300 group relative ${
+                                location.pathname === item.path
+                                    ? "bg-primary/10 text-primary border border-primary/20 shadow-sm"
+                                    : "text-muted-foreground hover:text-foreground hover:bg-black/[0.03] dark:hover:bg-white/5"
+                            }`}
+                        >
+                            <item.icon className={`w-5 h-5 transition-transform group-hover:scale-110 ${location.pathname === item.path ? "text-primary" : ""}`} />
+                            {!sidebarCollapsed && (
+                                <span className="font-semibold text-sm tracking-wide animate-in fade-in slide-in-from-left-2">{item.label}</span>
+                            )}
+                            {location.pathname === item.path && !sidebarCollapsed && (
+                                <ChevronRight className="w-4 h-4 ml-auto text-primary/50" />
+                            )}
+                        </button>
+                    ))}
+
+                    {/* Tools section */}
+                    <div className="my-4 mx-4">
+                        {!sidebarCollapsed && (
+                            <span className="text-[9px] font-bold uppercase tracking-[0.25em] text-muted-foreground/50 px-4">Tools</span>
+                        )}
+                        <div className="h-px bg-border mt-2" />
+                    </div>
+
+                    {toolItems.map((item) => (
                         <button
                             key={item.id}
                             onClick={() => navigate(item.path)}
@@ -163,7 +200,7 @@ export default function AppLayout({ children }: AppLayoutProps) {
                         <span className="text-[10px] font-bold uppercase tracking-[0.3em] text-muted-foreground">Workspace</span>
                         <ChevronRight className="w-3 h-3 text-muted-foreground/40" />
                         <span className="text-sm font-semibold text-foreground">
-                            {navItems.find(i => i.path === location.pathname)?.label || "Explore"}
+                            {[...navItems, ...toolItems].find(i => i.path === location.pathname)?.label || "Explore"}
                         </span>
                     </div>
 
