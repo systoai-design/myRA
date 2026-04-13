@@ -14,6 +14,7 @@ import {
     CreditCard,
     Wallet,
     AlertCircle,
+    X,
 } from "lucide-react";
 
 // ═══════════════════════════════════════════
@@ -79,6 +80,7 @@ export default function SpendingPage() {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const [viewMode, setViewMode] = useState<"calendar" | "list">("calendar");
+    const [selectedDate, setSelectedDate] = useState<string | null>(null);
 
     // Month navigation
     const [currentMonth, setCurrentMonth] = useState(() => {
@@ -224,6 +226,22 @@ export default function SpendingPage() {
             .slice(0, 15);
     }, [displayTx]);
 
+    // Transactions for selected day
+    const selectedDayTx = useMemo(() => {
+        if (!selectedDate) return [];
+        return displayTx
+            .filter(tx => tx.date === selectedDate && !tx.pending)
+            .sort((a, b) => b.amount - a.amount);
+    }, [selectedDate, displayTx]);
+
+    const selectedDayTotal = useMemo(() => {
+        return selectedDayTx.filter(t => t.amount > 0).reduce((s, t) => s + t.amount, 0);
+    }, [selectedDayTx]);
+
+    const selectedDateFormatted = selectedDate
+        ? new Date(selectedDate + "T12:00:00").toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric" })
+        : "";
+
     const goToPrevMonth = () => {
         setCurrentMonth(prev => {
             const m = prev.month - 1;
@@ -351,10 +369,12 @@ export default function SpendingPage() {
                                         {calendarDays.map((day) => (
                                             <div
                                                 key={day.key}
+                                                onClick={() => !day.isPad && setSelectedDate(day.key === selectedDate ? null : day.key)}
                                                 className={`
                                                     relative aspect-square flex flex-col items-center justify-center rounded-xl text-sm transition-all
-                                                    ${day.isPad ? "" : "hover:bg-muted/50 cursor-default"}
+                                                    ${day.isPad ? "" : "hover:bg-muted/50 cursor-pointer"}
                                                     ${day.isToday ? "ring-2 ring-primary ring-offset-2 ring-offset-card" : ""}
+                                                    ${day.key === selectedDate ? "ring-2 ring-blue-400 ring-offset-2 ring-offset-card" : ""}
                                                 `}
                                                 style={
                                                     !day.isPad && day.amount > 0
@@ -375,6 +395,55 @@ export default function SpendingPage() {
                                             </div>
                                         ))}
                                     </div>
+
+                                    {/* ═══ Selected Day Detail Panel ═══ */}
+                                    {selectedDate && selectedDayTx.length > 0 && (
+                                        <div className="mt-6 pt-6 border-t border-border animate-in fade-in slide-in-from-bottom-2 duration-200">
+                                            <div className="flex items-center justify-between mb-4">
+                                                <div>
+                                                    <h4 className="text-sm font-bold text-foreground">{selectedDateFormatted}</h4>
+                                                    <p className="text-xs text-muted-foreground mt-0.5">
+                                                        {selectedDayTx.length} transaction{selectedDayTx.length !== 1 ? "s" : ""} · ${selectedDayTotal.toFixed(2)} spent
+                                                    </p>
+                                                </div>
+                                                <button
+                                                    onClick={() => setSelectedDate(null)}
+                                                    className="p-1.5 hover:bg-muted rounded-lg transition-colors text-muted-foreground hover:text-foreground"
+                                                >
+                                                    <X className="w-4 h-4" />
+                                                </button>
+                                            </div>
+                                            <div className="space-y-1">
+                                                {selectedDayTx.map(tx => {
+                                                    const conf = getCategoryConfig(tx.category);
+                                                    return (
+                                                        <div key={tx.id} className="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-muted/50 transition-colors">
+                                                            <span className="text-base shrink-0">{conf.emoji}</span>
+                                                            <div className="flex-1 min-w-0">
+                                                                <p className="text-sm font-semibold text-foreground truncate">{tx.merchant_name}</p>
+                                                                <p className="text-xs text-muted-foreground">{conf.label}</p>
+                                                            </div>
+                                                            <span className={`text-sm font-bold tabular-nums ${tx.amount > 0 ? "text-red-400" : "text-green-400"}`}>
+                                                                {tx.amount > 0 ? "-" : "+"}${Math.abs(tx.amount).toFixed(2)}
+                                                            </span>
+                                                        </div>
+                                                    );
+                                                })}
+                                            </div>
+                                        </div>
+                                    )}
+
+                                    {selectedDate && selectedDayTx.length === 0 && (
+                                        <div className="mt-6 pt-6 border-t border-border text-center py-6">
+                                            <p className="text-sm text-muted-foreground">No transactions on {selectedDateFormatted}</p>
+                                            <button
+                                                onClick={() => setSelectedDate(null)}
+                                                className="text-xs text-primary mt-2 hover:underline"
+                                            >
+                                                Clear selection
+                                            </button>
+                                        </div>
+                                    )}
                                 </>
                             ) : (
                                 /* List View */
