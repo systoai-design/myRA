@@ -220,7 +220,7 @@ export const NewHeader = () => {
                                                         Settings
                                                     </button>
                                                     <button
-                                                        onClick={() => { setUserMenuOpen(false); navigate("/app/profile"); }}
+                                                        onClick={() => { setUserMenuOpen(false); navigate("/app"); }}
                                                         className="w-full flex items-center gap-3 px-5 py-3 text-left hover:bg-foreground/5 transition-colors text-sm text-foreground"
                                                     >
                                                         <User className="w-4 h-4 text-foreground/50" />
