@@ -132,7 +132,7 @@ export default function SpendingPage() {
     }, [user?.id, currentMonth]);
 
     // ═══════════ Demo data ═══════════
-    const isDemo = transactions.length === 0 && !error;
+    const isDemo = transactions.length === 0;
 
     const demoData = useMemo(() => {
         const now = new Date();
@@ -280,11 +280,6 @@ export default function SpendingPage() {
             {loading ? (
                 <div className="flex items-center justify-center py-32">
                     <Loader2 className="w-8 h-8 animate-spin text-primary" />
-                </div>
-            ) : error ? (
-                <div className="text-center py-32 text-destructive">
-                    <p className="font-semibold">Failed to load transactions</p>
-                    <p className="text-sm text-muted-foreground mt-1">{error}</p>
                 </div>
             ) : (
                 <>
