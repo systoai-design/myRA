@@ -57,6 +57,7 @@ export default function SettingsPage() {
                 data: { first_name: displayName.trim() }
             });
             if (error) throw error;
+            await supabase.auth.getSession(); // refresh sidebar
             toast.success("Display name updated!");
         } catch (err: any) {
             toast.error(err.message || "Failed to update name");
@@ -160,7 +161,8 @@ export default function SettingsPage() {
             if (metaError) throw metaError;
 
             // Force session refresh so sidebar avatar updates immediately
-            await supabase.auth.refreshSession();
+            // getSession re-reads the session from storage where updateUser already wrote it
+            await supabase.auth.getSession();
 
             setAvatarUrl(savedUrl);
             setAvatarPreview(null);
@@ -177,6 +179,7 @@ export default function SettingsPage() {
     const handleRemoveAvatar = async () => {
         try {
             await supabase.auth.updateUser({ data: { avatar_url: null } });
+            await supabase.auth.getSession(); // refresh sidebar
             setAvatarUrl(null);
             setAvatarPreview(null);
             toast.success("Profile picture removed");
