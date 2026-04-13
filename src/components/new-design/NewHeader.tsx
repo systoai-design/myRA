@@ -138,13 +138,10 @@ export const NewHeader = () => {
                             </AnimatePresence>
                         </div>
 
-                        {/* Logo */}
-                        <Link to="/" className="flex items-center gap-2 group">
-                            <div className="w-8 h-8 rounded-full border border-black/10 dark:border-white/20 flex items-center justify-center bg-black/[0.03] dark:bg-white/5 group-hover:bg-black/[0.06] dark:group-hover:bg-white/10 transition-colors">
-                                <span className="text-foreground font-serif font-bold text-xs tracking-wider">M.</span>
-                            </div>
-                            <span className="text-xl font-serif text-foreground tracking-tight hidden sm:inline">
-                                myra
+                        {/* Logo — myra. wordmark */}
+                        <Link to="/" className="flex items-center group">
+                            <span className="text-[22px] font-serif tracking-tight" style={{ color: '#6B9FCE' }}>
+                                myra<span className="text-[22px]">.</span>
                             </span>
                         </Link>
                     </div>
@@ -277,21 +274,10 @@ export const NewHeader = () => {
             {/* Mega Menu Panel Overlay */}
             <AnimatePresence>
                 {activePanel && (
-                    <>
-                        {/* Backdrop */}
-                        <motion.div
-                            initial={{ opacity: 0 }}
-                            animate={{ opacity: 1 }}
-                            exit={{ opacity: 0 }}
-                            className="fixed inset-0 z-[55] bg-black/40 backdrop-blur-sm"
-                            onClick={() => setActivePanelId(null)}
-                        />
-                        {/* Panel */}
-                        <MegaMenuPanel
-                            item={activePanel}
-                            onClose={() => setActivePanelId(null)}
-                        />
-                    </>
+                    <MegaMenuPanel
+                        item={activePanel}
+                        onClose={() => setActivePanelId(null)}
+                    />
                 )}
             </AnimatePresence>
         </>

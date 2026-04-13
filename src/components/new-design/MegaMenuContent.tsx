@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { 
     BookOpen, TrendingUp, Shield, DollarSign, BarChart3,
@@ -315,71 +315,90 @@ interface MegaMenuPanelProps {
 }
 
 export function MegaMenuPanel({ item, onClose }: MegaMenuPanelProps) {
+    // Lock body scroll when panel is open
+    useEffect(() => {
+        const original = document.body.style.overflow;
+        document.body.style.overflow = 'hidden';
+        return () => { document.body.style.overflow = original; };
+    }, []);
+
     return (
         <motion.div
-            initial={{ opacity: 0, y: -10 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -10 }}
-            transition={{ duration: 0.25, ease: "easeOut" }}
-            className="fixed inset-x-0 top-0 z-[60] bg-background/95 backdrop-blur-xl border-b border-border shadow-2xl max-h-[85vh] overflow-y-auto"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.3, ease: "easeOut" }}
+            className="fixed inset-0 z-[60] bg-background overflow-y-auto"
+            data-lenis-prevent
         >
-            {/* Close bar */}
-            <div className="sticky top-0 z-10 flex items-center justify-between px-6 md:px-12 py-4 bg-background/80 backdrop-blur-md border-b border-border/50">
-                <h2 className="text-lg font-serif text-foreground">{item.headline}</h2>
+            {/* Sticky header bar */}
+            <div className="sticky top-0 z-10 flex items-center justify-between px-6 md:px-12 py-4 bg-background/90 backdrop-blur-xl border-b border-border/30">
+                <div className="flex items-center gap-3">
+                    <span className="text-lg font-serif tracking-tight" style={{ color: '#6B9FCE' }}>myra.</span>
+                    <span className="text-foreground/30">|</span>
+                    <h2 className="text-base font-semibold text-foreground tracking-tight">{item.headline}</h2>
+                </div>
                 <button
                     onClick={onClose}
-                    className="w-9 h-9 rounded-full bg-foreground/5 hover:bg-foreground/10 flex items-center justify-center transition-colors"
+                    className="w-10 h-10 rounded-full bg-foreground/5 hover:bg-foreground/10 border border-border/50 flex items-center justify-center transition-all hover:scale-105"
                 >
                     <X className="w-4 h-4 text-foreground" />
                 </button>
             </div>
 
-            <div className="mx-auto max-w-4xl px-6 md:px-12 py-10">
+            <div className="mx-auto max-w-3xl px-6 md:px-8 py-8 pb-20">
                 {/* Tagline */}
                 {item.tagline && (
-                    <p className="text-lg md:text-xl text-foreground/80 font-medium leading-relaxed mb-10">
-                        {item.tagline}
-                    </p>
+                    <div className="mb-8 p-6 rounded-2xl bg-primary/[0.04] dark:bg-primary/[0.08] border border-primary/10">
+                        <p className="text-base md:text-lg text-foreground/80 font-medium leading-relaxed">
+                            {item.tagline}
+                        </p>
+                    </div>
                 )}
 
                 {/* Prose mode (myra Story) */}
                 {item.prose && (
-                    <div className="prose prose-sm md:prose-base dark:prose-invert max-w-none prose-p:text-foreground/70 prose-li:text-foreground/70 prose-headings:text-foreground prose-strong:text-foreground whitespace-pre-line text-foreground/70 leading-relaxed text-[15px]">
-                        {item.prose}
+                    <div className="p-6 md:p-8 rounded-2xl bg-foreground/[0.02] dark:bg-white/[0.03] border border-border/40">
+                        <div className="whitespace-pre-line text-foreground/70 leading-[1.85] text-[15px] font-sans">
+                            {item.prose}
+                        </div>
                     </div>
                 )}
 
                 {/* Structured sections */}
                 {item.sections.length > 0 && (
-                    <div className="space-y-10">
+                    <div className="space-y-4">
                         {item.sections.map((section, idx) => {
                             const Icon = section.icon;
                             return (
-                                <div key={idx} className="group">
-                                    <div className="flex items-start gap-4 mb-3">
-                                        <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center shrink-0 mt-0.5">
+                                <div 
+                                    key={idx} 
+                                    className="p-5 md:p-6 rounded-2xl bg-foreground/[0.02] dark:bg-white/[0.03] border border-border/40 hover:border-primary/20 transition-colors"
+                                >
+                                    <div className="flex items-start gap-4 mb-4">
+                                        <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
                                             <Icon className="w-5 h-5 text-primary" />
                                         </div>
-                                        <div>
-                                            <h3 className="text-lg font-semibold text-foreground">
+                                        <div className="min-w-0">
+                                            <h3 className="text-base font-semibold text-foreground leading-tight">
                                                 {idx + 1}. {section.title}
                                             </h3>
-                                            <p className="text-sm italic text-foreground/50 mt-0.5">
+                                            <p className="text-sm italic text-foreground/50 mt-1">
                                                 {section.subtitle}
                                             </p>
                                         </div>
                                     </div>
-                                    <ul className="ml-14 space-y-2.5">
+                                    <div className="ml-14 space-y-2">
                                         {section.bullets.map((b, bi) => (
-                                            <li key={bi} className="text-sm text-foreground/70 leading-relaxed flex items-start gap-2">
-                                                <span className="w-1.5 h-1.5 rounded-full bg-primary/40 mt-2 shrink-0" />
+                                            <div key={bi} className="text-sm text-foreground/65 leading-relaxed flex items-start gap-2.5">
+                                                <span className="w-1.5 h-1.5 rounded-full bg-primary/30 mt-[7px] shrink-0" />
                                                 <span>
-                                                    <strong className="text-foreground/90">{b.bold}</strong>{" "}
+                                                    <strong className="text-foreground/85 font-medium">{b.bold}</strong>{" "}
                                                     {b.text}
                                                 </span>
-                                            </li>
+                                            </div>
                                         ))}
-                                    </ul>
+                                    </div>
                                 </div>
                             );
                         })}
@@ -388,15 +407,15 @@ export function MegaMenuPanel({ item, onClose }: MegaMenuPanelProps) {
 
                 {/* CTA */}
                 {item.cta && (
-                    <div className="mt-12 pt-8 border-t border-border/50 text-center">
-                        <p className="text-foreground/60 text-sm mb-6">
+                    <div className="mt-10 p-8 rounded-2xl bg-foreground/[0.03] dark:bg-white/[0.04] border border-border/40 text-center">
+                        <p className="text-foreground/60 text-sm mb-5">
                             Ready to see what a completely optimized retirement looks like?
                         </p>
                         <Link
                             to={item.cta.to}
                             target="_blank"
                             onClick={onClose}
-                            className="inline-flex items-center gap-2 h-12 px-8 rounded-full bg-foreground text-background text-sm font-semibold hover:opacity-90 transition-all shadow-lg"
+                            className="inline-flex items-center gap-2 h-12 px-8 rounded-full bg-foreground text-background text-sm font-semibold hover:opacity-90 transition-all shadow-lg hover:scale-[1.02] active:scale-[0.98]"
                         >
                             {item.cta.label}
                             <ArrowRight className="w-4 h-4" />
