@@ -77,6 +77,7 @@ export default function SpendingPage() {
     const [categories, setCategories] = useState<Record<string, CategorySummary>>({});
     const [dailySpending, setDailySpending] = useState<Record<string, number>>({});
     const [totalSpending, setTotalSpending] = useState(0);
+    const [linkedAccountCount, setLinkedAccountCount] = useState<number | null>(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const [viewMode, setViewMode] = useState<"calendar" | "list">("calendar");
@@ -123,6 +124,7 @@ export default function SpendingPage() {
                 setCategories(data.categories || {});
                 setDailySpending(data.daily_spending || {});
                 setTotalSpending(data.total_spending || 0);
+                setLinkedAccountCount(data.linked_accounts ?? 0);
             } catch (err: any) {
                 setError(err.message);
             } finally {
@@ -134,7 +136,8 @@ export default function SpendingPage() {
     }, [user?.id, currentMonth]);
 
     // ═══════════ Demo data ═══════════
-    const isDemo = transactions.length === 0;
+    // Show demo only when no accounts are linked (not when linked but empty)
+    const isDemo = linkedAccountCount === 0 || (linkedAccountCount === null && transactions.length === 0);
 
     const demoData = useMemo(() => {
         const now = new Date();

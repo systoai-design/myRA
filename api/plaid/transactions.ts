@@ -48,8 +48,10 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     }
 
     if (!items || items.length === 0) {
-      return res.status(200).json({ transactions: [], total_spending: 0, categories: {} });
+      return res.status(200).json({ transactions: [], total_spending: 0, categories: {}, linked_accounts: 0 });
     }
+
+    console.log(`[transactions] Found ${items.length} linked items for user, fetching ${startDate} to ${endDate}`);
 
     const allTransactions: any[] = [];
 
@@ -109,12 +111,15 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       dailySpending[tx.date] = (dailySpending[tx.date] || 0) + tx.amount;
     }
 
+    console.log(`[transactions] Returning ${allTransactions.length} transactions from ${items.length} accounts`);
+
     return res.status(200).json({
       transactions: allTransactions,
       total_spending: Math.round(totalSpending * 100) / 100,
       categories,
       daily_spending: dailySpending,
       period: { start: startDate, end: endDate },
+      linked_accounts: items.length,
     });
   } catch (error: any) {
     console.error('Transactions fetch error:', error?.response?.data || error.message);
