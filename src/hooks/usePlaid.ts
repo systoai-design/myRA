@@ -58,7 +58,7 @@ export function usePlaid(): UsePlaidReturn {
 
   // 1. Create a link token when user becomes available, or restore for OAuth
   useEffect(() => {
-    if (!user) return;
+    if (!user?.id) return;
 
     // If returning from OAuth, restore the stored link token
     if (isOAuthReturn) {
@@ -72,12 +72,22 @@ export function usePlaid(): UsePlaidReturn {
     let cancelled = false;
     const createLinkToken = async () => {
       try {
+        const userId = String(user.id); // Ensure string
+        if (!userId || userId === 'undefined' || userId === 'null') {
+          console.warn('[usePlaid] Invalid user.id, skipping link token creation');
+          return;
+        }
+
         const res = await fetch(`${API_BASE}/create-link-token`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ user_id: user.id }),
+          body: JSON.stringify({ user_id: userId }),
         });
         const data = await res.json();
+        if (!res.ok) {
+          console.error('[usePlaid] Create link token failed:', data);
+          return;
+        }
         if (!cancelled && data.link_token) {
           setLinkToken(data.link_token);
           // Store for OAuth return
@@ -89,7 +99,7 @@ export function usePlaid(): UsePlaidReturn {
     };
     createLinkToken();
     return () => { cancelled = true; };
-  }, [user, isOAuthReturn]);
+  }, [user?.id, isOAuthReturn]);
 
   // 2. Fetch existing linked accounts
   const fetchAccounts = useCallback(async () => {
