@@ -1,9 +1,10 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { useScrollReveal } from "./hooks";
 
 const ACCENT = "#00D4AA";
+const BRAND_BLUE = "#4A8DCA";
 
 const rotatingQuestions = [
     "How much do I need to retire comfortably?",
@@ -55,6 +56,15 @@ const NewHero = () => {
     const navigate = useNavigate();
     const { user } = useAuth();
     const [ref, visible] = useScrollReveal<HTMLElement>(0.05);
+    const wordmarkRef = useRef<HTMLVideoElement>(null);
+
+    // Replay the wordmark draw animation when it enters view
+    useEffect(() => {
+        if (visible && wordmarkRef.current) {
+            wordmarkRef.current.currentTime = 0;
+            wordmarkRef.current.play().catch(() => {});
+        }
+    }, [visible]);
 
     const handleChatClick = () => {
         if (user) navigate("/app/chat");
@@ -81,93 +91,157 @@ const NewHero = () => {
                 padding: "140px 24px 80px",
             }}
         >
-            {/* Gradient orbs */}
+            {/* Cinematic background video */}
+            <video
+                autoPlay
+                loop
+                muted
+                playsInline
+                preload="auto"
+                poster="/hero-bg.png"
+                style={{
+                    position: "absolute",
+                    inset: 0,
+                    width: "100%",
+                    height: "100%",
+                    objectFit: "cover",
+                    zIndex: 0,
+                    opacity: 0.55,
+                    pointerEvents: "none",
+                }}
+            >
+                <source src="/myra-feature-video.webm" type="video/webm" />
+                <source src="/myra-feature-video.mp4" type="video/mp4" />
+            </video>
+            {/* Dark vignette for readability */}
             <div
                 aria-hidden
                 style={{
                     position: "absolute",
-                    top: "8%",
+                    inset: 0,
+                    background:
+                        "radial-gradient(ellipse at center, rgba(0,0,0,0.35) 0%, rgba(0,0,0,0.78) 70%, rgba(0,0,0,0.95) 100%)",
+                    zIndex: 1,
+                    pointerEvents: "none",
+                }}
+            />
+            {/* Soft blue accent glow */}
+            <div
+                aria-hidden
+                style={{
+                    position: "absolute",
+                    top: "10%",
                     left: "50%",
                     transform: "translate(-50%, -30%)",
                     width: 800,
                     height: 800,
                     borderRadius: "50%",
-                    background: `radial-gradient(circle, ${ACCENT}26 0%, transparent 70%)`,
-                    filter: "blur(60px)",
-                    pointerEvents: "none",
-                }}
-            />
-            <div
-                aria-hidden
-                style={{
-                    position: "absolute",
-                    top: "40%",
-                    right: "-10%",
-                    width: 500,
-                    height: 500,
-                    borderRadius: "50%",
-                    background: `radial-gradient(circle, ${ACCENT}1a 0%, transparent 70%)`,
+                    background: `radial-gradient(circle, ${BRAND_BLUE}22 0%, transparent 70%)`,
                     filter: "blur(80px)",
                     pointerEvents: "none",
+                    zIndex: 1,
                 }}
             />
 
-            {/* Badge */}
+            {/* CFP badge */}
             <div
                 style={{
                     display: "inline-flex",
                     alignItems: "center",
-                    gap: 8,
-                    padding: "6px 16px",
-                    borderRadius: 20,
-                    background: "var(--myra-glass)",
-                    border: "1px solid var(--myra-glass-border)",
+                    gap: 10,
+                    padding: "6px 14px 6px 8px",
+                    borderRadius: 999,
+                    background: "rgba(255, 255, 255, 0.06)",
+                    border: "1px solid rgba(255,255,255,0.12)",
                     backdropFilter: "blur(12px)",
                     WebkitBackdropFilter: "blur(12px)",
                     marginBottom: 32,
+                    position: "relative",
+                    zIndex: 2,
                     ...reveal(0),
                 }}
             >
-                <span style={{ width: 6, height: 6, borderRadius: "50%", background: ACCENT }} />
+                <img
+                    src="/cfp-logo.png"
+                    alt="Certified Financial Planner"
+                    width={26}
+                    height={26}
+                    style={{ borderRadius: 4, display: "block" }}
+                />
                 <span
                     style={{
                         fontSize: 12,
-                        fontWeight: 500,
+                        fontWeight: 600,
                         letterSpacing: "0.08em",
                         textTransform: "uppercase",
-                        color: "var(--myra-text-secondary)",
+                        color: "#f5f5f7",
                     }}
                 >
-                    Fiduciary Standard · AI Powered
+                    CFP® · Fiduciary Standard · AI Powered
                 </span>
             </div>
 
-            {/* Headline */}
-            <h1
+            {/* Headline: "Hello, I'm" + animated MyRA wordmark video */}
+            <div
                 style={{
-                    fontFamily: "var(--myra-font-display)",
-                    fontWeight: 400,
-                    fontSize: "clamp(48px, 8vw, 96px)",
-                    lineHeight: 1.05,
-                    textAlign: "center",
+                    display: "flex",
+                    flexDirection: "column",
+                    alignItems: "center",
+                    gap: 8,
                     maxWidth: 900,
-                    margin: 0,
+                    width: "100%",
+                    position: "relative",
+                    zIndex: 2,
                     ...reveal(0.15),
                 }}
             >
-                Your money.{" "}
-                <span style={{ fontStyle: "italic", color: ACCENT }}>Smarter.</span>
-            </h1>
+                <h1
+                    style={{
+                        fontFamily: "var(--myra-font-display)",
+                        fontWeight: 400,
+                        fontStyle: "italic",
+                        fontSize: "clamp(44px, 7vw, 84px)",
+                        lineHeight: 1,
+                        textAlign: "center",
+                        margin: 0,
+                        color: "#ffffff",
+                    }}
+                >
+                    Hello, I'm
+                </h1>
+                <video
+                    ref={wordmarkRef}
+                    autoPlay
+                    muted
+                    playsInline
+                    preload="auto"
+                    aria-label="MyRA"
+                    style={{
+                        width: "clamp(280px, 50vw, 600px)",
+                        height: "auto",
+                        // black in the source video blends out against dark bg
+                        mixBlendMode: "screen",
+                        marginTop: -8,
+                    }}
+                >
+                    <source src="/myra_transparent.webm" type="video/webm" />
+                    <source src="/myra_transparent.mov" type="video/quicktime" />
+                </video>
+            </div>
 
+            {/* Subtitle — bolded and larger per request */}
             <p
                 style={{
-                    fontSize: 20,
+                    fontSize: "clamp(18px, 2vw, 22px)",
                     lineHeight: 1.5,
-                    color: "var(--myra-text-secondary)",
+                    fontWeight: 700,
+                    color: "#f5f5f7",
                     textAlign: "center",
-                    maxWidth: 520,
+                    maxWidth: 620,
                     marginTop: 24,
                     textWrap: "pretty",
+                    position: "relative",
+                    zIndex: 2,
                     ...reveal(0.3),
                 }}
             >
@@ -181,8 +255,8 @@ const NewHero = () => {
                     marginTop: 48,
                     width: "100%",
                     maxWidth: 560,
-                    background: "var(--myra-glass)",
-                    border: "1px solid var(--myra-glass-border)",
+                    background: "rgba(255,255,255,0.06)",
+                    border: "1px solid rgba(255,255,255,0.14)",
                     borderRadius: 16,
                     padding: "4px 4px 4px 20px",
                     display: "flex",
@@ -190,6 +264,8 @@ const NewHero = () => {
                     backdropFilter: "blur(20px)",
                     WebkitBackdropFilter: "blur(20px)",
                     cursor: "pointer",
+                    position: "relative",
+                    zIndex: 2,
                     ...reveal(0.45),
                 }}
             >
@@ -197,7 +273,7 @@ const NewHero = () => {
                     style={{
                         flex: 1,
                         fontSize: 15,
-                        color: "var(--myra-text-secondary)",
+                        color: "rgba(245,245,247,0.82)",
                         fontFamily: "var(--myra-font-body)",
                         minHeight: 44,
                         display: "flex",
@@ -251,6 +327,8 @@ const NewHero = () => {
                     marginTop: 56,
                     opacity: visible ? 1 : 0,
                     transition: "opacity 1s ease 0.6s",
+                    position: "relative",
+                    zIndex: 2,
                 }}
             >
                 {[
@@ -263,8 +341,9 @@ const NewHero = () => {
                         <span
                             style={{
                                 fontSize: 12,
-                                color: "var(--myra-text-secondary)",
+                                color: "rgba(245,245,247,0.78)",
                                 letterSpacing: "0.02em",
+                                fontWeight: 500,
                             }}
                         >
                             {label}

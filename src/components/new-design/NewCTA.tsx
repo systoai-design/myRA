@@ -41,28 +41,29 @@ const NewCTA = () => {
 
             <h2
                 style={{
-                    fontFamily: "var(--myra-font-display)",
                     fontSize: "clamp(40px, 6vw, 80px)",
-                    fontWeight: 400,
                     textAlign: "center",
                     lineHeight: 1.1,
-                    maxWidth: 700,
+                    maxWidth: 800,
                     margin: 0,
                     position: "relative",
                     opacity: visible ? 1 : 0,
                     transform: visible ? "translateY(0)" : "translateY(30px)",
                     transition: "all 0.8s cubic-bezier(0.16, 1, 0.3, 1)",
+                    color: "var(--myra-text)",
                 }}
             >
-                Forecast <span style={{ fontStyle: "italic", color: ACCENT }}>your future.</span>
+                <span style={{ fontFamily: "var(--myra-font-display)", fontStyle: "italic", fontWeight: 700, color: ACCENT }}>Forecast</span>
+                <span style={{ fontFamily: "var(--myra-font-body)", fontWeight: 400 }}> your future.</span>
             </h2>
             <p
                 style={{
-                    fontSize: 18,
-                    color: "var(--myra-text-secondary)",
+                    fontSize: "clamp(18px, 1.6vw, 22px)",
+                    fontWeight: 700,
+                    color: "var(--myra-text)",
                     textAlign: "center",
                     marginTop: 20,
-                    maxWidth: 500,
+                    maxWidth: 560,
                     position: "relative",
                     textWrap: "pretty",
                     opacity: visible ? 1 : 0,
