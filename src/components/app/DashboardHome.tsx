@@ -34,6 +34,7 @@ import {
     Plus,
     Info,
 } from "lucide-react";
+import FamilySection from "@/components/dashboard/FamilySection";
 
 // ═══════════════════════════════════════════
 // TYPES & HELPERS
@@ -435,6 +436,9 @@ export default function DashboardHome() {
                     </div>
                 </button>
             </div>
+
+            {/* ───────── Family Section (Partner / Children) ───────── */}
+            <FamilySection />
 
             {/* ═══════════ NET WORTH + ALLOCATION ═══════════ */}
             <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
