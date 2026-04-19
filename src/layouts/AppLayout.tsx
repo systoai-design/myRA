@@ -50,54 +50,63 @@ export default function AppLayout({ children }: AppLayoutProps) {
 
     return (
         <div className="h-screen bg-background text-foreground flex overflow-hidden font-sans selection:bg-primary/30">
-            {/* Background Effects — vibrant aurora wash */}
+            {/* Background Effects — vibrant aurora wash (dark mode only) */}
             <div className="fixed inset-0 z-0 pointer-events-none overflow-hidden">
                 {/* Light mode: soft gradient wash */}
                 <div className="absolute inset-0 bg-gradient-to-br from-blue-50/80 via-transparent to-purple-50/40 dark:opacity-0" />
 
-                {/* Dark mode: vibrant aurora — top-left indigo → center purple → bottom-right magenta */}
+                {/* Dark mode: saturated purple/magenta base — matches SoundMind / ref screenshot */}
                 <div
                     className="absolute inset-0 hidden dark:block"
                     style={{
                         background: `
-                            radial-gradient(ellipse 80% 60% at 8% 0%, rgba(79, 70, 229, 0.55) 0%, transparent 55%),
-                            radial-gradient(ellipse 70% 55% at 95% 15%, rgba(217, 70, 239, 0.38) 0%, transparent 60%),
-                            radial-gradient(ellipse 90% 70% at 50% 100%, rgba(139, 92, 246, 0.45) 0%, transparent 60%),
-                            radial-gradient(ellipse 60% 50% at 0% 100%, rgba(59, 130, 246, 0.30) 0%, transparent 55%),
-                            linear-gradient(135deg, #0a0a1a 0%, #140f28 50%, #1a0a24 100%)
+                            radial-gradient(ellipse 95% 75% at 12% -5%, rgba(99, 102, 241, 0.9) 0%, transparent 55%),
+                            radial-gradient(ellipse 80% 65% at 100% 20%, rgba(217, 70, 239, 0.75) 0%, transparent 60%),
+                            radial-gradient(ellipse 110% 80% at 55% 110%, rgba(139, 92, 246, 0.85) 0%, transparent 60%),
+                            radial-gradient(ellipse 70% 55% at 0% 100%, rgba(79, 70, 229, 0.7) 0%, transparent 55%),
+                            linear-gradient(135deg, #1e1b4b 0%, #2d1065 35%, #3b0764 65%, #4c0519 100%)
                         `,
                     }}
                 />
 
-                {/* Drifting orbs — extra life */}
+                {/* Drifting orbs — add motion on top of the static base */}
                 <div
-                    className="absolute top-[-15%] left-[-10%] w-[55%] h-[55%] rounded-full hidden dark:block"
+                    className="absolute top-[-15%] left-[-10%] w-[65%] h-[65%] rounded-full hidden dark:block"
                     style={{
-                        background: "radial-gradient(circle, rgba(99, 102, 241, 0.35), transparent 70%)",
-                        filter: "blur(100px)",
+                        background: "radial-gradient(circle, rgba(129, 140, 248, 0.55), transparent 70%)",
+                        filter: "blur(90px)",
                         animation: "orb-drift 22s ease-in-out infinite",
                     }}
                 />
                 <div
-                    className="absolute top-[20%] right-[-10%] w-[45%] h-[45%] rounded-full hidden dark:block"
+                    className="absolute top-[15%] right-[-15%] w-[55%] h-[55%] rounded-full hidden dark:block"
                     style={{
-                        background: "radial-gradient(circle, rgba(217, 70, 239, 0.28), transparent 70%)",
-                        filter: "blur(100px)",
+                        background: "radial-gradient(circle, rgba(232, 121, 249, 0.5), transparent 70%)",
+                        filter: "blur(90px)",
                         animation: "orb-drift 26s ease-in-out infinite reverse",
                     }}
                 />
                 <div
-                    className="absolute bottom-[-15%] left-[25%] w-[50%] h-[50%] rounded-full hidden dark:block"
+                    className="absolute bottom-[-20%] left-[20%] w-[60%] h-[60%] rounded-full hidden dark:block"
                     style={{
-                        background: "radial-gradient(circle, rgba(139, 92, 246, 0.30), transparent 70%)",
-                        filter: "blur(120px)",
+                        background: "radial-gradient(circle, rgba(167, 139, 250, 0.55), transparent 70%)",
+                        filter: "blur(100px)",
                         animation: "orb-drift 30s ease-in-out infinite",
                         animationDelay: "-10s",
                     }}
                 />
+                <div
+                    className="absolute top-[40%] right-[10%] w-[40%] h-[40%] rounded-full hidden dark:block"
+                    style={{
+                        background: "radial-gradient(circle, rgba(236, 72, 153, 0.4), transparent 70%)",
+                        filter: "blur(100px)",
+                        animation: "orb-drift 34s ease-in-out infinite",
+                        animationDelay: "-16s",
+                    }}
+                />
 
                 {/* Subtle grain */}
-                <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-[0.015] dark:opacity-[0.04] mix-blend-overlay" />
+                <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-[0.015] dark:opacity-[0.05] mix-blend-overlay" />
             </div>
 
             {/* Glass Sidebar */}
