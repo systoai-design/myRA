@@ -1,30 +1,24 @@
-import { useState, useRef, useEffect } from "react";
+import { useState } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
 import { useTheme } from "@/components/theme-provider";
-import { 
-    User, Lock, Palette, LogOut, Loader2, Save, 
-    Moon, Sun, Monitor, AlertTriangle, Camera,
-    Mail, Shield, Bell, BellOff, Eye, EyeOff,
-    ChevronRight, CheckCircle2, Upload, X,
+import {
+    User, Lock, Palette, LogOut, Loader2, Save,
+    Moon, Sun, Monitor, AlertTriangle,
+    Mail, Bell, Eye, EyeOff,
+    ChevronRight, CheckCircle2,
 } from "lucide-react";
 
 export default function SettingsPage() {
     const { user, signOut } = useAuth();
     const navigate = useNavigate();
     const { theme, setTheme } = useTheme();
-    const fileInputRef = useRef<HTMLInputElement>(null);
-    
+
     // Account
     const [displayName, setDisplayName] = useState(user?.user_metadata?.first_name || "");
     const [savingName, setSavingName] = useState(false);
-
-    // Avatar
-    const [avatarUrl, setAvatarUrl] = useState<string | null>(user?.user_metadata?.avatar_url || null);
-    const [uploadingAvatar, setUploadingAvatar] = useState(false);
-    const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
 
     // Password
     const [newPassword, setNewPassword] = useState("");
@@ -39,13 +33,6 @@ export default function SettingsPage() {
 
     // Active section (for mobile nav)
     const [activeSection, setActiveSection] = useState("profile");
-
-    // Load avatar from metadata
-    useEffect(() => {
-        if (user?.user_metadata?.avatar_url) {
-            setAvatarUrl(user.user_metadata.avatar_url);
-        }
-    }, [user]);
 
     // ═══════════ Handlers ═══════════
 
@@ -63,128 +50,6 @@ export default function SettingsPage() {
             toast.error(err.message || "Failed to update name");
         } finally {
             setSavingName(false);
-        }
-    };
-
-    const handleAvatarSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const file = e.target.files?.[0];
-        if (!file) return;
-
-        // Validate
-        if (!file.type.startsWith("image/")) {
-            toast.error("Please select an image file");
-            return;
-        }
-        if (file.size > 5 * 1024 * 1024) {
-            toast.error("Image must be under 5MB");
-            return;
-        }
-
-        // Preview
-        const reader = new FileReader();
-        reader.onload = () => setAvatarPreview(reader.result as string);
-        reader.readAsDataURL(file);
-    };
-
-    const handleAvatarUpload = async () => {
-        const file = fileInputRef.current?.files?.[0];
-        if (!file || !user) return;
-
-        setUploadingAvatar(true);
-        try {
-            // Compress image to a small square for avatar use
-            const compressImage = (f: File): Promise<Blob> => {
-                return new Promise((resolve, reject) => {
-                    const img = new Image();
-                    img.onload = () => {
-                        const canvas = document.createElement("canvas");
-                        const size = 128; // Small for metadata storage
-                        canvas.width = size;
-                        canvas.height = size;
-                        const ctx = canvas.getContext("2d")!;
-                        // Crop to center square
-                        const min = Math.min(img.width, img.height);
-                        const sx = (img.width - min) / 2;
-                        const sy = (img.height - min) / 2;
-                        ctx.drawImage(img, sx, sy, min, min, 0, 0, size, size);
-                        canvas.toBlob(
-                            (blob) => blob ? resolve(blob) : reject(new Error("Canvas toBlob failed")),
-                            "image/jpeg",
-                            0.7
-                        );
-                    };
-                    img.onerror = () => reject(new Error("Failed to load image"));
-                    img.src = URL.createObjectURL(f);
-                });
-            };
-
-            const compressed = await compressImage(file);
-
-            // Convert to base64 data URL for user metadata storage
-            const toDataUrl = (blob: Blob): Promise<string> => {
-                return new Promise((resolve, reject) => {
-                    const reader = new FileReader();
-                    reader.onload = () => resolve(reader.result as string);
-                    reader.onerror = () => reject(new Error("FileReader failed"));
-                    reader.readAsDataURL(blob);
-                });
-            };
-
-            // Try storage first
-            let savedUrl: string | null = null;
-            const fileName = `${user.id}.jpg`;
-
-            try {
-                const { error: uploadError } = await supabase.storage
-                    .from("avatars")
-                    .upload(fileName, compressed, { upsert: true, contentType: "image/jpeg" });
-
-                if (!uploadError) {
-                    const { data: urlData } = supabase.storage
-                        .from("avatars")
-                        .getPublicUrl(fileName);
-                    savedUrl = urlData.publicUrl + `?t=${Date.now()}`;
-                }
-            } catch {
-                // Storage not available, will use data URL fallback
-            }
-
-            // Fallback to data URL in metadata
-            if (!savedUrl) {
-                savedUrl = await toDataUrl(compressed);
-            }
-
-            // Save to user metadata
-            const { error: metaError } = await supabase.auth.updateUser({
-                data: { avatar_url: savedUrl }
-            });
-            if (metaError) throw metaError;
-
-            // Force session refresh so sidebar avatar updates immediately
-            // getSession re-reads the session from storage where updateUser already wrote it
-            await supabase.auth.getSession();
-
-            setAvatarUrl(savedUrl);
-            setAvatarPreview(null);
-            if (fileInputRef.current) fileInputRef.current.value = "";
-            toast.success("Profile picture updated!");
-        } catch (err: any) {
-            console.error("Avatar upload error:", err);
-            toast.error(err.message || "Failed to upload avatar");
-        } finally {
-            setUploadingAvatar(false);
-        }
-    };
-
-    const handleRemoveAvatar = async () => {
-        try {
-            await supabase.auth.updateUser({ data: { avatar_url: null } });
-            await supabase.auth.getSession(); // refresh sidebar
-            setAvatarUrl(null);
-            setAvatarPreview(null);
-            toast.success("Profile picture removed");
-        } catch {
-            toast.error("Failed to remove avatar");
         }
     };
 
@@ -238,10 +103,6 @@ export default function SettingsPage() {
         { value: "light" as const, label: "Light", icon: Sun, desc: "Classic and clean" },
         { value: "system" as const, label: "Auto", icon: Monitor, desc: "Match your OS" },
     ];
-
-    const initials = displayName
-        ? displayName.split(" ").map(w => w[0]).join("").toUpperCase().slice(0, 2)
-        : user?.email?.charAt(0).toUpperCase() || "?";
 
     const navSections = [
         { id: "profile", label: "Profile", icon: User },
@@ -299,75 +160,15 @@ export default function SettingsPage() {
                             </div>
                         </div>
 
-                        {/* Avatar Upload */}
-                        <div className="flex items-center gap-6">
-                            <div className="relative group">
-                                <div className="w-24 h-24 rounded-3xl overflow-hidden border-2 border-border bg-muted flex items-center justify-center">
-                                    {avatarPreview ? (
-                                        <img src={avatarPreview} alt="Preview" className="w-full h-full object-cover" />
-                                    ) : avatarUrl ? (
-                                        <img src={avatarUrl} alt="Avatar" className="w-full h-full object-cover" />
-                                    ) : (
-                                        <span className="text-2xl font-bold text-muted-foreground">{initials}</span>
-                                    )}
-                                </div>
-                                {/* Overlay */}
-                                <button
-                                    onClick={() => fileInputRef.current?.click()}
-                                    className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 rounded-3xl flex items-center justify-center transition-opacity cursor-pointer"
-                                >
-                                    <Camera className="w-6 h-6 text-white" />
-                                </button>
-                                <input
-                                    ref={fileInputRef}
-                                    type="file"
-                                    accept="image/*"
-                                    onChange={handleAvatarSelect}
-                                    className="hidden"
-                                />
-                            </div>
-                            <div className="space-y-2">
-                                <p className="text-sm font-semibold text-foreground">Profile Picture</p>
-                                <p className="text-xs text-muted-foreground">JPG, PNG or GIF. Max 5MB.</p>
-                                <div className="flex items-center gap-2">
-                                    {avatarPreview ? (
-                                        <>
-                                            <button
-                                                onClick={handleAvatarUpload}
-                                                disabled={uploadingAvatar}
-                                                className="px-3 py-1.5 bg-primary text-primary-foreground rounded-xl text-xs font-semibold hover:opacity-90 transition-opacity disabled:opacity-50 flex items-center gap-1.5"
-                                            >
-                                                {uploadingAvatar ? <Loader2 className="w-3 h-3 animate-spin" /> : <Upload className="w-3 h-3" />}
-                                                Save
-                                            </button>
-                                            <button
-                                                onClick={() => { setAvatarPreview(null); if (fileInputRef.current) fileInputRef.current.value = ""; }}
-                                                className="px-3 py-1.5 border border-border rounded-xl text-xs font-semibold text-muted-foreground hover:text-foreground transition-colors"
-                                            >
-                                                Cancel
-                                            </button>
-                                        </>
-                                    ) : (
-                                        <>
-                                            <button
-                                                onClick={() => fileInputRef.current?.click()}
-                                                className="px-3 py-1.5 border border-border rounded-xl text-xs font-semibold text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-all"
-                                            >
-                                                Upload
-                                            </button>
-                                            {avatarUrl && (
-                                                <button
-                                                    onClick={handleRemoveAvatar}
-                                                    className="px-3 py-1.5 text-xs font-semibold text-red-400 hover:text-red-500 transition-colors"
-                                                >
-                                                    Remove
-                                                </button>
-                                            )}
-                                        </>
-                                    )}
-                                </div>
-                            </div>
-                        </div>
+                        <p className="text-xs text-muted-foreground -mt-4">
+                            Your profile picture and retirement details are managed on the{" "}
+                            <button
+                                onClick={() => navigate("/app/profile")}
+                                className="text-primary hover:underline font-semibold"
+                            >
+                                Profile page
+                            </button>.
+                        </p>
 
                         {/* Display Name */}
                         <div className="space-y-2">

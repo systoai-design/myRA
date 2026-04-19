@@ -70,12 +70,34 @@ export default function AppLayout({ children }: AppLayoutProps) {
                 <div className="p-6 mb-8">
                     <Link to="/" className="flex items-center gap-3 group">
                         <div className="w-10 h-10 rounded-2xl bg-gradient-to-tr from-primary to-blue-600 flex items-center justify-center shadow-lg shadow-primary/20 transition-transform group-hover:scale-110">
-                            <span className="font-serif text-white text-sm font-bold tracking-tighter">RA</span>
+                            <span
+                                style={{
+                                    fontFamily: "'Playfair Display', Georgia, serif",
+                                    fontStyle: "italic",
+                                    fontWeight: 700,
+                                    fontSize: 20,
+                                    color: "#fff",
+                                    lineHeight: 1,
+                                }}
+                            >
+                                m
+                            </span>
                         </div>
                         {!sidebarCollapsed && (
                             <div className="flex flex-col animate-in fade-in slide-in-from-left-2">
-                                <span className="text-xl font-serif font-bold tracking-tight text-foreground">myra</span>
-                                <span className="text-[10px] uppercase tracking-[0.2em] text-muted-foreground font-bold -mt-1">Fiduciary AI</span>
+                                <span
+                                    style={{
+                                        fontFamily: "'Playfair Display', Georgia, serif",
+                                        fontStyle: "italic",
+                                        fontWeight: 600,
+                                        fontSize: 22,
+                                        lineHeight: 1,
+                                    }}
+                                    className="text-foreground"
+                                >
+                                    myra
+                                </span>
+                                <span className="text-[10px] uppercase tracking-[0.2em] text-muted-foreground font-bold mt-1">Fiduciary AI</span>
                             </div>
                         )}
                     </Link>
