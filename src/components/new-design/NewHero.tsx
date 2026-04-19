@@ -4,6 +4,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useScrollReveal } from "./hooks";
 
 const ACCENT = "#00D4AA";
+const BLUE = "#4F8BFF";
 
 const rotatingQuestions = [
     "How much do I need to retire comfortably?",
@@ -81,6 +82,39 @@ const NewHero = () => {
                 padding: "140px 24px 80px",
             }}
         >
+            {/* Cinematic video background */}
+            <video
+                autoPlay
+                muted
+                loop
+                playsInline
+                preload="metadata"
+                aria-hidden
+                style={{
+                    position: "absolute",
+                    inset: 0,
+                    width: "100%",
+                    height: "100%",
+                    objectFit: "cover",
+                    opacity: 0.35,
+                    pointerEvents: "none",
+                    zIndex: 0,
+                }}
+            >
+                <source src="/hero-adobe.mp4" type="video/mp4" />
+            </video>
+            {/* Dark gradient overlay on top of video for text legibility */}
+            <div
+                aria-hidden
+                style={{
+                    position: "absolute",
+                    inset: 0,
+                    background: "linear-gradient(180deg, rgba(0,0,0,0.55) 0%, rgba(0,0,0,0.35) 40%, rgba(5,8,16,0.85) 100%)",
+                    pointerEvents: "none",
+                    zIndex: 1,
+                }}
+            />
+
             {/* Gradient orbs */}
             <div
                 aria-hidden
@@ -95,6 +129,7 @@ const NewHero = () => {
                     background: `radial-gradient(circle, ${ACCENT}26 0%, transparent 70%)`,
                     filter: "blur(60px)",
                     pointerEvents: "none",
+                    zIndex: 2,
                 }}
             />
             <div
@@ -109,42 +144,51 @@ const NewHero = () => {
                     background: `radial-gradient(circle, ${ACCENT}1a 0%, transparent 70%)`,
                     filter: "blur(80px)",
                     pointerEvents: "none",
+                    zIndex: 2,
                 }}
             />
 
-            {/* Badge */}
+            {/* CFP Badge */}
             <div
                 style={{
+                    position: "relative",
+                    zIndex: 3,
                     display: "inline-flex",
                     alignItems: "center",
-                    gap: 8,
-                    padding: "6px 16px",
-                    borderRadius: 20,
-                    background: "var(--myra-glass)",
-                    border: "1px solid var(--myra-glass-border)",
+                    gap: 10,
+                    padding: "8px 16px 8px 10px",
+                    borderRadius: 999,
+                    background: "rgba(255,255,255,0.06)",
+                    border: "1px solid rgba(255,255,255,0.12)",
                     backdropFilter: "blur(12px)",
                     WebkitBackdropFilter: "blur(12px)",
                     marginBottom: 32,
                     ...reveal(0),
                 }}
             >
-                <span style={{ width: 6, height: 6, borderRadius: "50%", background: ACCENT }} />
+                <img
+                    src="/cfp-logo.png"
+                    alt="CFP Certified"
+                    style={{ width: 28, height: 28, objectFit: "contain" }}
+                />
                 <span
                     style={{
                         fontSize: 12,
-                        fontWeight: 500,
+                        fontWeight: 600,
                         letterSpacing: "0.08em",
                         textTransform: "uppercase",
-                        color: "var(--myra-text-secondary)",
+                        color: "rgba(255,255,255,0.85)",
                     }}
                 >
-                    Fiduciary Standard · AI Powered
+                    CFP<span style={{ fontSize: 8, verticalAlign: "super" }}>®</span> Certified · Fiduciary
                 </span>
             </div>
 
             {/* Headline */}
             <h1
                 style={{
+                    position: "relative",
+                    zIndex: 3,
                     fontFamily: "var(--myra-font-display)",
                     fontWeight: 400,
                     fontSize: "clamp(48px, 8vw, 96px)",
@@ -152,21 +196,34 @@ const NewHero = () => {
                     textAlign: "center",
                     maxWidth: 900,
                     margin: 0,
+                    color: "#fff",
                     ...reveal(0.15),
                 }}
             >
-                Your money.{" "}
-                <span style={{ fontStyle: "italic", color: ACCENT }}>Smarter.</span>
+                Hello, I'm{" "}
+                <span
+                    style={{
+                        fontStyle: "italic",
+                        fontWeight: 600,
+                        color: BLUE,
+                    }}
+                >
+                    myra.
+                </span>
             </h1>
 
             <p
                 style={{
-                    fontSize: 20,
+                    position: "relative",
+                    zIndex: 3,
+                    fontFamily: "var(--myra-font-body)",
+                    fontSize: 22,
+                    fontWeight: 700,
                     lineHeight: 1.5,
-                    color: "var(--myra-text-secondary)",
+                    color: "#fff",
                     textAlign: "center",
-                    maxWidth: 520,
-                    marginTop: 24,
+                    maxWidth: 620,
+                    marginTop: 28,
                     textWrap: "pretty",
                     ...reveal(0.3),
                 }}
@@ -178,11 +235,13 @@ const NewHero = () => {
             <div
                 onClick={handleChatClick}
                 style={{
+                    position: "relative",
+                    zIndex: 3,
                     marginTop: 48,
                     width: "100%",
                     maxWidth: 560,
-                    background: "var(--myra-glass)",
-                    border: "1px solid var(--myra-glass-border)",
+                    background: "rgba(255,255,255,0.08)",
+                    border: "1px solid rgba(255,255,255,0.14)",
                     borderRadius: 16,
                     padding: "4px 4px 4px 20px",
                     display: "flex",
@@ -197,7 +256,7 @@ const NewHero = () => {
                     style={{
                         flex: 1,
                         fontSize: 15,
-                        color: "var(--myra-text-secondary)",
+                        color: "rgba(255,255,255,0.7)",
                         fontFamily: "var(--myra-font-body)",
                         minHeight: 44,
                         display: "flex",
@@ -244,6 +303,8 @@ const NewHero = () => {
             {/* Trust badges */}
             <div
                 style={{
+                    position: "relative",
+                    zIndex: 3,
                     display: "flex",
                     flexWrap: "wrap",
                     justifyContent: "center",
@@ -263,7 +324,7 @@ const NewHero = () => {
                         <span
                             style={{
                                 fontSize: 12,
-                                color: "var(--myra-text-secondary)",
+                                color: "rgba(255,255,255,0.7)",
                                 letterSpacing: "0.02em",
                             }}
                         >

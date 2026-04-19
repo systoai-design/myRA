@@ -84,22 +84,22 @@ const NewMobileApp = () => {
                     </div>
                     <h2
                         style={{
-                            fontFamily: "var(--myra-font-display)",
                             fontSize: "clamp(32px, 4vw, 56px)",
-                            fontWeight: 400,
                             lineHeight: 1.1,
                             marginBottom: 20,
                         }}
                     >
-                        Your entire financial life,{" "}
-                        <span style={{ fontStyle: "italic", color: ACCENT }}>in your pocket.</span>
+                        <span style={{ fontFamily: "var(--myra-font-display)", fontWeight: 700 }}>Your</span>{" "}
+                        <span style={{ fontFamily: "var(--myra-font-body)", fontWeight: 400 }}>entire financial life, in your pocket.</span>
                     </h2>
                     <p
                         style={{
-                            fontSize: 16,
-                            lineHeight: 1.7,
-                            color: "var(--myra-text-secondary)",
-                            maxWidth: 400,
+                            fontFamily: "var(--myra-font-body)",
+                            fontSize: 18,
+                            fontWeight: 700,
+                            lineHeight: 1.6,
+                            color: "var(--myra-text)",
+                            maxWidth: 440,
                         }}
                     >
                         Track your net worth, execute AI tax-loss harvesting, and chat with myra directly from your iPhone.

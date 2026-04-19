@@ -42,19 +42,34 @@ const NewFAQ = () => {
         >
             <h2
                 style={{
-                    fontFamily: "var(--myra-font-display)",
-                    fontSize: "clamp(36px, 5vw, 56px)",
-                    fontWeight: 400,
+                    fontSize: "clamp(30px, 4.2vw, 54px)",
                     textAlign: "center",
                     lineHeight: 1.1,
                     margin: 0,
+                    maxWidth: 900,
                     opacity: visible ? 1 : 0,
                     transform: visible ? "translateY(0)" : "translateY(30px)",
                     transition: "all 0.8s cubic-bezier(0.16, 1, 0.3, 1)",
                 }}
             >
-                Ask <span style={{ fontStyle: "italic", color: ACCENT }}>anything</span>
+                <span style={{ fontFamily: "var(--myra-font-display)", fontWeight: 700 }}>Frequently</span>{" "}
+                <span style={{ fontFamily: "var(--myra-font-body)", fontWeight: 400 }}>Asked Questions</span>
             </h2>
+            <p
+                style={{
+                    fontFamily: "'Lato', system-ui, sans-serif",
+                    fontSize: 18,
+                    fontWeight: 700,
+                    color: "var(--myra-text)",
+                    textAlign: "center",
+                    marginTop: 14,
+                    maxWidth: 520,
+                    opacity: visible ? 1 : 0,
+                    transition: "opacity 0.8s ease 0.2s",
+                }}
+            >
+                Clear answers to common questions.
+            </p>
 
             <div
                 style={{
@@ -84,15 +99,16 @@ const NewFAQ = () => {
                             aria-expanded={open === i}
                             style={{
                                 width: "100%",
-                                padding: "18px 20px",
+                                padding: "22px 24px",
                                 background: "none",
                                 border: "none",
                                 color: "var(--myra-text)",
-                                fontSize: 15,
-                                fontWeight: 500,
+                                fontSize: 18,
+                                fontWeight: 600,
+                                lineHeight: 1.4,
                                 textAlign: "left",
                                 cursor: "pointer",
-                                fontFamily: "var(--myra-font-body)",
+                                fontFamily: "'Lato', system-ui, sans-serif",
                                 display: "flex",
                                 justifyContent: "space-between",
                                 alignItems: "center",
@@ -116,15 +132,16 @@ const NewFAQ = () => {
                         </button>
                         <div
                             style={{
-                                maxHeight: open === i ? 300 : 0,
+                                maxHeight: open === i ? 400 : 0,
                                 overflow: "hidden",
                                 transition: "max-height 0.4s cubic-bezier(0.16, 1, 0.3, 1)",
                             }}
                         >
                             <p
                                 style={{
-                                    padding: "0 20px 18px",
-                                    fontSize: 14,
+                                    padding: "0 24px 22px",
+                                    fontFamily: "'Lato', system-ui, sans-serif",
+                                    fontSize: 16,
                                     lineHeight: 1.7,
                                     color: "var(--myra-text-secondary)",
                                     margin: 0,
