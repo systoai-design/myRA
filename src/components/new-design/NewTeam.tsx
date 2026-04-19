@@ -3,10 +3,12 @@ import { useScrollReveal } from "./hooks";
 
 const ACCENT = "#00D4AA";
 
-type Member = { name: string; role: string; img: string };
+type Member = { name: string; role: string; img: string; objectPosition?: string };
 
 const teamData: Member[] = [
-    { name: "Darren P.", role: "Creator", img: "/team/Darren.avif" },
+    // Darren's source image is framed wider than the others; pull up and slightly left so
+    // the crop reads as a tight headshot matching the rest of the grid.
+    { name: "Darren P.", role: "Creator", img: "/team/Darren.avif", objectPosition: "50% 18%" },
     { name: "Sierrah P.", role: "Creator", img: "/team/Sierra.avif" },
     { name: "Marquis L.", role: "Strategy", img: "/team/Marquis.avif" },
     { name: "Amanda W.", role: "Designer", img: "/team/Amanda.avif" },
@@ -48,6 +50,7 @@ const TeamAvatar = ({ member }: { member: Member }) => {
                         width: "100%",
                         height: "100%",
                         objectFit: "cover",
+                        objectPosition: member.objectPosition || "50% 30%",
                         filter: "grayscale(0.1) contrast(1.02)",
                     }}
                 />
@@ -106,6 +109,7 @@ const NewTeam = () => {
                     fontFamily: "var(--myra-font-display)",
                     fontSize: "clamp(36px, 5vw, 56px)",
                     fontWeight: 400,
+                    fontStyle: "normal",
                     textAlign: "center",
                     lineHeight: 1.1,
                     margin: 0,
@@ -113,17 +117,19 @@ const NewTeam = () => {
                     transform: visible ? "translateY(0)" : "translateY(30px)",
                     transition: "all 0.8s cubic-bezier(0.16, 1, 0.3, 1) 0.1s",
                     position: "relative",
+                    color: "var(--myra-text)",
                 }}
             >
-                myra's <span style={{ fontStyle: "italic" }}>Back Office</span>
+                myra's Back Office
             </h2>
             <p
                 style={{
-                    fontSize: 16,
-                    color: "var(--myra-text-secondary)",
+                    fontSize: "clamp(16px, 1.4vw, 19px)",
+                    fontWeight: 700,
+                    color: "var(--myra-text)",
                     textAlign: "center",
                     marginTop: 12,
-                    maxWidth: 480,
+                    maxWidth: 520,
                     opacity: visible ? 1 : 0,
                     transition: "opacity 0.8s ease 0.2s",
                     position: "relative",

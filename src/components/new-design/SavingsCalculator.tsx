@@ -63,25 +63,26 @@ const SavingsCalculator = () => {
             </span>
             <h2
                 style={{
-                    fontFamily: "var(--myra-font-display)",
                     fontSize: "clamp(36px, 5vw, 72px)",
-                    fontWeight: 400,
                     textAlign: "center",
                     lineHeight: 1.1,
-                    maxWidth: 700,
+                    maxWidth: 800,
                     margin: 0,
+                    color: "var(--myra-text)",
                     ...reveal(0.1),
                 }}
             >
-                Calculate <span style={{ fontStyle: "italic", color: ACCENT }}>how much</span> you save
+                <span style={{ fontFamily: "var(--myra-font-display)", fontStyle: "italic", fontWeight: 700, color: ACCENT }}>Calculate</span>
+                <span style={{ fontFamily: "var(--myra-font-body)", fontWeight: 400 }}> how much you save</span>
             </h2>
             <p
                 style={{
-                    fontSize: 17,
-                    color: "var(--myra-text-secondary)",
+                    fontSize: "clamp(17px, 1.6vw, 20px)",
+                    fontWeight: 700,
+                    color: "var(--myra-text)",
                     textAlign: "center",
                     marginTop: 16,
-                    maxWidth: 460,
+                    maxWidth: 520,
                     opacity: visible ? 1 : 0,
                     transition: "opacity 0.8s ease 0.2s",
                 }}

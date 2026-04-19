@@ -53,19 +53,19 @@ const NewAppMockup = () => {
 
             <h2
                 style={{
-                    fontFamily: "var(--myra-font-display)",
                     fontSize: "clamp(36px, 5vw, 72px)",
-                    fontWeight: 400,
                     textAlign: "center",
                     lineHeight: 1.1,
-                    maxWidth: 700,
+                    maxWidth: 800,
                     margin: 0,
                     opacity: visible ? 1 : 0,
                     transform: visible ? "translateY(0)" : "translateY(30px)",
                     transition: "all 0.8s cubic-bezier(0.16, 1, 0.3, 1) 0.1s",
+                    color: "var(--myra-text)",
                 }}
             >
-                Manage your <span style={{ fontStyle: "italic", color: ACCENT }}>Net Worth</span>
+                <span style={{ fontFamily: "var(--myra-font-display)", fontStyle: "italic", fontWeight: 700, color: ACCENT }}>Manage</span>
+                <span style={{ fontFamily: "var(--myra-font-body)", fontWeight: 400 }}> your Net Worth</span>
             </h2>
 
             {/* 3D Dashboard */}
