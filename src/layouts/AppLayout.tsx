@@ -50,14 +50,54 @@ export default function AppLayout({ children }: AppLayoutProps) {
 
     return (
         <div className="h-screen bg-background text-foreground flex overflow-hidden font-sans selection:bg-primary/30">
-            {/* Background Effects */}
-            <div className="fixed inset-0 z-0 pointer-events-none">
+            {/* Background Effects — vibrant aurora wash */}
+            <div className="fixed inset-0 z-0 pointer-events-none overflow-hidden">
                 {/* Light mode: soft gradient wash */}
-                <div className="absolute inset-0 bg-gradient-to-br from-blue-50/80 via-transparent to-purple-50/40 dark:from-transparent dark:via-transparent dark:to-transparent" />
-                {/* Dark mode: aurora orbs */}
-                <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-transparent dark:bg-blue-600/10 blur-[120px] rounded-full" />
-                <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-transparent dark:bg-purple-600/5 blur-[120px] rounded-full" />
-                <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-[0.015] dark:opacity-[0.03] mix-blend-overlay" />
+                <div className="absolute inset-0 bg-gradient-to-br from-blue-50/80 via-transparent to-purple-50/40 dark:opacity-0" />
+
+                {/* Dark mode: vibrant aurora — top-left indigo → center purple → bottom-right magenta */}
+                <div
+                    className="absolute inset-0 hidden dark:block"
+                    style={{
+                        background: `
+                            radial-gradient(ellipse 80% 60% at 8% 0%, rgba(79, 70, 229, 0.55) 0%, transparent 55%),
+                            radial-gradient(ellipse 70% 55% at 95% 15%, rgba(217, 70, 239, 0.38) 0%, transparent 60%),
+                            radial-gradient(ellipse 90% 70% at 50% 100%, rgba(139, 92, 246, 0.45) 0%, transparent 60%),
+                            radial-gradient(ellipse 60% 50% at 0% 100%, rgba(59, 130, 246, 0.30) 0%, transparent 55%),
+                            linear-gradient(135deg, #0a0a1a 0%, #140f28 50%, #1a0a24 100%)
+                        `,
+                    }}
+                />
+
+                {/* Drifting orbs — extra life */}
+                <div
+                    className="absolute top-[-15%] left-[-10%] w-[55%] h-[55%] rounded-full hidden dark:block"
+                    style={{
+                        background: "radial-gradient(circle, rgba(99, 102, 241, 0.35), transparent 70%)",
+                        filter: "blur(100px)",
+                        animation: "orb-drift 22s ease-in-out infinite",
+                    }}
+                />
+                <div
+                    className="absolute top-[20%] right-[-10%] w-[45%] h-[45%] rounded-full hidden dark:block"
+                    style={{
+                        background: "radial-gradient(circle, rgba(217, 70, 239, 0.28), transparent 70%)",
+                        filter: "blur(100px)",
+                        animation: "orb-drift 26s ease-in-out infinite reverse",
+                    }}
+                />
+                <div
+                    className="absolute bottom-[-15%] left-[25%] w-[50%] h-[50%] rounded-full hidden dark:block"
+                    style={{
+                        background: "radial-gradient(circle, rgba(139, 92, 246, 0.30), transparent 70%)",
+                        filter: "blur(120px)",
+                        animation: "orb-drift 30s ease-in-out infinite",
+                        animationDelay: "-10s",
+                    }}
+                />
+
+                {/* Subtle grain */}
+                <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-[0.015] dark:opacity-[0.04] mix-blend-overlay" />
             </div>
 
             {/* Glass Sidebar */}
