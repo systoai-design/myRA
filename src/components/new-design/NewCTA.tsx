@@ -1,50 +1,135 @@
-import { ArrowRight } from "lucide-react";
-import { motion } from "framer-motion";
+import { useNavigate } from "react-router-dom";
+import { useAuth } from "@/contexts/AuthContext";
+import { useScrollReveal } from "./hooks";
+
+const ACCENT = "#00D4AA";
 
 const NewCTA = () => {
+    const navigate = useNavigate();
+    const { user } = useAuth();
+    const [ref, visible] = useScrollReveal<HTMLElement>(0.15);
+
+    const handleLaunch = () => {
+        if (user) navigate("/app");
+        else document.getElementById("auth-modal-trigger")?.click();
+    };
+
+    const handleLearnMore = () => {
+        document.querySelector(".myra-landing section")?.scrollIntoView({ behavior: "smooth" });
+    };
+
     return (
-        <section className="relative py-48 overflow-hidden bg-background">
-            {/* Light: soft blue gradient. Dark: deep blue aurora */}
-            <div className="absolute inset-0 bg-gradient-to-t from-blue-100/60 via-background to-background dark:from-blue-900/40 dark:via-background dark:to-background" />
-            <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-[1200px] h-[600px] bg-blue-400/10 dark:bg-blue-600/20 blur-[150px] rounded-full pointer-events-none" />
-
-            <motion.div 
-                initial={{ opacity: 0, y: 40 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ duration: 1, ease: "easeOut" }}
-                className="relative z-10 mx-auto max-w-4xl px-6 text-center"
-            >
-                
-                <h2 className="text-5xl md:text-7xl font-serif text-foreground mb-8 dark:text-glow">
-                    <span className="italic font-light">Forecast</span> your future.
-                </h2>
-                
-                <p className="text-xl text-muted-foreground font-sans font-light mb-16 max-w-2xl mx-auto">
-                    Take control of your retirement trajectory. Start your free analysis today and see how your money could grow.
-                </p>
-
-                <div className="flex flex-col sm:flex-row items-center justify-center gap-6">
-                    <div 
-                        onClick={() => window.open('/app', '_blank')}
-                        className="group inline-flex rounded-full transition-all hover:scale-[1.02] active:scale-[0.98] cursor-pointer"
-                    >
-                        <div className="flex h-14 w-full items-center justify-center gap-2 rounded-full bg-foreground px-10 text-base font-semibold text-background transition-all hover:opacity-90 shadow-lg">
-                            LAUNCH APP
-                            <ArrowRight className="w-5 h-5 transition-transform group-hover:translate-x-1" />
-                        </div>
-                    </div>
-                    
-                    <button className="inline-flex h-14 items-center justify-center rounded-full border border-black/10 dark:border-white/20 bg-black/[0.03] dark:bg-white/5 px-10 text-base font-semibold text-foreground backdrop-blur-md transition-colors hover:bg-black/[0.06] dark:hover:bg-white/10">
-                        LEARN MORE
-                    </button>
-                </div>
-            </motion.div>
-            
-            <motion.div 
-                initial={{ opacity: 0 }} whileInView={{ opacity: 0.3 }} viewport={{ once: true }} transition={{ duration: 2 }}
-                className="absolute -bottom-32 left-1/2 -translate-x-1/2 w-[110%] max-w-7xl h-64 border-t border-black/5 dark:border-white/10 glass-panel rounded-[100%] blur-[1px]" 
+        <section
+            ref={ref}
+            style={{
+                padding: "120px 24px",
+                display: "flex",
+                flexDirection: "column",
+                alignItems: "center",
+                position: "relative",
+            }}
+        >
+            <div
+                aria-hidden
+                style={{
+                    position: "absolute",
+                    inset: 0,
+                    background: `linear-gradient(180deg, transparent 0%, ${ACCENT}0f 50%, transparent 100%)`,
+                    pointerEvents: "none",
+                }}
             />
+
+            <h2
+                style={{
+                    fontFamily: "var(--myra-font-display)",
+                    fontSize: "clamp(40px, 6vw, 80px)",
+                    fontWeight: 400,
+                    textAlign: "center",
+                    lineHeight: 1.1,
+                    maxWidth: 700,
+                    margin: 0,
+                    position: "relative",
+                    opacity: visible ? 1 : 0,
+                    transform: visible ? "translateY(0)" : "translateY(30px)",
+                    transition: "all 0.8s cubic-bezier(0.16, 1, 0.3, 1)",
+                }}
+            >
+                Forecast <span style={{ fontStyle: "italic", color: ACCENT }}>your future.</span>
+            </h2>
+            <p
+                style={{
+                    fontSize: 18,
+                    color: "var(--myra-text-secondary)",
+                    textAlign: "center",
+                    marginTop: 20,
+                    maxWidth: 500,
+                    position: "relative",
+                    textWrap: "pretty",
+                    opacity: visible ? 1 : 0,
+                    transition: "opacity 0.8s ease 0.15s",
+                }}
+            >
+                Take control of your retirement trajectory. Start your free analysis today and see how your money could grow.
+            </p>
+
+            <div
+                style={{
+                    display: "flex",
+                    flexWrap: "wrap",
+                    justifyContent: "center",
+                    gap: 12,
+                    marginTop: 40,
+                    position: "relative",
+                    opacity: visible ? 1 : 0,
+                    transition: "opacity 0.8s ease 0.3s",
+                }}
+            >
+                <button
+                    onClick={handleLaunch}
+                    style={{
+                        background: ACCENT,
+                        color: "#000",
+                        border: "none",
+                        padding: "16px 36px",
+                        borderRadius: 14,
+                        fontSize: 16,
+                        fontWeight: 600,
+                        cursor: "pointer",
+                        fontFamily: "var(--myra-font-body)",
+                        display: "inline-flex",
+                        alignItems: "center",
+                        gap: 8,
+                        transition: "transform 0.2s ease",
+                    }}
+                    onMouseEnter={(e) => (e.currentTarget.style.transform = "scale(1.03)")}
+                    onMouseLeave={(e) => (e.currentTarget.style.transform = "scale(1)")}
+                >
+                    {user ? "Open App" : "Launch App"}
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
+                        <line x1="5" y1="12" x2="19" y2="12" />
+                        <polyline points="12 5 19 12 12 19" />
+                    </svg>
+                </button>
+                <button
+                    onClick={handleLearnMore}
+                    style={{
+                        background: "transparent",
+                        color: "var(--myra-text)",
+                        border: "1px solid var(--myra-glass-border)",
+                        padding: "16px 36px",
+                        borderRadius: 14,
+                        fontSize: 16,
+                        fontWeight: 500,
+                        cursor: "pointer",
+                        fontFamily: "var(--myra-font-body)",
+                        transition: "border-color 0.2s ease",
+                    }}
+                    onMouseEnter={(e) => (e.currentTarget.style.borderColor = "rgba(255,255,255,0.2)")}
+                    onMouseLeave={(e) => (e.currentTarget.style.borderColor = "var(--myra-glass-border)")}
+                >
+                    Learn More
+                </button>
+            </div>
         </section>
     );
 };

@@ -1,8 +1,9 @@
-import { ArrowRight, Play } from "lucide-react";
-import { Link, useNavigate } from "react-router-dom";
-import { motion } from "framer-motion";
 import { useState, useEffect, useCallback } from "react";
+import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
+import { useScrollReveal } from "./hooks";
+
+const ACCENT = "#00D4AA";
 
 const rotatingQuestions = [
     "How much do I need to retire comfortably?",
@@ -22,7 +23,6 @@ const useTypewriter = (texts: string[], typingSpeed = 45, deletingSpeed = 25, pa
 
     const tick = useCallback(() => {
         const currentFullText = texts[textIndex];
-
         if (!isDeleting) {
             if (displayText.length < currentFullText.length) {
                 setDisplayText(currentFullText.substring(0, displayText.length + 1));
@@ -54,136 +54,224 @@ const NewHero = () => {
     const typedQuestion = useTypewriter(rotatingQuestions);
     const navigate = useNavigate();
     const { user } = useAuth();
+    const [ref, visible] = useScrollReveal<HTMLElement>(0.05);
 
     const handleChatClick = () => {
-        if (user) {
-            navigate("/app/chat");
-        } else {
-            document.getElementById('auth-modal-trigger')?.click();
-        }
+        if (user) navigate("/app/chat");
+        else document.getElementById("auth-modal-trigger")?.click();
     };
 
+    const reveal = (delay = 0): React.CSSProperties => ({
+        opacity: visible ? 1 : 0,
+        transform: visible ? "translateY(0)" : "translateY(30px)",
+        transition: `opacity 1s cubic-bezier(0.16,1,0.3,1) ${delay}s, transform 1s cubic-bezier(0.16,1,0.3,1) ${delay}s`,
+    });
+
     return (
-        <section className="relative min-h-[95vh] flex flex-col items-center justify-center overflow-hidden bg-black pt-20">
-            {/* Background Video */}
-            <div className="absolute inset-0 z-0">
-                <video 
-                    autoPlay 
-                    loop 
-                    muted 
-                    playsInline
-                    className="absolute inset-0 w-full h-full object-cover opacity-60"
+        <section
+            ref={ref}
+            style={{
+                minHeight: "100vh",
+                display: "flex",
+                flexDirection: "column",
+                alignItems: "center",
+                justifyContent: "center",
+                position: "relative",
+                overflow: "hidden",
+                padding: "140px 24px 80px",
+            }}
+        >
+            {/* Gradient orbs */}
+            <div
+                aria-hidden
+                style={{
+                    position: "absolute",
+                    top: "8%",
+                    left: "50%",
+                    transform: "translate(-50%, -30%)",
+                    width: 800,
+                    height: 800,
+                    borderRadius: "50%",
+                    background: `radial-gradient(circle, ${ACCENT}26 0%, transparent 70%)`,
+                    filter: "blur(60px)",
+                    pointerEvents: "none",
+                }}
+            />
+            <div
+                aria-hidden
+                style={{
+                    position: "absolute",
+                    top: "40%",
+                    right: "-10%",
+                    width: 500,
+                    height: 500,
+                    borderRadius: "50%",
+                    background: `radial-gradient(circle, ${ACCENT}1a 0%, transparent 70%)`,
+                    filter: "blur(80px)",
+                    pointerEvents: "none",
+                }}
+            />
+
+            {/* Badge */}
+            <div
+                style={{
+                    display: "inline-flex",
+                    alignItems: "center",
+                    gap: 8,
+                    padding: "6px 16px",
+                    borderRadius: 20,
+                    background: "var(--myra-glass)",
+                    border: "1px solid var(--myra-glass-border)",
+                    backdropFilter: "blur(12px)",
+                    WebkitBackdropFilter: "blur(12px)",
+                    marginBottom: 32,
+                    ...reveal(0),
+                }}
+            >
+                <span style={{ width: 6, height: 6, borderRadius: "50%", background: ACCENT }} />
+                <span
+                    style={{
+                        fontSize: 12,
+                        fontWeight: 500,
+                        letterSpacing: "0.08em",
+                        textTransform: "uppercase",
+                        color: "var(--myra-text-secondary)",
+                    }}
                 >
-                    <source src="/hero-bg.mp4" type="video/mp4" />
-                </video>
-                
-                {/* Black fade — top */}
-                <div className="absolute inset-x-0 top-0 h-[30%] bg-gradient-to-b from-black via-black/80 to-transparent" />
-                {/* Black fade — bottom */}
-                <div className="absolute inset-x-0 bottom-0 h-[35%] bg-gradient-to-t from-black via-black/80 to-transparent" />
-                {/* Left/right vignette */}
-                <div className="absolute inset-0 bg-gradient-to-r from-black/50 via-transparent to-black/50" />
+                    Fiduciary Standard · AI Powered
+                </span>
             </div>
 
-            <motion.div 
-                initial={{ opacity: 0, y: 30 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.8, ease: "easeOut" }}
-                className="relative z-10 w-full max-w-5xl mx-auto px-6 flex flex-col items-center text-center mt-12 mb-24"
+            {/* Headline */}
+            <h1
+                style={{
+                    fontFamily: "var(--myra-font-display)",
+                    fontWeight: 400,
+                    fontSize: "clamp(48px, 8vw, 96px)",
+                    lineHeight: 1.05,
+                    textAlign: "center",
+                    maxWidth: 900,
+                    margin: 0,
+                    ...reveal(0.15),
+                }}
             >
-                {/* Badge */}
-                <motion.div 
-                    initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}
-                    className="mb-12 inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/5 px-4 py-1.5 backdrop-blur-md"
-                >
-                    <span className="text-[11px] font-bold tracking-widest uppercase text-white/80 font-sans">
-                        Fiduciary Standard • AI Powered
-                    </span>
-                </motion.div>
+                Your money.{" "}
+                <span style={{ fontStyle: "italic", color: ACCENT }}>Smarter.</span>
+            </h1>
 
-                {/* Headline — "Hello, I'm myra" */}
-                <motion.h1 
-                    initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2, duration: 0.8 }}
-                    className="text-5xl sm:text-6xl md:text-[5.5rem] leading-[1.1] font-serif text-white mb-8 text-glow"
-                >
-                    Hello, I'm <span className="italic">myra</span>
-                    <span className="inline-block ml-3 text-4xl sm:text-5xl md:text-6xl">👋</span>
-                </motion.h1>
+            <p
+                style={{
+                    fontSize: 20,
+                    lineHeight: 1.5,
+                    color: "var(--myra-text-secondary)",
+                    textAlign: "center",
+                    maxWidth: 520,
+                    marginTop: 24,
+                    textWrap: "pretty",
+                    ...reveal(0.3),
+                }}
+            >
+                Skip the drive. Meet your AI financial advisor here. Keep more of your money while we map your best path forward — together.
+            </p>
 
-                {/* New subtext */}
-                <motion.p 
-                    initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }}
-                    className="max-w-2xl mx-auto text-lg sm:text-xl text-white/60 font-sans font-light mb-12 leading-relaxed"
+            {/* Chat input with rotating typewriter */}
+            <div
+                onClick={handleChatClick}
+                style={{
+                    marginTop: 48,
+                    width: "100%",
+                    maxWidth: 560,
+                    background: "var(--myra-glass)",
+                    border: "1px solid var(--myra-glass-border)",
+                    borderRadius: 16,
+                    padding: "4px 4px 4px 20px",
+                    display: "flex",
+                    alignItems: "center",
+                    backdropFilter: "blur(20px)",
+                    WebkitBackdropFilter: "blur(20px)",
+                    cursor: "pointer",
+                    ...reveal(0.45),
+                }}
+            >
+                <span
+                    style={{
+                        flex: 1,
+                        fontSize: 15,
+                        color: "var(--myra-text-secondary)",
+                        fontFamily: "var(--myra-font-body)",
+                        minHeight: 44,
+                        display: "flex",
+                        alignItems: "center",
+                    }}
                 >
-                    Your modern supplement (or alternative) to a traditional financial advisor. Skip the drive and meet with me here. I'll help you keep more of your money while we map your best financial path forward together.
-                </motion.p>
+                    {typedQuestion}
+                    <span
+                        aria-hidden
+                        style={{
+                            display: "inline-block",
+                            width: 2,
+                            height: 18,
+                            background: ACCENT,
+                            marginLeft: 2,
+                            verticalAlign: "middle",
+                            animation: "myra-blink 1s infinite",
+                        }}
+                    />
+                </span>
+                <button
+                    onClick={(e) => { e.stopPropagation(); handleChatClick(); }}
+                    aria-label={user ? "Open chat" : "Sign up to chat"}
+                    style={{
+                        width: 44,
+                        height: 44,
+                        borderRadius: 12,
+                        background: ACCENT,
+                        border: "none",
+                        cursor: "pointer",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        flexShrink: 0,
+                    }}
+                >
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#000" strokeWidth="2.5" strokeLinecap="round">
+                        <line x1="5" y1="12" x2="19" y2="12" />
+                        <polyline points="12 5 19 12 12 19" />
+                    </svg>
+                </button>
+            </div>
 
-                {/* "Why myra?" CTA */}
-                <motion.div 
-                    initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.4 }}
-                    className="mb-12 inline-flex rounded-full transition-all hover:scale-[1.02] active:scale-[0.98] cursor-pointer"
-                >
-                    <Link 
-                        to="/offer" 
-                        target="_blank" 
-                        className="flex h-12 w-full items-center justify-center gap-3 rounded-full bg-white px-8 text-sm font-semibold text-black transition-all hover:opacity-90 shadow-lg gradient-ring"
-                    >
-                        <Play className="w-4 h-4 fill-black" />
-                        Why myra?
-                        <ArrowRight className="w-4 h-4 opacity-50" />
-                    </Link>
-                </motion.div>
-
-                {/* Glass Chat Input with Typewriter Effect */}
-                <motion.div 
-                    initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.5, duration: 0.8 }}
-                    className="w-full max-w-2xl mx-auto relative group cursor-pointer transition-transform duration-500 hover:scale-[1.01]"
-                >
-                    <div onClick={handleChatClick} className="block relative outline-none focus:outline-none">
-                        {/* Static glow outline */}
-                        <div className="absolute -inset-[2px] rounded-[2rem] bg-gradient-to-r from-blue-500/20 via-purple-500/15 to-blue-500/20 pointer-events-none" />
-                        
-                        <div className="relative glass-panel rounded-[2rem] p-2 flex items-center pr-4">
-                            <div className="flex-1 py-4 px-6 text-left overflow-hidden h-[60px] flex items-center">
-                                <span className="text-white/40 text-base sm:text-lg font-sans">Chat...</span>
-                                <span className="text-white/50 text-base sm:text-lg font-sans ml-1">
-                                    {typedQuestion}
-                                </span>
-                                <span className="inline-block w-[2px] h-5 bg-white ml-0.5 animate-pulse align-middle shrink-0" />
-                            </div>
-                            <div className="w-12 h-12 rounded-full bg-white/10 flex items-center justify-center transition-colors border border-white/10 shrink-0 hover:bg-white/20">
-                                <ArrowRight className="w-5 h-5 text-white" />
-                            </div>
-                        </div>
+            {/* Trust badges */}
+            <div
+                style={{
+                    display: "flex",
+                    flexWrap: "wrap",
+                    justifyContent: "center",
+                    gap: 40,
+                    marginTop: 56,
+                    opacity: visible ? 1 : 0,
+                    transition: "opacity 1s ease 0.6s",
+                }}
+            >
+                {[
+                    { icon: "🔒", label: "Bank-Level Security" },
+                    { icon: "✓", label: "SEC Registered" },
+                    { icon: "⚡", label: "Powered by Plaid" },
+                ].map(({ icon, label }) => (
+                    <div key={label} style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                        <span style={{ fontSize: 14 }}>{icon}</span>
+                        <span
+                            style={{
+                                fontSize: 12,
+                                color: "var(--myra-text-secondary)",
+                                letterSpacing: "0.02em",
+                            }}
+                        >
+                            {label}
+                        </span>
                     </div>
-                </motion.div>
-
-                {/* Trust Badges — Plaid, CFP®, Secured */}
-                <motion.div 
-                    initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.6, duration: 1 }}
-                    className="mt-20 flex flex-wrap items-center justify-center gap-x-16 gap-y-8 opacity-50 hover:opacity-80 transition-all duration-500"
-                >
-                    {/* Plaid Badge — actual logo */}
-                    <div className="flex items-center gap-3">
-                        <img src="/plaid-logo.png" alt="Plaid" className="h-7 invert brightness-0 invert" style={{ filter: 'brightness(0) invert(1)' }} />
-                    </div>
-
-                    {/* CFP® Badge — actual logo */}
-                    <div className="flex items-center gap-2">
-                        <img src="/cfp-logo.png" alt="CFP Certified" className="h-10" />
-                        <p className="text-sm font-bold tracking-widest text-white">CERTIFIED</p>
-                    </div>
-
-                    {/* Secured Badge */}
-                    <div className="flex items-center gap-2">
-                        <svg width="30" height="30" viewBox="0 0 100 100" className="text-white">
-                            <path d="M50 5 L90 25 V55 C90 78 68 95 50 100 C32 95 10 78 10 55 V25 Z" fill="none" stroke="currentColor" strokeWidth="5" opacity="0.6" />
-                            <path d="M35 50 L45 60 L65 40" fill="none" stroke="currentColor" strokeWidth="7" strokeLinecap="round" strokeLinejoin="round" opacity="0.8" />
-                        </svg>
-                        <p className="text-sm font-bold tracking-widest text-white">SECURED</p>
-                    </div>
-                </motion.div>
-            </motion.div>
+                ))}
+            </div>
         </section>
     );
 };

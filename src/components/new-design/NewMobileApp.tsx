@@ -1,174 +1,236 @@
-import { useState, useEffect } from "react";
-import { motion, AnimatePresence } from "framer-motion";
-import { Apple } from "lucide-react";
+import { useScrollReveal, useSectionScroll } from "./hooks";
 
-const tabs = [
-    { id: "networth", label: "Net Worth" },
-    { id: "cashflow", label: "Cashflow" },
-    { id: "portfolio", label: "Portfolio" }
+const ACCENT = "#00D4AA";
+
+const FEATURES = [
+    "Smart portfolio rebalancing",
+    "Real-time spending alerts",
+    "AI-powered tax optimization",
 ];
 
-const variants = {
-    initial: { opacity: 0, scale: 0.98, filter: "blur(10px)" },
-    animate: { opacity: 1, scale: 1, filter: "blur(0px)", transition: { duration: 0.6, ease: [0.16, 1, 0.3, 1] } },
-    exit: { opacity: 0, scale: 1.02, filter: "blur(10px)", transition: { duration: 0.4, ease: "easeInOut" } }
-};
-
-// --- Mobile Panels --- //
-
-const MobileNetWorth = () => (
-    <motion.div variants={variants} initial="initial" animate="animate" exit="exit" className="absolute inset-0 p-4 pt-12 flex flex-col">
-        <h4 className="text-white/50 text-xs font-semibold text-center mb-1">Total Net Worth</h4>
-        <div className="text-3xl font-serif text-white tracking-tight text-center mb-4">$1,204,500</div>
-        <div className="flex justify-center mb-6">
-             <div className="flex items-center gap-1 text-emerald-400 bg-emerald-500/10 px-3 py-1 flex-col rounded-full text-[10px] font-semibold">
-                +12.5% All Time
-            </div>
-        </div>
-        <div className="flex-1 w-full relative rounded-xl bg-white/[0.02] border border-white/5 overflow-hidden">
-            <div className="absolute bottom-0 left-0 w-full h-[60%] bg-gradient-to-t from-blue-500/20 to-transparent" />
-        </div>
-    </motion.div>
-);
-
-const MobileCashflow = () => (
-    <motion.div variants={variants} initial="initial" animate="animate" exit="exit" className="absolute inset-0 p-4 pt-12 flex flex-col items-center">
-        <h4 className="text-white/50 text-xs font-semibold mb-6">Monthly Cashflow</h4>
-        <div className="relative w-32 h-32 mb-8">
-            <svg className="w-full h-full transform -rotate-90" viewBox="0 0 100 100">
-                <circle cx="50" cy="50" r="40" stroke="rgba(255,255,255,0.1)" strokeWidth="12" fill="none" />
-                <circle cx="50" cy="50" r="40" stroke="#10b981" strokeWidth="12" fill="none" strokeDasharray="251.2" strokeDashoffset="60" />
-            </svg>
-            <div className="absolute inset-0 flex flex-col items-center justify-center">
-                <span className="text-lg font-serif text-white tracking-tight">+$4.2k</span>
-            </div>
-        </div>
-        <div className="w-full space-y-2 mt-auto">
-            <div className="bg-white/5 border border-white/5 rounded-lg p-3 text-xs flex justify-between"><span className="text-white/50">Income</span><span className="text-white">$12,400</span></div>
-            <div className="bg-white/5 border border-white/5 rounded-lg p-3 text-xs flex justify-between"><span className="text-white/50">Expenses</span><span className="text-white">$8,200</span></div>
-        </div>
-    </motion.div>
-);
-
-const MobilePortfolio = () => (
-    <motion.div variants={variants} initial="initial" animate="animate" exit="exit" className="absolute inset-0 p-4 pt-12 flex flex-col">
-        <h4 className="text-white/50 text-xs font-semibold text-center mb-1">Asset Allocation</h4>
-        <div className="text-3xl font-serif text-white tracking-tight text-center mb-8">$850,300</div>
-        
-        <div className="flex-1 flex flex-col gap-4">
-            {[
-                { label: "US Equities", pct: "55%", w: "w-[55%]", color: "bg-purple-500" },
-                { label: "Intl Equities", pct: "20%", w: "w-[20%]", color: "bg-blue-500" },
-                { label: "Bonds", pct: "15%", w: "w-[15%]", color: "bg-emerald-500" }
-            ].map((item, i) => (
-                <div key={i}>
-                    <div className="flex justify-between text-xs mb-2">
-                        <span className="text-white/70">{item.label}</span>
-                        <span className="text-white">{item.pct}</span>
-                    </div>
-                    <div className="w-full h-2 bg-white/10 rounded-full overflow-hidden">
-                        <div className={`h-full ${item.color} ${item.w} rounded-full`} />
-                    </div>
-                </div>
-            ))}
-        </div>
-    </motion.div>
-);
-
 const NewMobileApp = () => {
-    const [activeTab, setActiveTab] = useState(0);
+    const [sRef, ratio] = useSectionScroll<HTMLElement>();
+    const [rRef, visible] = useScrollReveal<HTMLElement>(0.1);
 
-    // Auto-play interval rotates the active tab every 5 seconds
-    useEffect(() => {
-        const interval = setInterval(() => {
-            setActiveTab((prev) => (prev + 1) % tabs.length);
-        }, 5000);
-        return () => clearInterval(interval);
-    }, []);
+    const setRef = (el: HTMLElement | null) => {
+        sRef.current = el;
+        rRef.current = el;
+    };
+
+    const phoneRotY = -15 + ratio * 15;
+    const phoneRotX = 5 - ratio * 5;
 
     return (
-        <section className="py-24 lg:py-40 w-full bg-background relative overflow-hidden">
-            
-            {/* Background Glow */}
-            <div className={`absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] blur-[140px] -z-10 rounded-full pointer-events-none transition-colors duration-1000 opacity-20 ${activeTab === 0 ? 'bg-blue-600' : activeTab === 1 ? 'bg-emerald-600' : 'bg-purple-600'}`} />
+        <section
+            ref={setRef}
+            style={{
+                padding: "120px 24px 160px",
+                position: "relative",
+                display: "flex",
+                justifyContent: "center",
+            }}
+        >
+            {/* Glow */}
+            <div
+                aria-hidden
+                style={{
+                    position: "absolute",
+                    top: "50%",
+                    left: "60%",
+                    transform: "translate(-50%, -50%)",
+                    width: 500,
+                    height: 500,
+                    borderRadius: "50%",
+                    background: `radial-gradient(circle, ${ACCENT}1f 0%, transparent 60%)`,
+                    filter: "blur(60px)",
+                    pointerEvents: "none",
+                }}
+            />
 
-            <div className="flex flex-col lg:flex-row items-center justify-center max-w-7xl mx-auto px-6 gap-16 lg:gap-24 relative z-20">
-                {/* LEFT Col: Header and Text */}
-                <div className="w-full lg:w-1/2 text-center lg:text-left z-20">
-                    <div className="inline-flex items-center gap-2 px-4 py-2 mb-8 rounded-full bg-black/[0.03] dark:bg-white/5 border border-black/5 dark:border-white/10 text-xs font-semibold text-muted-foreground">
-                        <Apple className="w-4 h-4" />
-                        iOS App Coming Soon
+            <div
+                style={{
+                    maxWidth: 1100,
+                    width: "100%",
+                    display: "grid",
+                    gridTemplateColumns: "repeat(auto-fit, minmax(320px, 1fr))",
+                    gap: 60,
+                    alignItems: "center",
+                }}
+            >
+                {/* Text */}
+                <div
+                    style={{
+                        opacity: visible ? 1 : 0,
+                        transform: visible ? "translateX(0)" : "translateX(-40px)",
+                        transition: "all 1s cubic-bezier(0.16, 1, 0.3, 1)",
+                    }}
+                >
+                    <div
+                        style={{
+                            display: "inline-flex",
+                            alignItems: "center",
+                            gap: 6,
+                            padding: "5px 12px",
+                            borderRadius: 8,
+                            fontSize: 12,
+                            fontWeight: 500,
+                            background: "var(--myra-glass)",
+                            border: "1px solid var(--myra-glass-border)",
+                            color: "var(--myra-text-secondary)",
+                            marginBottom: 24,
+                        }}
+                    >
+                        📱 iOS App Coming Soon
                     </div>
-
-                    <h2 className="text-4xl md:text-5xl lg:text-6xl font-serif text-foreground mb-6 tracking-tight leading-tight">
-                        Your entire financial life, in your pocket.
+                    <h2
+                        style={{
+                            fontFamily: "var(--myra-font-display)",
+                            fontSize: "clamp(32px, 4vw, 56px)",
+                            fontWeight: 400,
+                            lineHeight: 1.1,
+                            marginBottom: 20,
+                        }}
+                    >
+                        Your entire financial life,{" "}
+                        <span style={{ fontStyle: "italic", color: ACCENT }}>in your pocket.</span>
                     </h2>
-                    
-                    <p className="text-lg text-muted-foreground font-light mb-10 max-w-lg mx-auto lg:mx-0">
-                        We are currently building the ultimate mobile experience. Soon, you will be able to track your net worth, execute AI tax loss harvesting, and chat with myra directly from your iPhone.
+                    <p
+                        style={{
+                            fontSize: 16,
+                            lineHeight: 1.7,
+                            color: "var(--myra-text-secondary)",
+                            maxWidth: 400,
+                        }}
+                    >
+                        Track your net worth, execute AI tax-loss harvesting, and chat with myra directly from your iPhone.
                     </p>
 
-                    {/* Interactive State Indicators */}
-                    <div className="flex items-center justify-center lg:justify-start gap-4">
-                        {tabs.map((tab, idx) => (
-                            <button
-                                key={tab.id}
-                                onClick={() => setActiveTab(idx)}
-                                className={`h-2 rounded-full transition-all duration-300 ${
-                                    activeTab === idx 
-                                    ? "w-12 bg-foreground" 
-                                    : "w-4 bg-foreground/20 hover:bg-foreground/40"
-                                }`}
-                                aria-label={`View ${tab.label} mock`}
-                            />
+                    <div style={{ marginTop: 32, display: "flex", flexDirection: "column", gap: 12 }}>
+                        {FEATURES.map((f) => (
+                            <div key={f} style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                                <span
+                                    style={{
+                                        width: 20,
+                                        height: 20,
+                                        borderRadius: 6,
+                                        background: `${ACCENT}33`,
+                                        display: "flex",
+                                        alignItems: "center",
+                                        justifyContent: "center",
+                                        flexShrink: 0,
+                                    }}
+                                >
+                                    <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke={ACCENT} strokeWidth="3" strokeLinecap="round">
+                                        <polyline points="20 6 9 17 4 12" />
+                                    </svg>
+                                </span>
+                                <span style={{ fontSize: 14, color: "var(--myra-text-secondary)" }}>{f}</span>
+                            </div>
                         ))}
                     </div>
                 </div>
 
-                {/* RIGHT Col: 3D iPhone Mockup */}
-                <div className="w-full lg:w-1/2 flex justify-center perspective-[2000px] mt-12 lg:mt-0 relative">
-                    {/* Colored Orb — sits behind the phone as a sibling */}
-                    <div 
-                        className={`absolute z-10 rounded-full blur-[80px] transition-colors duration-1000 pointer-events-none ${
-                            activeTab === 0 ? 'bg-blue-500' : activeTab === 1 ? 'bg-emerald-500' : 'bg-purple-500'
-                        }`}
+                {/* 3D Phone */}
+                <div style={{ perspective: 1000, display: "flex", justifyContent: "center" }}>
+                    <div
                         style={{
-                            animation: "orbPulse 6s ease-in-out infinite",
-                            width: "420px",
-                            height: "420px",
-                            top: "50%",
-                            left: "50%",
-                            transform: "translate(-50%, -50%)",
-                        }}
-                    />
-
-                    {/* Phone — renders above the orb */}
-                    <div 
-                        className="relative z-20 w-[280px] h-[580px] lg:w-[320px] lg:h-[660px]"
-                        style={{ 
-                            transform: "translateZ(80px) rotateY(-15deg) rotateX(10deg) rotateZ(2deg)",
-                            transformStyle: "preserve-3d"
+                            width: 280,
+                            height: 560,
+                            borderRadius: 40,
+                            background: "linear-gradient(145deg, #1a1a1f, #0a0a0e)",
+                            border: "2px solid rgba(255,255,255,0.1)",
+                            boxShadow: `0 60px 120px rgba(0,0,0,0.8), 0 0 80px ${ACCENT}1a, inset 0 1px 0 rgba(255,255,255,0.06)`,
+                            transform: `rotateY(${phoneRotY}deg) rotateX(${phoneRotX}deg)`,
+                            transition: "transform 0.1s linear",
+                            padding: 12,
+                            position: "relative",
+                            overflow: "hidden",
                         }}
                     >
-                        {/* iPhone Thickness Layers */}
-                        <div className="absolute inset-0 rounded-[3.5rem] bg-[#1a1a1b] shadow-[-20px_40px_100px_rgba(0,0,0,0.8)]" style={{ transform: "translateZ(-15px)" }} />
-                        <div className="absolute inset-0 rounded-[3.5rem] bg-[#2a2a2b]" style={{ transform: "translateZ(-8px)" }} />
-                        <div className="absolute inset-0 rounded-[3.5rem] bg-[#333]" style={{ transform: "translateZ(-4px)" }} />
-                        
-                        {/* iPhone Base */}
-                        <div className="absolute inset-0 border-[6px] lg:border-[8px] border-[#3a3a3a] rounded-[3.5rem] bg-black overflow-hidden pointer-events-none" style={{ transform: "translateZ(0px)" }}>
-                        </div>
+                        {/* Notch */}
+                        <div
+                            aria-hidden
+                            style={{
+                                width: 100,
+                                height: 28,
+                                background: "#000",
+                                borderRadius: 14,
+                                margin: "0 auto 16px",
+                                position: "relative",
+                                zIndex: 2,
+                            }}
+                        />
 
-                        {/* Dynamic Island */}
-                        <div className="absolute top-[16px] lg:top-[20px] left-1/2 -translate-x-1/2 w-[80px] lg:w-[100px] h-[22px] lg:h-[28px] bg-black rounded-full pointer-events-none" style={{ transform: "translateZ(2px)" }} />
-                        
-                        {/* Screens Container */}
-                        <div className="absolute inset-x-[6px] lg:inset-x-[8px] inset-y-[6px] lg:inset-y-[8px] rounded-[3rem] bg-[#050505] overflow-hidden" style={{ transform: "translateZ(1px)" }}>
-                            <AnimatePresence mode="wait">
-                                {activeTab === 0 && <MobileNetWorth key="networth" />}
-                                {activeTab === 1 && <MobileCashflow key="cashflow" />}
-                                {activeTab === 2 && <MobilePortfolio key="portfolio" />}
-                            </AnimatePresence>
+                        {/* Screen */}
+                        <div
+                            style={{
+                                background: "#0a0a0e",
+                                borderRadius: 28,
+                                height: "calc(100% - 44px)",
+                                padding: 20,
+                                display: "flex",
+                                flexDirection: "column",
+                            }}
+                        >
+                            <div style={{ fontSize: 11, color: "var(--myra-text-secondary)", marginBottom: 4 }}>
+                                Monthly Cashflow
+                            </div>
+
+                            {/* Ring chart */}
+                            <div style={{ display: "flex", justifyContent: "center", margin: "24px 0" }}>
+                                <div style={{ width: 120, height: 120, position: "relative" }}>
+                                    <svg width="120" height="120" viewBox="0 0 120 120">
+                                        <circle cx="60" cy="60" r="50" fill="none" stroke="var(--myra-surface-2)" strokeWidth="8" />
+                                        <circle
+                                            cx="60"
+                                            cy="60"
+                                            r="50"
+                                            fill="none"
+                                            stroke={ACCENT}
+                                            strokeWidth="8"
+                                            strokeDasharray="220 94"
+                                            strokeLinecap="round"
+                                            transform="rotate(-90 60 60)"
+                                        />
+                                    </svg>
+                                    <div
+                                        style={{
+                                            position: "absolute",
+                                            inset: 0,
+                                            display: "flex",
+                                            flexDirection: "column",
+                                            alignItems: "center",
+                                            justifyContent: "center",
+                                        }}
+                                    >
+                                        <span style={{ fontSize: 10, color: "var(--myra-text-secondary)" }}>+</span>
+                                        <span style={{ fontSize: 18, fontWeight: 700, color: ACCENT }}>$4.2k</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div style={{ flex: 1 }} />
+
+                            {[
+                                { label: "Income", amount: "$12,400" },
+                                { label: "Expenses", amount: "$8,200" },
+                            ].map((item) => (
+                                <div
+                                    key={item.label}
+                                    style={{
+                                        display: "flex",
+                                        justifyContent: "space-between",
+                                        alignItems: "center",
+                                        padding: "12px 0",
+                                        borderTop: "1px solid var(--myra-glass-border)",
+                                    }}
+                                >
+                                    <span style={{ fontSize: 13, color: "var(--myra-text-secondary)" }}>{item.label}</span>
+                                    <span style={{ fontSize: 14, fontWeight: 600, color: "var(--myra-text)" }}>
+                                        {item.amount}
+                                    </span>
+                                </div>
+                            ))}
                         </div>
                     </div>
                 </div>
