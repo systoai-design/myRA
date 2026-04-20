@@ -345,10 +345,11 @@ const NewMobileApp = () => {
         rRef.current = el;
     };
 
-    const phoneRotY = -15 + ratio * 15;
-    const phoneRotX = 5 - ratio * 5;
+    // Slight parallax as the section scrolls, but always angled for 3D
+    const phoneRotY = -18 + ratio * 10;
+    const phoneRotX = 6 - ratio * 4;
 
-    // iPhone 15 Pro proportions: approx 280 x 568 (screen area)
+    // iPhone 15 Pro proportions: roughly 1:2.05 — 290 x 594
     const PHONE_W = 290;
     const PHONE_H = 600;
 
@@ -463,7 +464,7 @@ const NewMobileApp = () => {
                 </div>
 
                 {/* ═══════ Realistic 3D iPhone ═══════ */}
-                <div style={{ perspective: 1600, display: "flex", justifyContent: "center" }}>
+                <div style={{ perspective: 1800, display: "flex", justifyContent: "center" }}>
                     <div
                         style={{
                             width: PHONE_W,
@@ -471,23 +472,28 @@ const NewMobileApp = () => {
                             position: "relative",
                             transformStyle: "preserve-3d",
                             transform: `rotateY(${phoneRotY}deg) rotateX(${phoneRotX}deg)`,
-                            transition: "transform 0.1s linear",
-                            filter: "drop-shadow(0 60px 80px rgba(0,0,0,0.8)) drop-shadow(0 0 60px rgba(0,212,170,0.08))",
+                            transition: "transform 0.2s linear",
+                            filter: `
+                                drop-shadow(0 40px 60px rgba(0,0,0,0.85))
+                                drop-shadow(0 12px 24px rgba(0,0,0,0.6))
+                                drop-shadow(0 0 80px rgba(0,212,170,0.12))
+                            `,
                         }}
                     >
-                        {/* ── Side buttons (absolutely positioned on the frame edges) ── */}
-                        {/* Action button — left top */}
+                        {/* ── Side buttons — chunky, protruding off the frame edges ── */}
+                        {/* Action button (left top) */}
                         <div
                             aria-hidden
                             style={{
                                 position: "absolute",
-                                left: -2,
-                                top: 96,
-                                width: 3,
-                                height: 28,
-                                background: "linear-gradient(90deg, #2a2a2e 0%, #55555a 50%, #1a1a1e 100%)",
-                                borderRadius: "2px 0 0 2px",
-                                boxShadow: "inset -1px 0 0 rgba(0,0,0,0.5)",
+                                left: -4,
+                                top: 100,
+                                width: 5,
+                                height: 30,
+                                background: "linear-gradient(90deg, #1a1a1e 0%, #4a4a50 40%, #6a6a70 60%, #2a2a2e 100%)",
+                                borderRadius: "3px 0 0 3px",
+                                boxShadow: "inset 0 1px 0 rgba(255,255,255,0.25), inset 0 -1px 0 rgba(0,0,0,0.5), -1px 0 2px rgba(0,0,0,0.4)",
+                                zIndex: 0,
                             }}
                         />
                         {/* Volume up */}
@@ -495,13 +501,14 @@ const NewMobileApp = () => {
                             aria-hidden
                             style={{
                                 position: "absolute",
-                                left: -2,
-                                top: 140,
-                                width: 3,
-                                height: 52,
-                                background: "linear-gradient(90deg, #2a2a2e 0%, #55555a 50%, #1a1a1e 100%)",
-                                borderRadius: "2px 0 0 2px",
-                                boxShadow: "inset -1px 0 0 rgba(0,0,0,0.5)",
+                                left: -4,
+                                top: 150,
+                                width: 5,
+                                height: 56,
+                                background: "linear-gradient(90deg, #1a1a1e 0%, #4a4a50 40%, #6a6a70 60%, #2a2a2e 100%)",
+                                borderRadius: "3px 0 0 3px",
+                                boxShadow: "inset 0 1px 0 rgba(255,255,255,0.25), inset 0 -1px 0 rgba(0,0,0,0.5), -1px 0 2px rgba(0,0,0,0.4)",
+                                zIndex: 0,
                             }}
                         />
                         {/* Volume down */}
@@ -509,76 +516,100 @@ const NewMobileApp = () => {
                             aria-hidden
                             style={{
                                 position: "absolute",
-                                left: -2,
-                                top: 200,
-                                width: 3,
-                                height: 52,
-                                background: "linear-gradient(90deg, #2a2a2e 0%, #55555a 50%, #1a1a1e 100%)",
-                                borderRadius: "2px 0 0 2px",
-                                boxShadow: "inset -1px 0 0 rgba(0,0,0,0.5)",
+                                left: -4,
+                                top: 214,
+                                width: 5,
+                                height: 56,
+                                background: "linear-gradient(90deg, #1a1a1e 0%, #4a4a50 40%, #6a6a70 60%, #2a2a2e 100%)",
+                                borderRadius: "3px 0 0 3px",
+                                boxShadow: "inset 0 1px 0 rgba(255,255,255,0.25), inset 0 -1px 0 rgba(0,0,0,0.5), -1px 0 2px rgba(0,0,0,0.4)",
+                                zIndex: 0,
                             }}
                         />
-                        {/* Power button — right */}
+                        {/* Power button (right) */}
                         <div
                             aria-hidden
                             style={{
                                 position: "absolute",
-                                right: -2,
-                                top: 160,
-                                width: 3,
-                                height: 78,
-                                background: "linear-gradient(-90deg, #2a2a2e 0%, #55555a 50%, #1a1a1e 100%)",
-                                borderRadius: "0 2px 2px 0",
-                                boxShadow: "inset 1px 0 0 rgba(0,0,0,0.5)",
+                                right: -4,
+                                top: 170,
+                                width: 5,
+                                height: 82,
+                                background: "linear-gradient(-90deg, #1a1a1e 0%, #4a4a50 40%, #6a6a70 60%, #2a2a2e 100%)",
+                                borderRadius: "0 3px 3px 0",
+                                boxShadow: "inset 0 1px 0 rgba(255,255,255,0.25), inset 0 -1px 0 rgba(0,0,0,0.5), 1px 0 2px rgba(0,0,0,0.4)",
+                                zIndex: 0,
                             }}
                         />
 
-                        {/* ── Titanium frame (outer body) ── */}
+                        {/* ── Titanium frame (outer body) with strong specular banding ── */}
                         <div
                             style={{
                                 width: "100%",
                                 height: "100%",
-                                borderRadius: 46,
-                                padding: 4,
+                                borderRadius: 48,
+                                padding: 5,
+                                position: "relative",
                                 background: `
                                     linear-gradient(135deg,
-                                        #6d6d72 0%,
-                                        #3a3a3f 12%,
-                                        #8a8a90 25%,
-                                        #2a2a2e 45%,
-                                        #1a1a1e 55%,
-                                        #4a4a50 75%,
-                                        #2e2e33 88%,
+                                        #7c7c82 0%,
+                                        #a8a8b0 6%,
+                                        #3a3a40 18%,
+                                        #1e1e22 32%,
+                                        #44444a 48%,
+                                        #0e0e12 62%,
+                                        #2e2e34 78%,
+                                        #8e8e95 92%,
                                         #5a5a60 100%)
                                 `,
-                                position: "relative",
                                 boxShadow: `
-                                    inset 0 1px 0 rgba(255,255,255,0.25),
-                                    inset 0 -1px 0 rgba(0,0,0,0.4),
-                                    inset 1px 0 0 rgba(255,255,255,0.08),
-                                    inset -1px 0 0 rgba(255,255,255,0.08)
+                                    inset 0 2px 0 rgba(255,255,255,0.35),
+                                    inset 0 -2px 0 rgba(0,0,0,0.6),
+                                    inset 2px 0 0 rgba(255,255,255,0.12),
+                                    inset -2px 0 0 rgba(255,255,255,0.12),
+                                    0 0 0 1px rgba(0,0,0,0.4)
                                 `,
                             }}
                         >
-                            {/* Inner black bezel */}
+                            {/* Left-edge rim light — catches light due to the Y-axis rotation */}
+                            <div
+                                aria-hidden
+                                style={{
+                                    position: "absolute",
+                                    left: 0,
+                                    top: "8%",
+                                    bottom: "8%",
+                                    width: 3,
+                                    background: "linear-gradient(180deg, transparent 0%, rgba(255,255,255,0.5) 30%, rgba(255,255,255,0.3) 70%, transparent 100%)",
+                                    borderRadius: "3px 0 0 3px",
+                                    pointerEvents: "none",
+                                    zIndex: 3,
+                                    filter: "blur(0.5px)",
+                                }}
+                            />
+
+                            {/* Inner black bezel (deep frame that surrounds the glass) */}
                             <div
                                 style={{
                                     width: "100%",
                                     height: "100%",
-                                    borderRadius: 42,
-                                    padding: 3,
-                                    background: "#000",
+                                    borderRadius: 43,
+                                    padding: 4,
+                                    background: "linear-gradient(135deg, #050507 0%, #000 50%, #050507 100%)",
                                     position: "relative",
                                     overflow: "hidden",
-                                    boxShadow: "inset 0 0 0 1px rgba(0,0,0,1)",
+                                    boxShadow: `
+                                        inset 0 0 0 1px rgba(0,0,0,1),
+                                        inset 0 1px 2px rgba(0,0,0,0.9)
+                                    `,
                                 }}
                             >
-                                {/* Screen */}
+                                {/* Screen (black OLED surface) */}
                                 <div
                                     style={{
                                         width: "100%",
                                         height: "100%",
-                                        borderRadius: 38,
+                                        borderRadius: 39,
                                         overflow: "hidden",
                                         position: "relative",
                                         background: "#000",
@@ -586,7 +617,7 @@ const NewMobileApp = () => {
                                 >
                                     <MiniDashboard />
 
-                                    {/* Dynamic Island (sits on top of content) */}
+                                    {/* Dynamic Island */}
                                     <div
                                         aria-hidden
                                         style={{
@@ -594,59 +625,102 @@ const NewMobileApp = () => {
                                             top: 10,
                                             left: "50%",
                                             transform: "translateX(-50%)",
-                                            width: 100,
-                                            height: 28,
+                                            width: 104,
+                                            height: 30,
                                             background: "#000",
                                             borderRadius: 20,
-                                            boxShadow: "inset 0 0 0 0.5px rgba(255,255,255,0.05), 0 2px 4px rgba(0,0,0,0.6)",
+                                            boxShadow: `
+                                                inset 0 0 0 0.5px rgba(255,255,255,0.08),
+                                                inset 0 1px 2px rgba(255,255,255,0.04),
+                                                0 2px 6px rgba(0,0,0,0.8)
+                                            `,
                                             display: "flex",
                                             alignItems: "center",
                                             justifyContent: "flex-end",
-                                            paddingRight: 10,
+                                            paddingRight: 11,
                                             zIndex: 10,
                                         }}
                                     >
-                                        {/* Front camera */}
+                                        {/* Front camera lens */}
                                         <div
                                             style={{
-                                                width: 8,
-                                                height: 8,
+                                                width: 9,
+                                                height: 9,
                                                 borderRadius: "50%",
-                                                background: "radial-gradient(circle at 30% 30%, #1a1a2e 0%, #000 60%)",
-                                                boxShadow: "inset 0 0 0 1px rgba(30,30,50,0.8)",
+                                                background: "radial-gradient(circle at 30% 30%, #2a2a4e 0%, #0a0a18 60%, #000 100%)",
+                                                boxShadow: `
+                                                    inset 0 0 0 1px rgba(40,40,60,0.9),
+                                                    inset 0 0 0 2px rgba(80,80,110,0.2)
+                                                `,
                                             }}
                                         />
                                     </div>
 
-                                    {/* Screen glare — top-left diagonal gloss */}
+                                    {/* ── Glass surface reflection — the big diagonal gloss stripe ── */}
                                     <div
                                         aria-hidden
                                         style={{
                                             position: "absolute",
                                             inset: 0,
-                                            background: `linear-gradient(135deg,
-                                                rgba(255,255,255,0.08) 0%,
-                                                rgba(255,255,255,0.02) 18%,
-                                                transparent 40%)`,
+                                            background: `linear-gradient(118deg,
+                                                rgba(255,255,255,0) 0%,
+                                                rgba(255,255,255,0.14) 18%,
+                                                rgba(255,255,255,0.04) 28%,
+                                                rgba(255,255,255,0) 42%,
+                                                rgba(255,255,255,0) 58%,
+                                                rgba(255,255,255,0.06) 70%,
+                                                rgba(255,255,255,0) 82%)`,
                                             pointerEvents: "none",
                                             zIndex: 20,
+                                            mixBlendMode: "screen",
+                                        }}
+                                    />
+
+                                    {/* Subtle curved edge highlight on screen */}
+                                    <div
+                                        aria-hidden
+                                        style={{
+                                            position: "absolute",
+                                            inset: 0,
+                                            borderRadius: "inherit",
+                                            background: "radial-gradient(ellipse 120% 90% at 15% 5%, rgba(255,255,255,0.1) 0%, transparent 35%)",
+                                            pointerEvents: "none",
+                                            zIndex: 21,
                                         }}
                                     />
                                 </div>
                             </div>
 
-                            {/* Frame highlight sheen — subtle light reflection along top edge */}
+                            {/* Frame top-edge specular highlight */}
                             <div
                                 aria-hidden
                                 style={{
                                     position: "absolute",
-                                    top: 0,
-                                    left: "20%",
-                                    right: "20%",
+                                    top: 1,
+                                    left: "15%",
+                                    right: "15%",
                                     height: 2,
-                                    background: "linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent)",
+                                    background: "linear-gradient(90deg, transparent, rgba(255,255,255,0.7), transparent)",
                                     borderRadius: 2,
                                     pointerEvents: "none",
+                                    filter: "blur(0.5px)",
+                                    zIndex: 2,
+                                }}
+                            />
+
+                            {/* Frame bottom-edge shadow */}
+                            <div
+                                aria-hidden
+                                style={{
+                                    position: "absolute",
+                                    bottom: 1,
+                                    left: "20%",
+                                    right: "20%",
+                                    height: 1.5,
+                                    background: "linear-gradient(90deg, transparent, rgba(0,0,0,0.7), transparent)",
+                                    borderRadius: 2,
+                                    pointerEvents: "none",
+                                    zIndex: 2,
                                 }}
                             />
                         </div>
