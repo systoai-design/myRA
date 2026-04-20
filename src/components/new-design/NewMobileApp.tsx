@@ -80,7 +80,7 @@ const MiniDashboard = () => {
             </div>
 
             {/* ── Scrollable content ── */}
-            <div style={{ flex: 1, padding: "18px 16px 12px", display: "flex", flexDirection: "column", gap: 12 }}>
+            <div style={{ flex: 1, padding: "14px 16px 8px", display: "flex", flexDirection: "column", gap: 10, overflow: "hidden" }}>
                 {/* Greeting */}
                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                     <div>
@@ -349,9 +349,9 @@ const NewMobileApp = () => {
     const phoneRotY = -18 + ratio * 10;
     const phoneRotX = 6 - ratio * 4;
 
-    // iPhone 15 Pro proportions: roughly 1:2.05 — 290 x 594
-    const PHONE_W = 290;
-    const PHONE_H = 600;
+    // iPhone 15 Pro proportions: roughly 1:2.05. Bumped up so the screen content reads clearly.
+    const PHONE_W = 320;
+    const PHONE_H = 660;
 
     return (
         <section
@@ -473,11 +473,9 @@ const NewMobileApp = () => {
                             transformStyle: "preserve-3d",
                             transform: `rotateY(${phoneRotY}deg) rotateX(${phoneRotX}deg)`,
                             transition: "transform 0.2s linear",
-                            filter: `
-                                drop-shadow(0 40px 60px rgba(0,0,0,0.85))
-                                drop-shadow(0 12px 24px rgba(0,0,0,0.6))
-                                drop-shadow(0 0 80px rgba(0,212,170,0.12))
-                            `,
+                            // NOTE: No `filter` here — filter: drop-shadow() forces raster of the whole
+                            // subtree which destroys text crispness inside the phone. Shadow is applied
+                            // via box-shadow on the titanium frame below instead.
                         }}
                     >
                         {/* ── Side buttons — chunky, protruding off the frame edges ── */}
@@ -567,7 +565,10 @@ const NewMobileApp = () => {
                                     inset 0 -2px 0 rgba(0,0,0,0.6),
                                     inset 2px 0 0 rgba(255,255,255,0.12),
                                     inset -2px 0 0 rgba(255,255,255,0.12),
-                                    0 0 0 1px rgba(0,0,0,0.4)
+                                    0 0 0 1px rgba(0,0,0,0.4),
+                                    0 40px 60px rgba(0,0,0,0.75),
+                                    0 12px 24px rgba(0,0,0,0.55),
+                                    0 0 80px rgba(0,212,170,0.12)
                                 `,
                             }}
                         >

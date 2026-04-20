@@ -157,41 +157,52 @@
     box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.06);
   }
 
-  /* ─────── Liquid Glass ─────── */
-  /* Based on Kevin Bism's technique (dev.to/kevinbism):
-     low blur + strong inset rim highlights + ::after filter-blur for refraction.
-     This is the recipe that makes glass look like a liquid droplet, not a frosted window. */
+  /* ─────── Liquid Glass — truly transparent ─────── */
+  /* Reference: https://kube.io/blog/liquid-glass-css-svg/
+     The defining property is TRANSPARENCY — you must be able to see the backdrop through the pane.
+     The "liquid" character comes from: backdrop-filter refraction (url displacement when supported)
+     + droplet-style inset rim highlights + crisp thin top/left edge highlight.
+     Tint is near-zero; the glass is defined by how it bends light, not by a white sheet. */
   .glass-card {
     @apply rounded-3xl transition-all duration-300;
     position: relative;
     isolation: isolate;
-    background: rgba(255, 255, 255, 0.15);
-    border: 1px solid rgba(255, 255, 255, 0.8);
-    backdrop-filter: blur(2px) saturate(180%);
-    -webkit-backdrop-filter: blur(2px) saturate(180%);
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.18);
+    backdrop-filter: blur(12px) saturate(180%);
+    -webkit-backdrop-filter: blur(12px) saturate(180%);
     box-shadow:
-      0 8px 32px rgba(31, 38, 135, 0.2),
-      inset 0 4px 20px rgba(255, 255, 255, 0.3);
+      inset  0 1px 1px rgba(255, 255, 255, 0.45),
+      inset  0 -1px 1px rgba(255, 255, 255, 0.08),
+      inset  1px 0 1px rgba(255, 255, 255, 0.12),
+      inset -1px 0 1px rgba(255, 255, 255, 0.12),
+      0 10px 30px rgba(0, 0, 0, 0.1),
+      0 1px 2px rgba(0, 0, 0, 0.05);
   }
 
-  /* The ::after pseudo is the heart of the liquid look:
-     - inset box-shadows create thin bright rim-lights offset from the edges
-     - filter blur + brightness bends/amplifies the surrounding light
-     - combined, the surface looks like a soft glass droplet */
+  /* Progressive enhancement — when the browser supports `url()` inside backdrop-filter,
+     layer the liquid-glass SVG displacement filter on top of the blur. The filter itself
+     is defined once in index.html. Chromium/Safari pick it up; Firefox ignores gracefully. */
+  @supports (backdrop-filter: url(#liquid-glass-filter)) {
+    .glass-card {
+      backdrop-filter: url(#liquid-glass-filter) blur(12px) saturate(180%);
+      -webkit-backdrop-filter: url(#liquid-glass-filter) blur(12px) saturate(180%);
+    }
+  }
+
+  /* The droplet rim — thin bright arcs along the bottom-inside edge, blurred and
+     brightened so they read as liquid refraction, not hard lines. */
   .glass-card::after {
     content: "";
     position: absolute;
     inset: 0;
     border-radius: inherit;
-    background: rgba(255, 255, 255, 0.1);
-    backdrop-filter: blur(1px);
-    -webkit-backdrop-filter: blur(1px);
     box-shadow:
-      inset -10px -8px 0px -11px rgba(255, 255, 255, 1),
-      inset  0px -9px 0px  -8px rgba(255, 255, 255, 1);
-    opacity: 0.6;
+      inset -10px -8px 0px -11px rgba(255, 255, 255, 0.9),
+      inset   0px -9px 0px  -8px rgba(255, 255, 255, 0.9);
+    opacity: 0.55;
     z-index: -1;
-    filter: blur(1px) drop-shadow(10px 4px 6px rgba(0, 0, 0, 0.35)) brightness(115%);
+    filter: blur(1px) brightness(115%);
     pointer-events: none;
   }
 
@@ -201,39 +212,58 @@
   }
 
   .glass-card:hover {
-    background: rgba(255, 255, 255, 0.22);
+    background: rgba(255, 255, 255, 0.08);
+    border-color: rgba(255, 255, 255, 0.24);
     box-shadow:
-      0 16px 48px rgba(31, 38, 135, 0.28),
-      inset 0 4px 24px rgba(255, 255, 255, 0.4);
+      inset  0 1px 1px rgba(255, 255, 255, 0.55),
+      inset  0 -1px 1px rgba(255, 255, 255, 0.1),
+      inset  1px 0 1px rgba(255, 255, 255, 0.14),
+      inset -1px 0 1px rgba(255, 255, 255, 0.14),
+      0 16px 40px rgba(0, 0, 0, 0.14),
+      0 2px 4px rgba(0, 0, 0, 0.06);
   }
 
-  /* Dark-mode liquid glass — same recipe tuned for dark backdrops:
-     thinner white tint, stronger rim lights, brighter filter bump */
+  /* Dark mode — even more transparent, stronger rim highlights because the dark backdrop
+     absorbs more light. */
   .dark .glass-card {
-    background: rgba(255, 255, 255, 0.06);
-    border: 1px solid rgba(255, 255, 255, 0.3);
-    backdrop-filter: blur(2px) saturate(180%);
-    -webkit-backdrop-filter: blur(2px) saturate(180%);
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(12px) saturate(180%);
+    -webkit-backdrop-filter: blur(12px) saturate(180%);
     box-shadow:
-      0 16px 48px rgba(0, 0, 0, 0.5),
-      inset 0 4px 20px rgba(255, 255, 255, 0.12);
+      inset  0 1px 1px rgba(255, 255, 255, 0.14),
+      inset  0 -1px 1px rgba(255, 255, 255, 0.03),
+      inset  1px 0 1px rgba(255, 255, 255, 0.05),
+      inset -1px 0 1px rgba(255, 255, 255, 0.05),
+      0 20px 60px rgba(0, 0, 0, 0.5),
+      0 1px 2px rgba(0, 0, 0, 0.3);
+  }
+
+  @supports (backdrop-filter: url(#liquid-glass-filter)) {
+    .dark .glass-card {
+      backdrop-filter: url(#liquid-glass-filter) blur(12px) saturate(180%);
+      -webkit-backdrop-filter: url(#liquid-glass-filter) blur(12px) saturate(180%);
+    }
   }
 
   .dark .glass-card::after {
-    background: rgba(255, 255, 255, 0.04);
     box-shadow:
-      inset -10px -8px 0px -11px rgba(255, 255, 255, 0.9),
-      inset  0px -9px 0px  -8px rgba(255, 255, 255, 0.9);
-    opacity: 0.7;
-    filter: blur(1px) drop-shadow(10px 4px 6px rgba(0, 0, 0, 0.6)) brightness(125%);
+      inset -10px -8px 0px -11px rgba(255, 255, 255, 0.75),
+      inset   0px -9px 0px  -8px rgba(255, 255, 255, 0.75);
+    opacity: 0.6;
+    filter: blur(1px) brightness(130%);
   }
 
   .dark .glass-card:hover {
-    background: rgba(255, 255, 255, 0.09);
-    border-color: rgba(255, 255, 255, 0.4);
+    background: rgba(255, 255, 255, 0.05);
+    border-color: rgba(255, 255, 255, 0.16);
     box-shadow:
-      0 24px 64px rgba(0, 0, 0, 0.6),
-      inset 0 4px 24px rgba(255, 255, 255, 0.18);
+      inset  0 1px 1px rgba(255, 255, 255, 0.2),
+      inset  0 -1px 1px rgba(255, 255, 255, 0.05),
+      inset  1px 0 1px rgba(255, 255, 255, 0.08),
+      inset -1px 0 1px rgba(255, 255, 255, 0.08),
+      0 28px 80px rgba(0, 0, 0, 0.6),
+      0 2px 4px rgba(0, 0, 0, 0.35);
   }
 
   .glass-sidebar {
@@ -300,17 +330,27 @@
     border: 1px solid rgba(255, 255, 255, 0.05);
   }
 
-  /* .liquid-glass — same recipe, tuned for dark hero backdrops */
+  /* .liquid-glass — transparent variant tuned for dark hero backdrops */
   .liquid-glass {
     position: relative;
     isolation: isolate;
-    background: rgba(255, 255, 255, 0.06);
-    border: 1px solid rgba(255, 255, 255, 0.3);
-    backdrop-filter: blur(2px) saturate(180%);
-    -webkit-backdrop-filter: blur(2px) saturate(180%);
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(12px) saturate(180%);
+    -webkit-backdrop-filter: blur(12px) saturate(180%);
     box-shadow:
-      0 24px 64px rgba(0, 0, 0, 0.5),
-      inset 0 4px 20px rgba(255, 255, 255, 0.12);
+      inset  0 1px 1px rgba(255, 255, 255, 0.14),
+      inset  0 -1px 1px rgba(255, 255, 255, 0.03),
+      inset  1px 0 1px rgba(255, 255, 255, 0.05),
+      inset -1px 0 1px rgba(255, 255, 255, 0.05),
+      0 24px 64px rgba(0, 0, 0, 0.5);
+  }
+
+  @supports (backdrop-filter: url(#liquid-glass-filter)) {
+    .liquid-glass {
+      backdrop-filter: url(#liquid-glass-filter) blur(12px) saturate(180%);
+      -webkit-backdrop-filter: url(#liquid-glass-filter) blur(12px) saturate(180%);
+    }
   }
 
   .liquid-glass::after {
@@ -318,15 +358,12 @@
     position: absolute;
     inset: 0;
     border-radius: inherit;
-    background: rgba(255, 255, 255, 0.04);
-    backdrop-filter: blur(1px);
-    -webkit-backdrop-filter: blur(1px);
     box-shadow:
-      inset -10px -8px 0px -11px rgba(255, 255, 255, 0.9),
-      inset  0px -9px 0px  -8px rgba(255, 255, 255, 0.9);
-    opacity: 0.7;
+      inset -10px -8px 0px -11px rgba(255, 255, 255, 0.75),
+      inset   0px -9px 0px  -8px rgba(255, 255, 255, 0.75);
+    opacity: 0.6;
     z-index: -1;
-    filter: blur(1px) drop-shadow(10px 4px 6px rgba(0, 0, 0, 0.6)) brightness(125%);
+    filter: blur(1px) brightness(130%);
     pointer-events: none;
   }
 
@@ -335,17 +372,27 @@
     z-index: 1;
   }
 
-  /* .glass-premium — light-mode leaning variant of the same recipe */
+  /* .glass-premium — same transparent recipe */
   .glass-premium {
     position: relative;
     isolation: isolate;
-    background: rgba(255, 255, 255, 0.15);
-    border: 1px solid rgba(255, 255, 255, 0.8);
-    backdrop-filter: blur(2px) saturate(180%);
-    -webkit-backdrop-filter: blur(2px) saturate(180%);
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.18);
+    backdrop-filter: blur(12px) saturate(180%);
+    -webkit-backdrop-filter: blur(12px) saturate(180%);
     box-shadow:
-      0 8px 32px rgba(31, 38, 135, 0.2),
-      inset 0 4px 20px rgba(255, 255, 255, 0.3);
+      inset  0 1px 1px rgba(255, 255, 255, 0.45),
+      inset  0 -1px 1px rgba(255, 255, 255, 0.08),
+      inset  1px 0 1px rgba(255, 255, 255, 0.12),
+      inset -1px 0 1px rgba(255, 255, 255, 0.12),
+      0 10px 30px rgba(0, 0, 0, 0.1);
+  }
+
+  @supports (backdrop-filter: url(#liquid-glass-filter)) {
+    .glass-premium {
+      backdrop-filter: url(#liquid-glass-filter) blur(12px) saturate(180%);
+      -webkit-backdrop-filter: url(#liquid-glass-filter) blur(12px) saturate(180%);
+    }
   }
 
   .glass-premium::after {
@@ -353,15 +400,12 @@
     position: absolute;
     inset: 0;
     border-radius: inherit;
-    background: rgba(255, 255, 255, 0.1);
-    backdrop-filter: blur(1px);
-    -webkit-backdrop-filter: blur(1px);
     box-shadow:
-      inset -10px -8px 0px -11px rgba(255, 255, 255, 1),
-      inset  0px -9px 0px  -8px rgba(255, 255, 255, 1);
-    opacity: 0.6;
+      inset -10px -8px 0px -11px rgba(255, 255, 255, 0.9),
+      inset   0px -9px 0px  -8px rgba(255, 255, 255, 0.9);
+    opacity: 0.55;
     z-index: -1;
-    filter: blur(1px) drop-shadow(10px 4px 6px rgba(0, 0, 0, 0.35)) brightness(115%);
+    filter: blur(1px) brightness(115%);
     pointer-events: none;
   }
 
@@ -371,20 +415,22 @@
   }
 
   .dark .glass-premium {
-    background: rgba(255, 255, 255, 0.06);
-    border: 1px solid rgba(255, 255, 255, 0.3);
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.1);
     box-shadow:
-      0 16px 48px rgba(0, 0, 0, 0.5),
-      inset 0 4px 20px rgba(255, 255, 255, 0.12);
+      inset  0 1px 1px rgba(255, 255, 255, 0.14),
+      inset  0 -1px 1px rgba(255, 255, 255, 0.03),
+      inset  1px 0 1px rgba(255, 255, 255, 0.05),
+      inset -1px 0 1px rgba(255, 255, 255, 0.05),
+      0 20px 60px rgba(0, 0, 0, 0.5);
   }
 
   .dark .glass-premium::after {
-    background: rgba(255, 255, 255, 0.04);
     box-shadow:
-      inset -10px -8px 0px -11px rgba(255, 255, 255, 0.9),
-      inset  0px -9px 0px  -8px rgba(255, 255, 255, 0.9);
-    opacity: 0.7;
-    filter: blur(1px) drop-shadow(10px 4px 6px rgba(0, 0, 0, 0.6)) brightness(125%);
+      inset -10px -8px 0px -11px rgba(255, 255, 255, 0.75),
+      inset   0px -9px 0px  -8px rgba(255, 255, 255, 0.75);
+    opacity: 0.6;
+    filter: blur(1px) brightness(130%);
   }
 
   .text-balance {
