@@ -18,6 +18,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { supabase } from "@/integrations/supabase/client";
+import { displayName } from "@/lib/name";
 
 interface AppLayoutProps {
     children: React.ReactNode;
@@ -259,7 +260,7 @@ export default function AppLayout({ children }: AppLayoutProps) {
                         </div>
                         {!sidebarCollapsed && (
                             <div className="flex-1 min-w-0 pr-2">
-                                <p className="text-xs font-bold text-foreground truncate">{user?.user_metadata?.first_name || "Account"}</p>
+                                <p className="text-xs font-bold text-foreground truncate">{displayName(user, "Account")}</p>
                                 <button 
                                     onClick={handleSignOut}
                                     className="text-[10px] text-muted-foreground font-bold uppercase tracking-wider hover:text-red-500 transition-colors flex items-center gap-1"

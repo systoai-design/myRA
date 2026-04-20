@@ -35,6 +35,7 @@ import {
     Info,
 } from "lucide-react";
 import FamilySection from "@/components/dashboard/FamilySection";
+import { displayName } from "@/lib/name";
 
 // ═══════════════════════════════════════════
 // TYPES & HELPERS
@@ -133,8 +134,7 @@ export default function DashboardHome() {
 
     useEffect(() => {
         if (!user) return;
-        const name = user.user_metadata?.first_name || user.email?.split("@")[0];
-        if (name) setUserName(name);
+        setUserName(displayName(user, "Investor"));
 
         const loadData = async () => {
             setLoading(true);

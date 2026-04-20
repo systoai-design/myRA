@@ -3,6 +3,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { getTopMygaRates, MygaRate } from "@/utils/annuityApi";
+import { cleanName } from "@/lib/name";
 
 export interface ChatMessage {
     id: string;
@@ -336,8 +337,8 @@ export function useMyRAChat() {
         prevUserRef.current = user;
     }, [user]);
 
-    // Derive user's first name from Supabase metadata
-    const userName = user?.user_metadata?.first_name || null;
+    // Derive user's first name from Supabase metadata (sanitized — never emails)
+    const userName = cleanName(user?.user_metadata?.first_name);
 
     // Load user memories from Supabase
     const loadMemories = useCallback(async () => {

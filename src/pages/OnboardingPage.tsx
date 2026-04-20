@@ -8,6 +8,7 @@ import {
     Camera, Upload, X,
     TrendingUp, Target, Compass, Anchor,
 } from "lucide-react";
+import { cleanName } from "@/lib/name";
 
 // ═══════════════════════════════════════════
 // CONSTANTS
@@ -221,18 +222,12 @@ export default function OnboardingPage() {
         else setStep(step + 1);
     };
 
-    // Never render emails as names
-    const sanitize = (s?: string | null): string | null => {
-        if (!s) return null;
-        const t = s.trim();
-        if (!t || t.includes("@") || t.length > 40) return null;
-        return t;
-    };
-    const displayName =
-        sanitize(firstName) ||
-        sanitize(user?.user_metadata?.first_name) ||
+    // Never render emails or garbage as names
+    const displayNameStr =
+        cleanName(firstName) ||
+        cleanName(user?.user_metadata?.first_name) ||
         "there";
-    const initials = (sanitize(firstName) || user?.email || "?").slice(0, 2).toUpperCase();
+    const initials = (cleanName(firstName) || user?.email || "?").slice(0, 2).toUpperCase();
 
     // ═══════════════════════════════════════════
     // RENDER
@@ -340,7 +335,7 @@ export default function OnboardingPage() {
                                             <div className="space-y-2 animate-in fade-in duration-500">
                                                 <p className="text-lg md:text-xl text-white leading-snug">
                                                     <span style={{ fontFamily: "'Playfair Display', Georgia, serif", fontStyle: "italic" }}>
-                                                        Hi {displayName} — I'm myra.
+                                                        Hi {displayNameStr} — I'm myra.
                                                     </span>
                                                 </p>
                                                 <p className="text-white/80 text-sm md:text-base leading-relaxed">
