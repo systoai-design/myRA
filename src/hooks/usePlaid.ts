@@ -40,6 +40,8 @@ export interface UsePlaidReturn {
   readyToLink: boolean;
   fetchAccounts: () => Promise<void>;
   removeItem: (itemId: string, institutionName: string) => Promise<void>;
+  linkTokenError: string | null;
+  retryLinkToken: () => void;
 }
 
 const API_BASE = '/api/plaid';
@@ -51,6 +53,8 @@ export function usePlaid(): UsePlaidReturn {
   const [linkedInvestments, setLinkedInvestments] = useState<PlaidHolding[]>([]);
   const [isLinking, setIsLinking] = useState(false);
   const [isLoadingAccounts, setIsLoadingAccounts] = useState(false);
+  const [linkTokenError, setLinkTokenError] = useState<string | null>(null);
+  const [retryCounter, setRetryCounter] = useState(0);
 
   // Check if returning from OAuth redirect
   const isOAuthReturn = typeof window !== 'undefined' && 
@@ -70,11 +74,13 @@ export function usePlaid(): UsePlaidReturn {
     }
 
     let cancelled = false;
+    setLinkTokenError(null);
     const createLinkToken = async () => {
       try {
         const userId = String(user.id); // Ensure string
         if (!userId || userId === 'undefined' || userId === 'null') {
           console.warn('[usePlaid] Invalid user.id, skipping link token creation');
+          if (!cancelled) setLinkTokenError("Not signed in");
           return;
         }
 
@@ -83,23 +89,36 @@ export function usePlaid(): UsePlaidReturn {
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ user_id: userId }),
         });
-        const data = await res.json();
+        const data = await res.json().catch(() => ({}));
         if (!res.ok) {
-          console.error('[usePlaid] Create link token failed:', data);
+          console.error('[usePlaid] Create link token failed:', res.status, data);
+          if (!cancelled) {
+            setLinkTokenError(
+              data?.error || data?.message || `Plaid init failed (${res.status})`
+            );
+          }
           return;
         }
         if (!cancelled && data.link_token) {
           setLinkToken(data.link_token);
-          // Store for OAuth return
           sessionStorage.setItem('plaid_link_token', data.link_token);
+        } else if (!cancelled) {
+          setLinkTokenError("No link token returned from server");
         }
-      } catch (err) {
+      } catch (err: any) {
         console.error('[usePlaid] Create link token error:', err);
+        if (!cancelled) setLinkTokenError(err?.message || "Network error");
       }
     };
     createLinkToken();
     return () => { cancelled = true; };
-  }, [user?.id, isOAuthReturn]);
+  }, [user?.id, isOAuthReturn, retryCounter]);
+
+  const retryLinkToken = useCallback(() => {
+    setLinkToken(null);
+    setLinkTokenError(null);
+    setRetryCounter((c) => c + 1);
+  }, []);
 
   // 2. Fetch existing linked accounts
   const fetchAccounts = useCallback(async () => {
@@ -215,5 +234,7 @@ export function usePlaid(): UsePlaidReturn {
     readyToLink: ready && !!linkToken,
     fetchAccounts,
     removeItem,
+    linkTokenError,
+    retryLinkToken,
   };
 }

@@ -3,6 +3,7 @@ import { usePlaid } from "@/hooks/usePlaid";
 import {
     Link2, Loader2, Building2, Unplug, RefreshCw,
     TrendingUp, BanknoteIcon, Wallet, DollarSign,
+    AlertCircle,
 } from "lucide-react";
 
 function formatCurrency(value: number) {
@@ -32,6 +33,7 @@ export default function LinkedAccountsCard() {
     const {
         linkedAccounts, isLinking, isLoadingAccounts,
         openPlaidLink, readyToLink, fetchAccounts, removeItem,
+        linkTokenError, retryLinkToken,
     } = usePlaid();
     const [removingId, setRemovingId] = useState<string | null>(null);
 
@@ -73,21 +75,47 @@ export default function LinkedAccountsCard() {
                                 <RefreshCw className={`w-4 h-4 ${isLoadingAccounts ? "animate-spin" : ""}`} />
                             </button>
                         )}
-                        <button
-                            onClick={() => openPlaidLink()}
-                            disabled={isLinking}
-                            className="px-5 py-2.5 bg-emerald-500 hover:bg-emerald-400 disabled:bg-emerald-500/50 text-white font-bold rounded-xl text-xs transition-all cursor-pointer flex items-center gap-2 shadow-lg shadow-emerald-500/20 disabled:cursor-not-allowed"
-                        >
-                            {isLinking ? (
-                                <><Loader2 className="w-3.5 h-3.5 animate-spin" /> Connecting...</>
-                            ) : !readyToLink ? (
-                                <><Loader2 className="w-3.5 h-3.5 animate-spin" /> Loading...</>
-                            ) : (
-                                <><Link2 className="w-3.5 h-3.5" /> Connect Account</>
-                            )}
-                        </button>
+                        {linkTokenError ? (
+                            <button
+                                onClick={retryLinkToken}
+                                className="px-5 py-2.5 bg-red-500/10 hover:bg-red-500/20 text-red-400 border border-red-500/30 font-bold rounded-xl text-xs transition-all cursor-pointer flex items-center gap-2"
+                                title={linkTokenError}
+                            >
+                                <AlertCircle className="w-3.5 h-3.5" /> Retry
+                            </button>
+                        ) : (
+                            <button
+                                onClick={() => openPlaidLink()}
+                                disabled={isLinking || !readyToLink}
+                                className="px-5 py-2.5 bg-emerald-500 hover:bg-emerald-400 disabled:bg-emerald-500/50 text-white font-bold rounded-xl text-xs transition-all cursor-pointer flex items-center gap-2 shadow-lg shadow-emerald-500/20 disabled:cursor-not-allowed"
+                            >
+                                {isLinking ? (
+                                    <><Loader2 className="w-3.5 h-3.5 animate-spin" /> Connecting...</>
+                                ) : !readyToLink ? (
+                                    <><Loader2 className="w-3.5 h-3.5 animate-spin" /> Preparing Plaid...</>
+                                ) : (
+                                    <><Link2 className="w-3.5 h-3.5" /> Connect Account</>
+                                )}
+                            </button>
+                        )}
                     </div>
                 </div>
+
+                {linkTokenError && (
+                    <div className="mb-4 rounded-xl border border-red-500/30 bg-red-500/5 px-4 py-3 flex items-start gap-3">
+                        <AlertCircle className="w-4 h-4 text-red-400 flex-shrink-0 mt-0.5" />
+                        <div className="flex-1 min-w-0">
+                            <p className="text-xs font-bold text-red-400">Plaid couldn't initialize</p>
+                            <p className="text-xs text-muted-foreground mt-0.5 break-words">{linkTokenError}</p>
+                            <button
+                                onClick={retryLinkToken}
+                                className="text-[11px] font-bold text-red-400 hover:text-red-300 underline mt-1.5"
+                            >
+                                Try again
+                            </button>
+                        </div>
+                    </div>
+                )}
 
                 {isLoadingAccounts && linkedAccounts.length === 0 ? (
                     <div className="flex items-center justify-center py-10">
