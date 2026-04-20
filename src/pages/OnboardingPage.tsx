@@ -221,8 +221,18 @@ export default function OnboardingPage() {
         else setStep(step + 1);
     };
 
-    const displayName = firstName || user?.user_metadata?.first_name || "there";
-    const initials = (firstName || user?.email || "?").slice(0, 2).toUpperCase();
+    // Never render emails as names
+    const sanitize = (s?: string | null): string | null => {
+        if (!s) return null;
+        const t = s.trim();
+        if (!t || t.includes("@") || t.length > 40) return null;
+        return t;
+    };
+    const displayName =
+        sanitize(firstName) ||
+        sanitize(user?.user_metadata?.first_name) ||
+        "there";
+    const initials = (sanitize(firstName) || user?.email || "?").slice(0, 2).toUpperCase();
 
     // ═══════════════════════════════════════════
     // RENDER

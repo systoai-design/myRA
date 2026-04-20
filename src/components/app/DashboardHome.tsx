@@ -390,7 +390,7 @@ export default function DashboardHome() {
             </div>
 
             {/* ───────── Quick Actions ───────── */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <button onClick={() => navigate("/app/chat")} className="group glass-card rounded-2xl p-5 text-left hover:scale-[1.02] transition-all duration-300 cursor-pointer active:scale-[0.98] hover:border-blue-500/30">
                     <div className="flex items-center justify-between">
                         <div className="flex items-center gap-3">
@@ -418,21 +418,6 @@ export default function DashboardHome() {
                             </div>
                         </div>
                         <ArrowRight className="w-4 h-4 text-muted-foreground/30 group-hover:text-emerald-400 group-hover:translate-x-1 transition-all" />
-                    </div>
-                </button>
-
-                <button onClick={() => navigate("/app/profile")} className="group glass-card rounded-2xl p-5 text-left hover:scale-[1.02] transition-all duration-300 cursor-pointer active:scale-[0.98] hover:border-purple-500/30">
-                    <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-3">
-                            <div className="w-10 h-10 rounded-xl bg-purple-500/10 border border-purple-500/15 flex items-center justify-center">
-                                <User className="w-5 h-5 text-purple-400" />
-                            </div>
-                            <div>
-                                <p className="text-foreground font-bold text-sm">My Profile</p>
-                                <p className="text-muted-foreground text-xs mt-0.5">Calibrate your plan</p>
-                            </div>
-                        </div>
-                        <ArrowRight className="w-4 h-4 text-muted-foreground/30 group-hover:text-purple-400 group-hover:translate-x-1 transition-all" />
                     </div>
                 </button>
             </div>
