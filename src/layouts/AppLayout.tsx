@@ -3,7 +3,6 @@ import { useNavigate, useLocation, Link } from "react-router-dom";
 import {
     LayoutDashboard,
     MessageSquare,
-    BarChart3,
     User,
     Settings,
     LogOut,
@@ -13,6 +12,7 @@ import {
     DollarSign,
     PieChart,
     Bell,
+    Plug,
 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
@@ -67,7 +67,6 @@ export default function AppLayout({ children }: AppLayoutProps) {
     const navItems = [
         { icon: LayoutDashboard, label: "Dashboard", path: "/app", id: "dashboard" },
         { icon: MessageSquare, label: "myra Chat", path: "/app/chat", id: "chat" },
-        { icon: BarChart3, label: "Portfolio", path: "/app/portfolio", id: "portfolio" },
         { icon: User, label: "Profile", path: "/app/profile", id: "profile" },
     ];
 
@@ -75,6 +74,10 @@ export default function AppLayout({ children }: AppLayoutProps) {
         { icon: DollarSign, label: "Spending", path: "/app/spending", id: "spending" },
         { icon: PieChart, label: "Budget", path: "/app/budget", id: "budget" },
         { icon: Bell, label: "Subscriptions", path: "/app/subscriptions", id: "subscriptions" },
+    ];
+
+    const connectItems = [
+        { icon: Plug, label: "Integrations", path: "/app/integrations", id: "integrations" },
     ];
 
     return (
@@ -217,6 +220,34 @@ export default function AppLayout({ children }: AppLayoutProps) {
                             )}
                             {location.pathname === item.path && !sidebarCollapsed && (
                                 <ChevronRight className="w-4 h-4 ml-auto text-primary/50" />
+                            )}
+                        </button>
+                    ))}
+
+                    {/* Connect section */}
+                    <div className="my-4 mx-4">
+                        {!sidebarCollapsed && (
+                            <span className="text-[9px] font-bold uppercase tracking-[0.25em] text-muted-foreground/50 px-4">Connect</span>
+                        )}
+                        <div className="h-px bg-border mt-2" />
+                    </div>
+
+                    {connectItems.map((item) => (
+                        <button
+                            key={item.id}
+                            onClick={() => navigate(item.path)}
+                            className={`w-full flex items-center gap-3 px-4 py-3.5 rounded-2xl transition-all duration-300 group relative ${
+                                location.pathname === item.path
+                                    ? "bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 shadow-sm"
+                                    : "text-muted-foreground hover:text-foreground hover:bg-black/[0.03] dark:hover:bg-white/5"
+                            }`}
+                        >
+                            <item.icon className={`w-5 h-5 transition-transform group-hover:scale-110 ${location.pathname === item.path ? "text-emerald-400" : ""}`} />
+                            {!sidebarCollapsed && (
+                                <span className="font-semibold text-sm tracking-wide animate-in fade-in slide-in-from-left-2">{item.label}</span>
+                            )}
+                            {location.pathname === item.path && !sidebarCollapsed && (
+                                <ChevronRight className="w-4 h-4 ml-auto text-emerald-400/50" />
                             )}
                         </button>
                     ))}

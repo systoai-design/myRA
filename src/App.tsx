@@ -15,6 +15,7 @@ import BudgetPage from "./pages/BudgetPage";
 import SubscriptionsPage from "./pages/SubscriptionsPage";
 import ResetPassword from "./pages/ResetPassword";
 import OnboardingPage from "./pages/OnboardingPage";
+import IntegrationsPage from "./pages/IntegrationsPage";
 import React, { lazy, Suspense } from "react";
 import NotFound from "./pages/NotFound";
 import { AuthProvider } from "@/contexts/AuthContext";
@@ -46,7 +47,8 @@ function AppRoutes() {
       <Route path="/app/chat" element={<AppLayout><MyRAChatPage /></AppLayout>} />
       <Route path="/agent-chat" element={<AppLayout><MyRAChatPage /></AppLayout>} />
       <Route path="/dashboard" element={<AppLayout><MyRAChatPage /></AppLayout>} />
-      <Route path="/app/portfolio" element={<AppLayout><PortfolioPage /></AppLayout>} />
+      <Route path="/app/portfolio" element={<PortfolioPage />} />
+      <Route path="/app/integrations" element={<AppLayout><IntegrationsPage /></AppLayout>} />
       <Route path="/app/profile" element={<AppLayout><ProfilePage /></AppLayout>} />
       <Route path="/app/settings" element={<AppLayout><SettingsPage /></AppLayout>} />
       <Route path="/app/spending" element={<AppLayout><SpendingPage /></AppLayout>} />

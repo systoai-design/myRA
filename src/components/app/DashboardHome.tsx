@@ -33,6 +33,7 @@ import {
     Flame,
     Plus,
     Info,
+    Link2,
 } from "lucide-react";
 import FamilySection from "@/components/dashboard/FamilySection";
 import { displayName } from "@/lib/name";
@@ -406,15 +407,15 @@ export default function DashboardHome() {
                     </div>
                 </button>
 
-                <button onClick={() => navigate("/app/portfolio")} className="group glass-card rounded-2xl p-5 text-left hover:scale-[1.02] transition-all duration-300 cursor-pointer active:scale-[0.98] hover:border-emerald-500/30">
+                <button onClick={() => navigate("/app/integrations")} className="group glass-card rounded-2xl p-5 text-left hover:scale-[1.02] transition-all duration-300 cursor-pointer active:scale-[0.98] hover:border-emerald-500/30">
                     <div className="flex items-center justify-between">
                         <div className="flex items-center gap-3">
                             <div className="w-10 h-10 rounded-xl bg-emerald-500/10 border border-emerald-500/15 flex items-center justify-center">
-                                <BarChart3 className="w-5 h-5 text-emerald-400" />
+                                <Link2 className="w-5 h-5 text-emerald-400" />
                             </div>
                             <div>
-                                <p className="text-foreground font-bold text-sm">Portfolio Hub</p>
-                                <p className="text-muted-foreground text-xs mt-0.5">Track and manage assets</p>
+                                <p className="text-foreground font-bold text-sm">Integrations</p>
+                                <p className="text-muted-foreground text-xs mt-0.5">Link banks, brokerages & more</p>
                             </div>
                         </div>
                         <ArrowRight className="w-4 h-4 text-muted-foreground/30 group-hover:text-emerald-400 group-hover:translate-x-1 transition-all" />
@@ -493,7 +494,7 @@ export default function DashboardHome() {
                                 title="No Assets Added Yet"
                                 description="Add your accounts manually or tell myra about them in chat to see your portfolio here."
                                 ctaLabel="Add Your First Asset"
-                                ctaPath="/app/portfolio"
+                                ctaPath="/app/integrations"
                             />
                         )}
                     </div>
@@ -558,8 +559,8 @@ export default function DashboardHome() {
                                 icon={BarChart3}
                                 title="No Allocation Data"
                                 description="Add assets to see your tax-optimized allocation chart."
-                                ctaLabel="Go to Portfolio"
-                                ctaPath="/app/portfolio"
+                                ctaLabel="Connect Accounts"
+                                ctaPath="/app/integrations"
                                 iconColor="text-emerald-400"
                                 iconBg="bg-emerald-500/10"
                             />
@@ -642,20 +643,20 @@ export default function DashboardHome() {
                     {/* Connect CTA */}
                     <div className="glass-card rounded-3xl p-6 border-primary/10">
                         <div className="flex items-center gap-3 mb-4">
-                            <div className="w-9 h-9 rounded-xl bg-primary/10 flex items-center justify-center">
-                                <Zap className="w-4 h-4 text-primary" />
+                            <div className="w-9 h-9 rounded-xl bg-emerald-500/10 flex items-center justify-center">
+                                <Link2 className="w-4 h-4 text-emerald-400" />
                             </div>
                             <div>
                                 <h3 className="text-sm font-bold text-foreground">Connect Accounts</h3>
-                                <p className="text-[10px] text-muted-foreground">Link real brokerage data</p>
+                                <p className="text-[10px] text-muted-foreground">Link banks, 401(k)s, brokerages</p>
                             </div>
                         </div>
-                        <button 
-                            onClick={() => navigate("/app/portfolio")}
-                            className="w-full px-4 py-3 bg-primary/10 border border-primary/20 text-primary hover:bg-primary/20 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center justify-center gap-2"
+                        <button
+                            onClick={() => navigate("/app/integrations")}
+                            className="w-full px-4 py-3 bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 hover:bg-emerald-500/20 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center justify-center gap-2"
                         >
-                            <Plus className="w-3.5 h-3.5" />
-                            Coming Soon
+                            Open Integrations
+                            <ArrowRight className="w-3.5 h-3.5" />
                         </button>
                     </div>
 
