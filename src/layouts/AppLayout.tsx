@@ -4,7 +4,6 @@ import {
     LayoutDashboard,
     MessageSquare,
     User,
-    Settings,
     LogOut,
     Menu,
     ShieldAlert,
@@ -267,19 +266,8 @@ export default function AppLayout({ children }: AppLayoutProps) {
                     )}
                 </nav>
 
-                {/* User + Settings */}
+                {/* User chip (Settings merged into Profile) */}
                 <div className="p-4 mt-auto space-y-2 pb-8">
-                    <button
-                        onClick={() => navigate("/app/settings")}
-                        className={`w-full flex items-center gap-3 px-4 py-3 transition-all rounded-2xl ${
-                            location.pathname === "/app/settings" 
-                                ? "bg-black/[0.04] dark:bg-white/5 text-foreground" 
-                                : "text-muted-foreground hover:text-foreground"
-                        }`}
-                    >
-                        <Settings className="w-5 h-5" />
-                        {!sidebarCollapsed && <span className="text-sm font-medium">Settings</span>}
-                    </button>
 
                     <div className="p-4 rounded-[24px] glass-card flex items-center gap-3 group">
                         <div className="w-10 h-10 rounded-full bg-gradient-to-tr from-primary/40 to-blue-500/40 flex items-center justify-center border border-black/5 dark:border-white/10 overflow-hidden">

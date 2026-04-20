@@ -147,6 +147,9 @@ export default function DashboardHome() {
                     .eq('user_id', user.id);
 
                 if (memories) {
+                    // Refine the greeting once we have legal_name loaded
+                    const legal = memories.find((m) => m.category === "legal_name")?.fact;
+                    setUserName(displayName(user, "Investor", legal));
                     // Parse assets (categories starting with "asset_")
                     const parsedAssets: ParsedAsset[] = [];
                     const profileData: UserProfile = {

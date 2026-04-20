@@ -337,8 +337,13 @@ export function useMyRAChat() {
         prevUserRef.current = user;
     }, [user]);
 
-    // Derive user's first name from Supabase metadata (sanitized — never emails)
-    const userName = cleanName(user?.user_metadata?.first_name);
+    // Derive user's first name. Prefer user_metadata.first_name; fall back to
+    // the legal_name stored in user_memory (first word) for users whose
+    // metadata got corrupted with emails during early signup flows.
+    const legalNameFromMemory = userMemories.find((m) => m.category === "legal_name")?.fact;
+    const userName =
+        cleanName(user?.user_metadata?.first_name) ||
+        (legalNameFromMemory ? cleanName(legalNameFromMemory.trim().split(/\s+/)[0]) : null);
 
     // Load user memories from Supabase
     const loadMemories = useCallback(async () => {

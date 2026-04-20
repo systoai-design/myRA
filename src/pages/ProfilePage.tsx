@@ -1,10 +1,14 @@
 import { useState, useEffect, useCallback, useRef } from "react";
+import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
+import { useTheme } from "@/components/theme-provider";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import {
     User, Calendar, MapPin, ReceiptText, Users, Clock,
     Loader2, CheckCircle2, Shield, Camera, Upload, X,
+    Palette, Lock, Bell, Mail, LogOut, AlertTriangle,
+    Moon, Sun, Monitor, Eye, EyeOff, ChevronRight,
 } from "lucide-react";
 
 interface UserMemory {
@@ -45,7 +49,9 @@ const FIELD_CONFIG: FieldDef[] = [
 type SaveState = "idle" | "saving" | "saved" | "error";
 
 export default function ProfilePage() {
-    const { user } = useAuth();
+    const { user, signOut } = useAuth();
+    const navigate = useNavigate();
+    const { theme, setTheme } = useTheme();
     const [memories, setMemories] = useState<Record<string, string>>({});
     const [drafts, setDrafts] = useState<Record<string, string>>({});
     const [saveStates, setSaveStates] = useState<Record<string, SaveState>>({});
@@ -57,6 +63,57 @@ export default function ProfilePage() {
     const [avatarUrl, setAvatarUrl] = useState<string | null>(user?.user_metadata?.avatar_url || null);
     const [uploadingAvatar, setUploadingAvatar] = useState(false);
     const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
+
+    // Password
+    const [newPassword, setNewPassword] = useState("");
+    const [confirmPassword, setConfirmPassword] = useState("");
+    const [savingPassword, setSavingPassword] = useState(false);
+    const [showPassword, setShowPassword] = useState(false);
+
+    // Notifications
+    const [emailNotifs, setEmailNotifs] = useState(
+        user?.user_metadata?.email_notifications !== false
+    );
+
+    const handleChangePassword = async () => {
+        if (newPassword.length < 6) { toast.error("Password must be at least 6 characters"); return; }
+        if (newPassword !== confirmPassword) { toast.error("Passwords don't match"); return; }
+        setSavingPassword(true);
+        try {
+            const { error } = await supabase.auth.updateUser({ password: newPassword });
+            if (error) throw error;
+            toast.success("Password updated successfully!");
+            setNewPassword(""); setConfirmPassword("");
+        } catch (err: any) {
+            toast.error(err.message || "Failed to update password");
+        } finally {
+            setSavingPassword(false);
+        }
+    };
+
+    const handleToggleNotifs = async () => {
+        const newVal = !emailNotifs;
+        setEmailNotifs(newVal);
+        try {
+            await supabase.auth.updateUser({ data: { email_notifications: newVal } });
+            toast.success(newVal ? "Notifications enabled" : "Notifications muted");
+        } catch {
+            setEmailNotifs(!newVal);
+            toast.error("Failed to update preference");
+        }
+    };
+
+    const handleSignOut = async () => {
+        await signOut();
+        toast.success("Signed out successfully");
+        navigate("/");
+    };
+
+    const themeOptions = [
+        { value: "dark" as const, label: "Dark", icon: Moon, desc: "Easy on the eyes" },
+        { value: "light" as const, label: "Light", icon: Sun, desc: "Classic and clean" },
+        { value: "system" as const, label: "Auto", icon: Monitor, desc: "Match your OS" },
+    ];
 
     useEffect(() => {
         if (user?.user_metadata?.avatar_url) setAvatarUrl(user.user_metadata.avatar_url);
@@ -133,6 +190,18 @@ export default function ProfilePage() {
                 fact: trimmed,
                 updated_at: new Date().toISOString()
             }, { onConflict: 'user_id, category' });
+
+            // Side-effect: when legal_name saves, also push a clean first name
+            // to user_metadata so the sidebar/chat/dashboard greeting updates.
+            if (category === 'legal_name') {
+                const first = trimmed.split(/\s+/)[0] || "";
+                if (first && !first.includes("@") && first.length <= 40) {
+                    try {
+                        await supabase.auth.updateUser({ data: { first_name: first } });
+                        await supabase.auth.getSession();
+                    } catch { /* non-fatal */ }
+                }
+            }
 
             setMemories((prev) => ({ ...prev, [category]: trimmed }));
             setSaveStates((s) => ({ ...s, [category]: "saved" }));
@@ -453,8 +522,212 @@ export default function ProfilePage() {
                 </div>
             )}
 
-            {/* Security Badge */}
-            <div className="glass-premium rounded-[24px] p-6 border border-border bg-black/[0.02] dark:bg-white/[0.02] flex items-center gap-4">
+            {/* ═══════════ APPEARANCE ═══════════ */}
+            <section className="glass-card rounded-3xl p-8 space-y-6">
+                <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-2xl bg-purple-500/10 flex items-center justify-center">
+                        <Palette className="w-5 h-5 text-purple-400" />
+                    </div>
+                    <div>
+                        <h3 className="text-lg font-bold text-foreground">Appearance</h3>
+                        <p className="text-xs text-muted-foreground">Choose your preferred theme</p>
+                    </div>
+                </div>
+                <div className="grid grid-cols-3 gap-3">
+                    {themeOptions.map(({ value, label, icon: Icon, desc }) => (
+                        <button
+                            key={value}
+                            onClick={() => setTheme(value)}
+                            className={`relative flex flex-col items-center gap-3 p-5 rounded-2xl border-2 transition-all cursor-pointer ${
+                                theme === value
+                                    ? "bg-primary/5 border-primary/40 text-foreground shadow-sm"
+                                    : "bg-muted/20 border-transparent text-muted-foreground hover:text-foreground hover:border-border hover:bg-muted/40"
+                            }`}
+                        >
+                            {theme === value && (
+                                <div className="absolute top-2 right-2">
+                                    <CheckCircle2 className="w-4 h-4 text-primary" />
+                                </div>
+                            )}
+                            <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${theme === value ? "bg-primary/10" : "bg-muted/50"}`}>
+                                <Icon className="w-5 h-5" />
+                            </div>
+                            <div className="text-center">
+                                <p className="text-sm font-bold">{label}</p>
+                                <p className="text-[10px] text-muted-foreground mt-0.5">{desc}</p>
+                            </div>
+                        </button>
+                    ))}
+                </div>
+            </section>
+
+            {/* ═══════════ SECURITY ═══════════ */}
+            <section className="glass-card rounded-3xl p-8 space-y-6">
+                <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-2xl bg-amber-500/10 flex items-center justify-center">
+                        <Lock className="w-5 h-5 text-amber-400" />
+                    </div>
+                    <div>
+                        <h3 className="text-lg font-bold text-foreground">Security</h3>
+                        <p className="text-xs text-muted-foreground">Update your password</p>
+                    </div>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                        <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">New Password</label>
+                        <div className="relative">
+                            <input
+                                type={showPassword ? "text" : "password"}
+                                value={newPassword}
+                                onChange={(e) => setNewPassword(e.target.value)}
+                                placeholder="••••••••"
+                                minLength={6}
+                                className="w-full bg-muted/50 border border-border rounded-xl px-4 py-3 pr-10 text-foreground placeholder-muted-foreground/40 focus:outline-none focus:border-primary/50 focus:ring-1 focus:ring-primary/20 transition-all text-sm"
+                            />
+                            <button
+                                type="button"
+                                onClick={() => setShowPassword(!showPassword)}
+                                className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+                            >
+                                {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                            </button>
+                        </div>
+                    </div>
+                    <div className="space-y-2">
+                        <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Confirm Password</label>
+                        <input
+                            type={showPassword ? "text" : "password"}
+                            value={confirmPassword}
+                            onChange={(e) => setConfirmPassword(e.target.value)}
+                            onKeyDown={(e) => { if (e.key === "Enter") handleChangePassword(); }}
+                            placeholder="••••••••"
+                            minLength={6}
+                            className="w-full bg-muted/50 border border-border rounded-xl px-4 py-3 text-foreground placeholder-muted-foreground/40 focus:outline-none focus:border-primary/50 focus:ring-1 focus:ring-primary/20 transition-all text-sm"
+                        />
+                    </div>
+                </div>
+
+                {newPassword && (
+                    <div className="space-y-2">
+                        <div className="flex gap-1">
+                            {[1, 2, 3, 4].map((i) => (
+                                <div
+                                    key={i}
+                                    className={`h-1 flex-1 rounded-full transition-colors ${
+                                        newPassword.length >= i * 3
+                                            ? newPassword.length >= 12 ? "bg-emerald-500" : newPassword.length >= 8 ? "bg-amber-500" : "bg-red-500"
+                                            : "bg-muted"
+                                    }`}
+                                />
+                            ))}
+                        </div>
+                        <p className="text-[10px] text-muted-foreground">
+                            {newPassword.length < 6 ? "Too short" : newPassword.length < 8 ? "Weak" : newPassword.length < 12 ? "Good" : "Strong"}
+                            {confirmPassword && newPassword !== confirmPassword && (
+                                <span className="text-red-400 ml-2">· Passwords don't match</span>
+                            )}
+                            {confirmPassword && newPassword === confirmPassword && newPassword.length >= 6 && (
+                                <span className="text-emerald-400 ml-2">· Passwords match ✓</span>
+                            )}
+                        </p>
+                    </div>
+                )}
+
+                <button
+                    onClick={handleChangePassword}
+                    disabled={savingPassword || !newPassword || !confirmPassword || newPassword !== confirmPassword}
+                    className="px-6 py-3 bg-amber-500/10 hover:bg-amber-500/20 border border-amber-500/20 text-amber-400 font-semibold rounded-xl transition-all disabled:opacity-30 flex items-center gap-2 text-sm"
+                >
+                    {savingPassword ? <Loader2 className="w-4 h-4 animate-spin" /> : <Lock className="w-4 h-4" />}
+                    Update Password
+                </button>
+            </section>
+
+            {/* ═══════════ NOTIFICATIONS ═══════════ */}
+            <section className="glass-card rounded-3xl p-8 space-y-6">
+                <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-2xl bg-blue-500/10 flex items-center justify-center">
+                        <Bell className="w-5 h-5 text-blue-400" />
+                    </div>
+                    <div>
+                        <h3 className="text-lg font-bold text-foreground">Notifications</h3>
+                        <p className="text-xs text-muted-foreground">Manage how myra communicates with you</p>
+                    </div>
+                </div>
+                <div className="space-y-3">
+                    <div className="flex items-center justify-between p-4 rounded-2xl bg-muted/20 border border-border">
+                        <div className="flex items-center gap-3">
+                            <Mail className="w-4 h-4 text-muted-foreground" />
+                            <div>
+                                <p className="text-sm font-semibold text-foreground">Email Notifications</p>
+                                <p className="text-xs text-muted-foreground">Receive updates and insights via email</p>
+                            </div>
+                        </div>
+                        <button
+                            onClick={handleToggleNotifs}
+                            className={`relative w-12 h-7 rounded-full transition-colors ${emailNotifs ? "bg-primary" : "bg-muted"}`}
+                        >
+                            <div className={`absolute top-1 w-5 h-5 rounded-full bg-white shadow-sm transition-transform ${emailNotifs ? "left-6" : "left-1"}`} />
+                        </button>
+                    </div>
+                </div>
+            </section>
+
+            {/* ═══════════ EMAIL (read-only) ═══════════ */}
+            <section className="glass-card rounded-3xl p-8 space-y-4">
+                <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-2xl bg-primary/10 flex items-center justify-center">
+                        <Mail className="w-5 h-5 text-primary" />
+                    </div>
+                    <div>
+                        <h3 className="text-lg font-bold text-foreground">Account</h3>
+                        <p className="text-xs text-muted-foreground">Your login email (contact support to change)</p>
+                    </div>
+                </div>
+                <div className="flex items-center gap-3 bg-muted/30 border border-border rounded-xl px-4 py-3">
+                    <Mail className="w-4 h-4 text-muted-foreground" />
+                    <span className="text-sm text-muted-foreground">{user?.email}</span>
+                    <div className="ml-auto flex items-center gap-1.5 px-2 py-0.5 bg-emerald-500/10 rounded-lg">
+                        <CheckCircle2 className="w-3 h-3 text-emerald-500" />
+                        <span className="text-[10px] font-bold text-emerald-500">Verified</span>
+                    </div>
+                </div>
+            </section>
+
+            {/* ═══════════ SIGN OUT / DANGER ═══════════ */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <button
+                    onClick={handleSignOut}
+                    className="glass-card rounded-3xl p-6 flex items-center gap-4 hover:border-primary/20 transition-all cursor-pointer group text-left"
+                >
+                    <div className="w-10 h-10 rounded-2xl bg-muted/50 flex items-center justify-center group-hover:bg-primary/10 transition-all">
+                        <LogOut className="w-5 h-5 text-muted-foreground group-hover:text-primary transition-colors" />
+                    </div>
+                    <div className="flex-1">
+                        <p className="text-sm font-bold text-foreground">Sign Out</p>
+                        <p className="text-xs text-muted-foreground">End your current session</p>
+                    </div>
+                    <ChevronRight className="w-4 h-4 text-muted-foreground/40" />
+                </button>
+
+                <button
+                    onClick={() => toast.info("Contact support to delete your account: support@retirewithmyra.com")}
+                    className="glass-card rounded-3xl p-6 flex items-center gap-4 hover:border-red-500/20 transition-all cursor-pointer group text-left"
+                >
+                    <div className="w-10 h-10 rounded-2xl bg-red-500/10 flex items-center justify-center">
+                        <AlertTriangle className="w-5 h-5 text-red-400/60 group-hover:text-red-400 transition-colors" />
+                    </div>
+                    <div className="flex-1">
+                        <p className="text-sm font-bold text-red-400/80 group-hover:text-red-400 transition-colors">Delete Account</p>
+                        <p className="text-xs text-muted-foreground">Permanently remove all data</p>
+                    </div>
+                    <ChevronRight className="w-4 h-4 text-muted-foreground/40" />
+                </button>
+            </div>
+
+            {/* Security footer */}
+            <div className="glass-premium rounded-[24px] p-6 border border-border flex items-center gap-4">
                 <div className="w-10 h-10 rounded-xl bg-emerald-500/10 flex items-center justify-center">
                     <Shield className="w-5 h-5 text-emerald-400" />
                 </div>
@@ -462,6 +735,10 @@ export default function ProfilePage() {
                     <p className="text-sm font-semibold text-foreground">Your data is encrypted and secure</p>
                     <p className="text-xs text-muted-foreground mt-0.5">All profile information is stored with AES-256 encryption via Supabase.</p>
                 </div>
+            </div>
+
+            <div className="text-center py-4">
+                <p className="text-[10px] text-muted-foreground/40 font-medium tracking-widest uppercase">myRA v2.0 · Built by Retirement Architects</p>
             </div>
         </div>
     );
