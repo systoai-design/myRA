@@ -1,11 +1,11 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate, useLocation, Link } from "react-router-dom";
-import { 
-    LayoutDashboard, 
-    MessageSquare, 
-    BarChart3, 
-    User, 
-    Settings, 
+import {
+    LayoutDashboard,
+    MessageSquare,
+    BarChart3,
+    User,
+    Settings,
     LogOut,
     Menu,
     ShieldAlert,
@@ -17,6 +17,7 @@ import {
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
 import { ThemeToggle } from "@/components/ThemeToggle";
+import { supabase } from "@/integrations/supabase/client";
 
 interface AppLayoutProps {
     children: React.ReactNode;
@@ -28,6 +29,33 @@ export default function AppLayout({ children }: AppLayoutProps) {
     const { user, role, testRole, signOut } = useAuth();
     const effectiveRole = testRole || role;
     const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+
+    // Redirect new users to onboarding if they haven't completed it
+    useEffect(() => {
+        if (!user) return;
+        if (location.pathname.startsWith("/app/onboarding")) return;
+        // Skip redirect if user dismissed via query string (?skipOnboarding=1)
+        if (new URLSearchParams(location.search).get("skipOnboarding") === "1") return;
+        // Check localStorage for a "dismissed" flag so we don't loop
+        if (localStorage.getItem(`onboarding-dismissed-${user.id}`) === "true") return;
+
+        let cancelled = false;
+        (async () => {
+            const { data } = await supabase
+                .from("user_memory")
+                .select("category, fact")
+                .eq("user_id", user.id)
+                .in("category", ["onboarded", "date_of_birth", "life_stage"]);
+            if (cancelled) return;
+            const hasOnboarded = data?.some((m) => m.category === "onboarded" && m.fact === "true");
+            const hasBasics = data?.some((m) => m.category === "date_of_birth" && m.fact)
+                && data?.some((m) => m.category === "life_stage" && m.fact);
+            if (!hasOnboarded && !hasBasics) {
+                navigate("/app/onboarding", { replace: true });
+            }
+        })();
+        return () => { cancelled = true; };
+    }, [user, location.pathname, location.search, navigate]);
 
     const handleSignOut = async () => {
         await signOut();

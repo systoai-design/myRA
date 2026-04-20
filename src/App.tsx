@@ -14,6 +14,7 @@ import SpendingPage from "./pages/SpendingPage";
 import BudgetPage from "./pages/BudgetPage";
 import SubscriptionsPage from "./pages/SubscriptionsPage";
 import ResetPassword from "./pages/ResetPassword";
+import OnboardingPage from "./pages/OnboardingPage";
 import React, { lazy, Suspense } from "react";
 import NotFound from "./pages/NotFound";
 import { AuthProvider } from "@/contexts/AuthContext";
@@ -40,6 +41,7 @@ function AppRoutes() {
   const routes = (
     <Routes>
       <Route path="/" element={<Index />} />
+      <Route path="/app/onboarding" element={<OnboardingPage />} />
       <Route path="/app" element={<AppLayout><DashboardHome /></AppLayout>} />
       <Route path="/app/chat" element={<AppLayout><MyRAChatPage /></AppLayout>} />
       <Route path="/agent-chat" element={<AppLayout><MyRAChatPage /></AppLayout>} />
